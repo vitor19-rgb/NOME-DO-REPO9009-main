@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 7%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 222 47% 7%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 212 95% 48%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+}
+
+.bg-nav-pill {
+  @apply bg-[#0f172a] hover:bg-[#1e293b] text-white px-4 py-1 rounded-full text-xs font-medium border border-blue-900/50 transition-colors;
+}
+
+.bg-nav-pill-gradient {
+  background: linear-gradient(90deg, #fbbf24, #10b981, #3b82f6);
+  @apply px-4 py-1 rounded-full text-xs font-medium text-white border border-white/20 transition-transform hover:scale-105;
+}
+
+.glass-panel {
+  @apply bg-[#1e293b]/40 backdrop-blur-md border border-white/10 rounded-3xl;
+}

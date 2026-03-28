@@ -1,0 +1,76 @@
+{
+  "placeholderImages": [
+    {
+      "id": "caatinga-landscape",
+      "description": "Vista de satélite de uma área de Caatinga com solo exposto e vegetação esparsa típica do semiárido.",
+      "imageUrl": "/images/biomes/caatinga-satellite.png",
+      "imageHint": "dry caatinga satellite view"
+    },
+    {
+      "id": "caatinga-detail",
+      "description": "Análise técnica de perfil de solo mostrando camadas compactas e baixa umidade em campo.",
+      "imageUrl": "/images/biomes/caatinga-soil.png",
+      "imageHint": "semi-arid soil profile"
+    },
+    {
+      "id": "pampa-landscape",
+      "description": "Vista de satélite dos Campos Sulinos (Pampa) com vastas áreas de gramíneas e relevo suave ondulado.",
+      "imageUrl": "/images/biomes/pampa-satellite.png",
+      "imageHint": "pampa grasslands satellite"
+    },
+    {
+      "id": "pampa-detail",
+      "description": "Análise de solo fértil do Pampa, apresentando alta concentração de matéria orgânica e raízes densas.",
+      "imageUrl": "/images/biomes/pampa-soil.png",
+      "imageHint": "fertile grassland soil roots"
+    },
+    {
+      "id": "cerrado-landscape",
+      "description": "Vista de satélite do Cerrado brasileiro, apresentando mosaico de savana e matas de galeria.",
+      "imageUrl": "/images/biomes/cerrado-satellite.png",
+      "imageHint": "cerrado savanna satellite"
+    },
+    {
+      "id": "cerrado-detail",
+      "description": "Perfil de solo profundo do Cerrado, com presença de laterização e troncos retorcidos ao fundo.",
+      "imageUrl": "/images/biomes/cerrado-soil.png",
+      "imageHint": "cerrado deep red soil"
+    },
+    {
+      "id": "amazonia-landscape",
+      "description": "Vista de satélite da Floresta Amazônica, revelando um denso dossel verde contínuo e a presença de rios meandrantes.",
+      "imageUrl": "/images/biomes/amazonia-satellite.png",
+      "imageHint": "amazon rainforest satellite rivers"
+    },
+    {
+      "id": "amazonia-detail",
+      "description": "Análise de solo da Amazônia, destacando a fina e vital camada de matéria orgânica (serapilheira) sobre um solo argiloso e pobre.",
+      "imageUrl": "/images/biomes/amazonia-soil.png",
+      "imageHint": "amazon shallow forest soil with litter"
+    },
+    {
+      "id": "mata-atlantica-landscape",
+      "description": "Vista de satélite da Mata Atlântica, mostrando o relevo acidentado de serras e manchas de floresta densa próxima ao litoral.",
+      "imageUrl": "/images/biomes/mata-atlantica-satellite.png",
+      "imageHint": "atlantic forest satellite coastal mountains"
+    },
+    {
+      "id": "mata-atlantica-detail",
+      "description": "Perfil de solo úmido da Mata Atlântica, com espessa camada de húmus, alta umidade e presença de raízes de grande porte.",
+      "imageUrl": "/images/biomes/mata-atlantica-soil.png",
+      "imageHint": "atlantic forest humid soil humus"
+    },
+    {
+      "id": "pantanal-landscape",
+      "description": "Vista de satélite do Pantanal, destacando o vasto mosaico de áreas alagadas, corixos e manchas de vegetação arbustiva.",
+      "imageUrl": "/images/biomes/pantanal-satellite.png",
+      "imageHint": "pantanal wetlands satellite flooded"
+    },
+    {
+      "id": "pantanal-detail",
+      "description": "Análise de solo do Pantanal, evidenciando características de hidromorfismo e sedimentos trazidos pelos constantes alagamentos.",
+      "imageUrl": "/images/biomes/pantanal-soil.png",
+      "imageHint": "pantanal flooded hidromorphic soil profile"
+    }
+  ]
+}
