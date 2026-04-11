@@ -393,10 +393,15 @@ const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMod
                  <div className="max-w-6xl mx-auto">
                     <h2 className="text-3xl font-bold text-center text-white mb-12">Modos de Jogo</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <GameModeCard icon={<Globe size={40}/>} title="Biomas" description="Identifique os biomas do Brasil." onClick={() => handleModeSelection('biomes')} />
+                        {/* 1. Alterado de "Biomas" para "Meio Ambiente" */}
+                        <GameModeCard icon={<Globe size={40}/>} title="Meio Ambiente" description="Identifique biomas e aspectos ambientais do Brasil." onClick={() => handleModeSelection('biomes')} />
+                        
                         <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Analise o crescimento das cidades e evite a Macrocefalia Urbana." onClick={() => handleModeSelection('urbanization')} enabled={true} />
+                        
                         <GameModeCard icon={<ShieldCheck size={40}/>} title="Geopolítica" description="Entenda as disputas territoriais." onClick={() => handleModeSelection('Geopolítica')} enabled={false} />
-                        <GameModeCard icon={<Cloud size={40}/>} title="Clima" description="Explore os diferentes tipos climáticos." onClick={() => handleModeSelection('Clima')} enabled={false} />
+                        
+                        {/* 2. Alterado de "Clima" para "Fenômenos Naturais" */}
+                        <GameModeCard icon={<Cloud size={40}/>} title="Fenômenos Naturais" description="Explore os tipos climáticos e fenômenos naturais." onClick={() => handleModeSelection('Clima')} enabled={false} />
                     </div>
                  </div>
             </section>
