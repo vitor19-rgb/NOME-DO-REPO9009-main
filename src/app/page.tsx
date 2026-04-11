@@ -459,12 +459,12 @@ export default function BioGuesser() {
     setPlayerName(name); 
     setGameMode(mode);
 
-    // Setup inicial apenas se for Biomas
+    // Setup inicial apenas se o modo for Biomas
     if (mode === 'biomes') {
-        // CORREÇÃO: Removemos o .slice(0, 3) para que todos os 6 biomas 
-        // entrem na partida, garantindo que nenhum fique de fora. 
-        // Eles continuarão aparecendo em ordem aleatória!
-        const shuffledBiomes = shuffle([...BIOMES]);
+        // Passo 1: [...BIOMES] cria uma cópia da lista de 6 biomas.
+        // Passo 2: shuffle() embaralha essa lista de forma 100% aleatória.
+        // Passo 3: .slice(0, 3) seleciona os 3 primeiros biomas sorteados.
+        const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
         
         setSessionBiomes(shuffledBiomes);
         setCurrentBiomeIndex(0);
