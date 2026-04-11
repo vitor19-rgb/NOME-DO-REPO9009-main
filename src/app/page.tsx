@@ -389,19 +389,46 @@ const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMod
                 </div>
             </section>
 
-            <section id="modos" className="py-20 px-4">
+          <section id="modos" className="py-20 px-4">
                  <div className="max-w-6xl mx-auto">
                     <h2 className="text-3xl font-bold text-center text-white mb-12">Modos de Jogo</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {/* 1. Alterado de "Biomas" para "Meio Ambiente" */}
-                        <GameModeCard icon={<Globe size={40}/>} title="Meio Ambiente" description="Identifique biomas e aspectos ambientais do Brasil." onClick={() => handleModeSelection('biomes')} />
+                        {/* Eixo 1: Meio Ambiente */}
+                        <GameModeCard 
+                            icon={<Globe size={40}/>} 
+                            title="Meio Ambiente e Impactos" 
+                            description="Biomas,
+                            Impactos Ambientais/Urbanos, Desenvolvimento Sustentável." 
+                            onClick={() => handleModeSelection('biomes')} 
+                            enabled={true} 
+                        />
                         
-                        <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Analise o crescimento das cidades e evite a Macrocefalia Urbana." onClick={() => handleModeSelection('urbanization')} enabled={true} />
+                        {/* Eixo 2: Geografia Agrária */}
+                        <GameModeCard 
+                            icon={<BookOpen size={40}/>} 
+                            title="Geografia Agrária" 
+                            description="Estrutura Fundiária, Agronegócio, Agricultura Familiar, Revolução Verde." 
+                            onClick={() => handleModeSelection('agraria')} 
+                            enabled={false} 
+                        />
                         
-                        <GameModeCard icon={<ShieldCheck size={40}/>} title="Geopolítica" description="Entenda as disputas territoriais." onClick={() => handleModeSelection('Geopolítica')} enabled={false} />
+                        {/* Eixo 3: Urbanização */}
+                        <GameModeCard 
+                            icon={<Building size={40}/>} 
+                            title="Urbanização" 
+                            description="Metropolização, Migrações Pendulares, Hierarquia Urbana, Segregação." 
+                            onClick={() => handleModeSelection('urbanization')} 
+                            enabled={true} 
+                        />
                         
-                        {/* 2. Alterado de "Clima" para "Fenômenos Naturais" */}
-                        <GameModeCard icon={<Cloud size={40}/>} title="Fenômenos Naturais" description="Explore os tipos climáticos e fenômenos naturais." onClick={() => handleModeSelection('Clima')} enabled={false} />
+                        {/* Eixo 4: Geopolítica e Globalização */}
+                        <GameModeCard 
+                            icon={<ShieldCheck size={40}/>} 
+                            title="Geopolítica e Globalização" 
+                            description="Conflitos Contemporâneos, Nova Ordem Mundial, Fases do Capitalismo." 
+                            onClick={() => handleModeSelection('geopolitica')} 
+                            enabled={false} 
+                        />
                     </div>
                  </div>
             </section>
