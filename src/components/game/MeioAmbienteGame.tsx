@@ -11,6 +11,9 @@ import { Globe, BrainCircuit, ArrowRight, BookOpen, Search, Lightbulb, HelpCircl
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 
+// IMPORTAÇÃO DO NOVO CHEFÃO (EFEITO DOMINÓ)
+import ReacaoEmCadeiaGame from '@/components/game/ReacaoEmCadeiaGame';
+
 // --- FUNÇÕES UTILITÁRIAS --- //
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,  randomIndex;
@@ -100,8 +103,9 @@ const LevelCompleteScreen = ({ biome, score, onNext, isLast }: { biome: BiomeDat
                 <p className="text-sm text-slate-500 uppercase tracking-widest font-bold mb-1">Pontuação Total</p>
                 <p className="text-4xl font-black text-yellow-400">{score} pts</p>
             </div>
+            {/* O texto do botão muda se for a última fase antes do chefão */}
             <Button onClick={onNext} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-6 px-10 text-lg transition-all shadow-lg shadow-blue-900/50">
-                {isLast ? "Finalizar Missão" : "Próxima Fase"} <ArrowRight className="ml-2" />
+                {isLast ? "Desafio Final" : "Próxima Fase"} <ArrowRight className="ml-2" />
             </Button>
         </div>
     </div>
@@ -129,7 +133,10 @@ interface MeioAmbienteGameProps {
 export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore }: MeioAmbienteGameProps) {
   const [sessionBiomes, setSessionBiomes] = useState<BiomeData[]>([]);
   const [currentBiomeIndex, setCurrentBiomeIndex] = useState(0);
-  const [gameState, setGameState] = useState<'playing' | 'revealed' | 'gameover'>('playing');
+  
+  // O gameState agora inclui a fase bônus
+  const [gameState, setGameState] = useState<'playing' | 'revealed' | 'gameover' | 'bonus_stage'>('playing');
+  
   const [identifiedKeywords, setIdentifiedKeywords] = useState<Keyword[]>([]);
   const [totalScore, setTotalScore] = useState(0);
   const [wordBank, setWordBank] = useState<string[]>([]);
@@ -138,7 +145,7 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
   const [incorrectGuessCount, setIncorrectGuessCount] = useState(0);
   const [hintsShown, setHintsShown] = useState<string[]>([]);
 
-  // Inicializa o jogo
+  // Inicializa o jogo sorteando 3 biomas
   useEffect(() => {
     const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
     setSessionBiomes(shuffledBiomes);
@@ -223,15 +230,25 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
     }
   };
 
-  const handleFinishPhase = () => {
-      onSaveScore(totalScore);
-      toast({ title: "Missão Completa! 🎉", description: `Sua pontuação final (${totalScore} pts) foi registrada no Ranking.`, duration: 4000 });
-      onBackToHub(); 
-  }
-
+  // Função que envia o jogador para a fase bônus em vez de encerrar na hora
   const handleNextBiome = () => {
-    if (currentBiomeIndex + 1 < sessionBiomes.length) setCurrentBiomeIndex(prev => prev + 1);
-    else handleFinishPhase();
+    if (currentBiomeIndex + 1 < sessionBiomes.length) {
+        setCurrentBiomeIndex(prev => prev + 1);
+    } else {
+        setGameState('bonus_stage'); // Inicia o Efeito Dominó!
+    }
+  };
+
+  // Função que o Efeito Dominó vai chamar quando o aluno vencer tudo
+  const handleCompleteBoss = (bonusScore: number) => {
+      const finalScore = totalScore + bonusScore;
+      onSaveScore(finalScore);
+      toast({ 
+          title: "Missão Concluída com Honras! 🎉", 
+          description: `Sua pontuação final (${finalScore} pts) foi registrada no Ranking.`, 
+          duration: 4000 
+      });
+      onBackToHub(); 
   };
 
   const getButtonClass = (word: string) => {
@@ -243,9 +260,22 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
 
   const filteredWordBank = wordBank.filter(word => word.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  // 1. Tela de Game Over
   if (gameState === 'gameover') return <GameOverScreen onRestart={setupBiomeRound} />;
+  
+  // 2. Tela de Fase Bônus (Efeito Dominó)
+  if (gameState === 'bonus_stage') {
+      return (
+          <div className="min-h-screen bg-[#020617] flex flex-col w-full text-white">
+              <ReacaoEmCadeiaGame onFinishGame={handleCompleteBoss} />
+          </div>
+      );
+  }
+
+  // Se os dados não tiverem carregado ainda, retorna null (proteção)
   if (!currentBiome) return null;
 
+  // 3. Renderização Principal das 3 Fases de Identificação
   return (
     <main className="min-h-screen bg-[#020617] text-white overflow-x-hidden flex flex-col">
        <BackToHomeButton onConfirm={handleUserExit} />
