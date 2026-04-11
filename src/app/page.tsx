@@ -11,6 +11,9 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { BackToHomeButton } from "@/components/game/back-to-home-button";
 import { Input } from "@/components/ui/input";
 
+// IMPORTANDO O NOVO JOGO DE URBANIZAÇÃO
+import MacrocefaliaUrbanaGame from '@/components/game/macrocefalia-urbana';
+
 // --- FUNÇÕES UTILITÁRIAS --- //
 
 function shuffle<T>(array: T[]): T[] {
@@ -23,11 +26,12 @@ function shuffle<T>(array: T[]): T[] {
   return array;
 }
 
-// Lógica de Ranking no Local Storage
+// Lógica de Ranking no Local Storage (Atualizado para suportar 'Modos')
 export interface ScoreEntry {
     name: string;
     score: number;
     date: string;
+    mode?: string; // Diferencia Biomas de Urbanização
 }
 
 const getLeaderboard = (): ScoreEntry[] => {
@@ -36,10 +40,10 @@ const getLeaderboard = (): ScoreEntry[] => {
     return data ? JSON.parse(data) : [];
 };
 
-const saveScore = (name: string, score: number) => {
+const saveScore = (name: string, score: number, mode: string = 'Biomas') => {
     if (typeof window === 'undefined') return;
     const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, date: new Date().toISOString() });
+    leaderboard.push({ name, score, date: new Date().toISOString(), mode });
     leaderboard.sort((a, b) => b.score - a.score);
     localStorage.setItem('bioguesser_leaderboard', JSON.stringify(leaderboard.slice(0, 10)));
 };
@@ -55,9 +59,10 @@ interface BiomeData {
 }
 
 const BIOMES: BiomeData[] = [
+    // OS 3 PRIMEIROS USAM O NOME ANTIGO (-satellite e -soil)
     {
         name: 'Caatinga',
-        imageIds: { landscape: 'caatinga-landscape', detail: 'caatinga-detail' },
+        imageIds: { landscape: 'caatinga-satellite', detail: 'caatinga-soil' },
         keywords: {
           'Xerófita': 50, 'Semiárido': 45, 'Mandacaru': 40, 'Caatinga': 35, 'Sertão': 30,
           'Mata Branca': 25, 'Aridez': 20, 'Cacto': 15, 'Seca': 10, 'Espinhos': 5 
@@ -75,7 +80,7 @@ const BIOMES: BiomeData[] = [
     },
     {
         name: 'Pampa',
-        imageIds: { landscape: 'pampa-landscape', detail: 'pampa-detail' },
+        imageIds: { landscape: 'pampa-satellite', detail: 'pampa-soil' },
         keywords: {
           'Gramíneas': 50, 'Coxilhas': 45, 'Pampa': 40, 'Clima Temperado': 35, 'Campos Sulinos': 30,
           'Pecuária': 25, 'Biodiversidade': 20, 'Solo Fértil': 15, 'Ervas': 10, 'Campanha Gaúcha': 5 
@@ -93,7 +98,7 @@ const BIOMES: BiomeData[] = [
     },
     {
         name: 'Cerrado',
-        imageIds: { landscape: 'cerrado-landscape', detail: 'cerrado-detail' },
+        imageIds: { landscape: 'cerrado-satellite', detail: 'cerrado-soil' },
         keywords: {
           'Savana': 50, 'Hotspot': 45, 'Troncos Tortuosos': 40, 'Cerrado': 35, 'Divisor de Águas': 30,
           'Estação Seca': 25, 'Chapadão': 20, 'Latossolo': 15, 'Arbustivo': 10, 'Fogo': 5 
@@ -109,6 +114,7 @@ const BIOMES: BiomeData[] = [
         ],
         summary: "A savana brasileira. Caracteriza-se por um clima com duas estações bem definidas (seca e chuvosa) e vegetação de árvores baixas com troncos retorcidos e cascas grossas que resistem ao fogo natural."
     },
+    // OS 3 NOVOS USAM O NOME NOVO (-landscape e -detail)
     {
         name: 'Amazônia',
         imageIds: { landscape: 'amazonia-landscape', detail: 'amazonia-detail' },
@@ -231,10 +237,10 @@ const LevelCompleteScreen = ({ biome, score, onNext, isLast }: { biome: BiomeDat
     </div>
 );
 
-// HomeScreen com os ajustes para manter o usuário logado
-const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMode: (mode: 'biomes', playerName: string) => void, initialPlayerName: string, onLogout: () => void }) => {
+// HomeScreen com os ajustes para manter o usuário logado e nova tipagem do Modo
+const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMode: (mode: 'biomes' | 'urbanization', playerName: string) => void, initialPlayerName: string, onLogout: () => void }) => {
     const [view, setView] = useState<'home' | 'name_input' | 'ranking'>('home');
-    const [selectedMode, setSelectedMode] = useState<'biomes' | null>(null);
+    const [selectedMode, setSelectedMode] = useState<'biomes' | 'urbanization' | null>(null);
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
 
@@ -245,12 +251,11 @@ const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMod
     }, [view]);
 
     const handleModeSelection = (mode: string) => {
-        if (mode === 'biomes') {
-            // Se já tem um nome registrado, pula direto pro jogo
+        if (mode === 'biomes' || mode === 'urbanization') {
             if (initialPlayerName) {
-                onSelectMode('biomes', initialPlayerName);
+                onSelectMode(mode as 'biomes' | 'urbanization', initialPlayerName);
             } else {
-                setSelectedMode('biomes');
+                setSelectedMode(mode as 'biomes' | 'urbanization');
                 setView('name_input'); 
             }
         } else {
@@ -318,7 +323,10 @@ const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMod
                                     <div key={index} className="flex items-center justify-between bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
                                         <div className="flex items-center gap-4">
                                             <span className={`text-xl font-black w-8 text-center ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-slate-300' : index === 2 ? 'text-amber-600' : 'text-slate-500'}`}>#{index + 1}</span>
-                                            <span className="text-white font-bold text-lg">{entry.name}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold text-lg">{entry.name}</span>
+                                                <span className="text-slate-500 text-xs uppercase tracking-widest">{entry.mode || 'Biomas'}</span>
+                                            </div>
                                         </div>
                                         <div className="flex flex-col items-end">
                                             <span className="text-green-400 font-black text-xl">{entry.score} pts</span>
@@ -385,7 +393,7 @@ const HomeScreen = ({ onSelectMode, initialPlayerName, onLogout }: { onSelectMod
                     <h2 className="text-3xl font-bold text-center text-white mb-12">Modos de Jogo</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <GameModeCard icon={<Globe size={40}/>} title="Biomas" description="Identifique os biomas do Brasil." onClick={() => handleModeSelection('biomes')} />
-                        <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Analise o crescimento das cidades." onClick={() => handleModeSelection('Urbanização')} enabled={false} />
+                        <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Analise o crescimento das cidades e evite a Macrocefalia Urbana." onClick={() => handleModeSelection('urbanization')} enabled={true} />
                         <GameModeCard icon={<ShieldCheck size={40}/>} title="Geopolítica" description="Entenda as disputas territoriais." onClick={() => handleModeSelection('Geopolítica')} enabled={false} />
                         <GameModeCard icon={<Cloud size={40}/>} title="Clima" description="Explore os diferentes tipos climáticos." onClick={() => handleModeSelection('Clima')} enabled={false} />
                     </div>
@@ -412,16 +420,15 @@ const GameOverScreen = ({ onRestart }: { onRestart: () => void }) => (
     </div>
 );
 
-// --- MAIN GAME COMPONENT --- //
+// --- MAIN APP EXPORT --- //
 export default function BioGuesser() {
   const [isLoading, setIsLoading] = useState(true);
   const [gameMode, setGameMode] = useState<string | null>(null);
-  
   const [playerName, setPlayerName] = useState<string>('');
 
+  // Estados do Jogo de Biomas
   const [sessionBiomes, setSessionBiomes] = useState<BiomeData[]>([]);
   const [currentBiomeIndex, setCurrentBiomeIndex] = useState(0);
-  
   const [gameState, setGameState] = useState<'playing' | 'revealed' | 'gameover'>('playing');
   const [identifiedKeywords, setIdentifiedKeywords] = useState<Keyword[]>([]);
   const [totalScore, setTotalScore] = useState(0);
@@ -433,13 +440,31 @@ export default function BioGuesser() {
 
   const currentBiome = sessionBiomes[currentBiomeIndex];
 
-  const handleSelectMode = (mode: 'biomes', name: string) => {
-    const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
-    setSessionBiomes(shuffledBiomes);
+  const handleReturnHome = useCallback(() => {
+    setGameMode(null);
+    setSessionBiomes([]);
     setCurrentBiomeIndex(0);
+    setGameState('playing');
+    setIdentifiedKeywords([]);
     setTotalScore(0);
+    setWordBank([]);
+    setClickedWords({});
+    setSearchTerm("");
+    setIncorrectGuessCount(0);
+    setHintsShown([]);
+  }, []);
+
+  const handleSelectMode = (mode: 'biomes' | 'urbanization', name: string) => {
     setPlayerName(name); 
     setGameMode(mode);
+
+    // Setup inicial apenas se for Biomas
+    if (mode === 'biomes') {
+        const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
+        setSessionBiomes(shuffledBiomes);
+        setCurrentBiomeIndex(0);
+        setTotalScore(0);
+    }
   };
 
   const setupBiomeRound = useCallback(() => {
@@ -527,22 +552,6 @@ export default function BioGuesser() {
 
   const handleReveal = () => setGameState('revealed');
   
-  // Função atualizada para não perder o nome de usuário!
-  const handleReturnHome = () => {
-    setGameMode(null);
-    setSessionBiomes([]);
-    setCurrentBiomeIndex(0);
-    setGameState('playing');
-    setIdentifiedKeywords([]);
-    setTotalScore(0);
-    setWordBank([]);
-    setClickedWords({});
-    setSearchTerm("");
-    setIncorrectGuessCount(0);
-    setHintsShown([]);
-  };
-
-  // NOVA FUNÇÃO: Aciona a saída de segurança validada (usada nos botões de retorno)
   const handleUserExit = () => {
     if (window.confirm("Deseja realmente sair da partida? O seu progresso atual será perdido.")) {
         handleReturnHome();
@@ -550,7 +559,7 @@ export default function BioGuesser() {
   };
 
   const handleFinishPhase = () => {
-      saveScore(playerName, totalScore);
+      saveScore(playerName, totalScore, 'Biomas');
       toast({ 
           title: "Missão Completa! 🎉", 
           description: `Sua pontuação final (${totalScore} pts) foi registrada no Ranking.`,
@@ -578,24 +587,28 @@ export default function BioGuesser() {
     word.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // 1. TELA DE LOADING
   if (isLoading) return <LoadingScreen />;
   
-  // Passando os parâmetros novos para o HomeScreen
+  // 2. TELA INICIAL
   if (!gameMode) return <HomeScreen onSelectMode={handleSelectMode} initialPlayerName={playerName} onLogout={() => setPlayerName('')} />;
   
+  // 3. ROTEAMENTO PARA O NOVO MODO DE URBANIZAÇÃO
+  if (gameMode === 'urbanization') {
+      return <MacrocefaliaUrbanaGame playerName={playerName} onReturnHome={handleReturnHome} onSaveScore={(score) => saveScore(playerName, score, 'Urbanização')} />;
+  }
+
+  // 4. FLUXO DO MODO BIOMAS
   if (gameState === 'gameover') return <GameOverScreen onRestart={setupBiomeRound} />;
-  
   if (!currentBiome) return null;
 
   return (
     <main className="min-h-screen bg-[#020617] text-white overflow-x-hidden selection:bg-blue-500/30 flex flex-col">
        
-       {/* O COMPONENTE JÁ EXISTENTE AGORA RECEBE A FUNÇÃO COM A CONFIRMAÇÃO */}
        <BackToHomeButton onConfirm={handleUserExit} />
 
       <header className="bg-white px-4 md:px-8 py-4 flex justify-between items-center shadow-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          {/* O LOGOTIPO AGORA TAMBÉM PERGUNTA ANTES DE SAIR */}
           <button onClick={handleUserExit} className="flex items-center gap-3 transition-transform active:scale-95">
             <div className="bg-green-500 p-2 rounded-full"><Globe className="text-white w-5 h-5" /></div>
             <span className="text-blue-900 font-black text-xl md:text-2xl tracking-tighter">BioGuesser</span>
@@ -608,7 +621,6 @@ export default function BioGuesser() {
         
         <div className="flex items-center gap-3 md:gap-4">
             
-            {/* CONTADOR DE ERROS */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-bold transition-colors ${incorrectGuessCount >= 9 ? 'bg-red-100 border-red-300 text-red-600' : 'bg-orange-50 border-orange-200 text-orange-600'}`}>
                 <span className="hidden sm:inline">Erros:</span>
                 <span>{incorrectGuessCount}/12</span>
@@ -618,8 +630,6 @@ export default function BioGuesser() {
                 <User size={16} />
                 <span className="text-sm font-bold truncate max-w-[100px]">{playerName}</span>
             </div>
-            
-            {/* O botão 'Sair' extra foi removido daqui! */}
 
             <Sheet>
                 <SheetTrigger asChild>
@@ -668,7 +678,6 @@ export default function BioGuesser() {
 
       <div className="max-w-4xl mx-auto p-3 md:p-6 lg:p-10 w-full flex-grow flex flex-col justify-center">
         <AnimatePresence mode="wait">
-            {/* TELA 1: QUANDO ESTÁ JOGANDO (Mostra o desafio e as palavras) */}
             {gameState === 'playing' && (
                 <motion.div key={`play-area-${currentBiomeIndex}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="flex flex-col gap-8 w-full">
                     <section className="order-1">
@@ -735,7 +744,6 @@ export default function BioGuesser() {
                 </motion.div>
             )}
 
-            {/* TELA 2: FORÇA A LEITURA DO RESUMO DA FASE APÓS O ENVIO DA DEDUÇÃO */}
             {gameState === 'revealed' && (
                 <motion.div key={`level-complete-${currentBiomeIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="w-full flex justify-center mt-4">
                     <LevelCompleteScreen 
