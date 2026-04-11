@@ -59,10 +59,10 @@ interface BiomeData {
 }
 
 const BIOMES: BiomeData[] = [
-    // OS 3 PRIMEIROS USAM O NOME ANTIGO (-satellite e -soil)
+    // CORREÇÃO: Atualizamos os imageIds para bater com o placeholder-images.json
     {
         name: 'Caatinga',
-        imageIds: { landscape: 'caatinga-satellite', detail: 'caatinga-soil' },
+        imageIds: { landscape: 'caatinga-landscape', detail: 'caatinga-detail' }, 
         keywords: {
           'Xerófita': 50, 'Semiárido': 45, 'Mandacaru': 40, 'Caatinga': 35, 'Sertão': 30,
           'Mata Branca': 25, 'Aridez': 20, 'Cacto': 15, 'Seca': 10, 'Espinhos': 5 
@@ -80,7 +80,7 @@ const BIOMES: BiomeData[] = [
     },
     {
         name: 'Pampa',
-        imageIds: { landscape: 'pampa-satellite', detail: 'pampa-soil' },
+        imageIds: { landscape: 'pampa-landscape', detail: 'pampa-detail' },
         keywords: {
           'Gramíneas': 50, 'Coxilhas': 45, 'Pampa': 40, 'Clima Temperado': 35, 'Campos Sulinos': 30,
           'Pecuária': 25, 'Biodiversidade': 20, 'Solo Fértil': 15, 'Ervas': 10, 'Campanha Gaúcha': 5 
@@ -98,7 +98,7 @@ const BIOMES: BiomeData[] = [
     },
     {
         name: 'Cerrado',
-        imageIds: { landscape: 'cerrado-satellite', detail: 'cerrado-soil' },
+        imageIds: { landscape: 'cerrado-landscape', detail: 'cerrado-detail' },
         keywords: {
           'Savana': 50, 'Hotspot': 45, 'Troncos Tortuosos': 40, 'Cerrado': 35, 'Divisor de Águas': 30,
           'Estação Seca': 25, 'Chapadão': 20, 'Latossolo': 15, 'Arbustivo': 10, 'Fogo': 5 
@@ -114,6 +114,7 @@ const BIOMES: BiomeData[] = [
         ],
         summary: "A savana brasileira. Caracteriza-se por um clima com duas estações bem definidas (seca e chuvosa) e vegetação de árvores baixas com troncos retorcidos e cascas grossas que resistem ao fogo natural."
     },
+    // ... O resto da array (Amazônia, Mata Atlântica e Pantanal) já está correto! Pode manter igual.
     // OS 3 NOVOS USAM O NOME NOVO (-landscape e -detail)
     {
         name: 'Amazônia',
@@ -454,13 +455,17 @@ export default function BioGuesser() {
     setHintsShown([]);
   }, []);
 
-  const handleSelectMode = (mode: 'biomes' | 'urbanization', name: string) => {
+ const handleSelectMode = (mode: 'biomes' | 'urbanization', name: string) => {
     setPlayerName(name); 
     setGameMode(mode);
 
     // Setup inicial apenas se for Biomas
     if (mode === 'biomes') {
-        const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
+        // CORREÇÃO: Removemos o .slice(0, 3) para que todos os 6 biomas 
+        // entrem na partida, garantindo que nenhum fique de fora. 
+        // Eles continuarão aparecendo em ordem aleatória!
+        const shuffledBiomes = shuffle([...BIOMES]);
+        
         setSessionBiomes(shuffledBiomes);
         setCurrentBiomeIndex(0);
         setTotalScore(0);
