@@ -162,6 +162,20 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     const [pendingEvent, setPendingEvent] = useState<EventCard | null>(null);
     
     const [showCollapseInfo, setShowCollapseInfo] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Verifica se estamos num ecrã mobile para desativar animações complexas
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        
+        if (typeof window !== 'undefined') {
+            checkMobile();
+            window.addEventListener('resize', checkMobile);
+            return () => window.removeEventListener('resize', checkMobile);
+        }
+    }, []);
 
     const difference = gameState.population - gameState.infrastructure;
     const maxMonths = 12;
@@ -237,8 +251,8 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     const EnemHelpPanel = () => (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-4 font-bold shadow-lg">
-                    <HelpCircle className="w-5 h-5 mr-2" /> O que cai no ENEM?
+                <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
+                    <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
                 </Button>
             </SheetTrigger>
             <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
@@ -290,12 +304,8 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     if (status === 'intro') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, type: 'spring' }} className="max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 md:p-12 shadow-[0_0_50px_rgba(37,99,235,0.15)] relative">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, type: 'spring' }} className="max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 md:p-12 shadow-lg md:shadow-[0_0_50px_rgba(37,99,235,0.15)] relative">
                     
-                    <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
-                    </div>
-
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-blue-600/20 p-5 rounded-3xl border border-blue-500/30">
                             <Building className="w-16 h-16 text-blue-400" />
@@ -307,24 +317,24 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                     </p>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-10">
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-lg text-center">
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-md md:shadow-lg text-center">
                             <Users className="w-10 h-10 text-red-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">1. O Problema</h3>
                             <p className="text-sm text-slate-400">A População cresce todo mês. Se o descompasso com a Infraestrutura chegar a 30, é Game Over!</p>
                         </div>
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-lg text-center">
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-md md:shadow-lg text-center">
                             <BookOpen className="w-10 h-10 text-blue-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">2. Suas Cartas</h3>
                             <p className="text-sm text-slate-400">Todo mês você compra 3 cartas gigantes. Escolha 1 projeto para construir infraestrutura ou políticas.</p>
                         </div>
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-lg text-center">
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-md md:shadow-lg text-center">
                             <Coins className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">3. Orçamento</h3>
                             <p className="text-sm text-slate-400">Sem dinheiro? Pode <strong>Poupar e Avançar</strong> para recolher impostos da infraestrutura existente.</p>
                         </div>
                     </div>
 
-                    <Button onClick={() => { drawHand(); setStatus('playing'); }} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-all">
+                    <Button onClick={() => { drawHand(); setStatus('playing'); }} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg md:shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-all">
                         Assumir a Prefeitura
                     </Button>
                 </motion.div>
@@ -335,10 +345,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     if (status === 'gameover') {
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white absolute inset-0 z-50 p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative">
-                    <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
-                    </div>
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative">
                     <AlertTriangle className="w-24 h-24 text-red-500 mx-auto mb-6 animate-bounce" />
                     <h1 className="text-5xl md:text-6xl font-black text-red-500 mb-4 tracking-tighter">Colapso Urbano!</h1>
                     <p className="text-xl text-slate-300 mb-8 leading-relaxed">
@@ -346,7 +353,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button onClick={onReturnHome} variant="ghost" className="text-slate-400 hover:text-white py-6 text-lg">Voltar ao Menu</Button>
-                        <Button onClick={() => { setGameState({population: 5, infrastructure: 8, budget: 15, month: 1, score: 0}); setPhase('selection'); setStatus('playing'); drawHand(); }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6 text-lg">Tentar Novo Mandato</Button>
+                        <Button onClick={() => { setGameState({population: 5, infrastructure: 8, budget: 15, month: 1, score: 0}); setPhase('selection'); setStatus('playing'); drawHand(); }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6 text-lg shadow-md md:shadow-lg">Tentar Novo Mandato</Button>
                     </div>
                 </motion.div>
             </div>
@@ -357,10 +364,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         const finalScore = gameState.score + (gameState.infrastructure * 5) + gameState.budget;
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white absolute inset-0 z-50 p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
-                    <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
-                    </div>
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
                     <ShieldCheck className="w-24 h-24 text-green-400 mx-auto mb-6" />
                     <h1 className="text-5xl md:text-6xl font-black text-green-400 mb-4 tracking-tighter">Mandato de Sucesso!</h1>
                     <p className="text-xl text-slate-300 mb-8">
@@ -370,7 +374,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                         <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">Pontuação Final de Gestão</p>
                         <p className="text-6xl font-black text-yellow-400 drop-shadow-md">{finalScore} pts</p>
                     </div>
-                    <Button onClick={() => { onSaveScore(finalScore); onReturnHome(); }} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">Salvar Pontuação e continuar </Button>
+                    <Button onClick={() => { onSaveScore(finalScore); onReturnHome(); }} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform shadow-md md:shadow-lg">Salvar Pontuação e continuar </Button>
                 </motion.div>
             </div>
         );
@@ -401,7 +405,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                             </p>
                             <Button 
                                 onClick={() => setShowCollapseInfo(false)} 
-                                className="w-full font-black py-7 text-lg bg-blue-600 text-white hover:bg-blue-500"
+                                className="w-full font-black py-7 text-lg bg-blue-600 text-white hover:bg-blue-500 shadow-md"
                             >
                                 Entendi
                             </Button>
@@ -420,14 +424,14 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                         <motion.div 
                             initial={{ scale: 0.5, y: 100 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: 'spring', bounce: 0.5 }}
-                            className={`max-w-md w-full p-8 rounded-[2.5rem] border-2 shadow-2xl text-center ${pendingEvent.type === 'negative' ? 'bg-red-950 border-red-500 shadow-[0_0_80px_rgba(239,68,68,0.4)]' : pendingEvent.type === 'positive' ? 'bg-green-950 border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.4)]' : 'bg-blue-950 border-blue-500 shadow-[0_0_80px_rgba(59,130,246,0.4)]'}`}
+                            className={`max-w-md w-full p-8 rounded-[2.5rem] border-2 shadow-xl md:shadow-2xl text-center ${pendingEvent.type === 'negative' ? 'bg-red-950 border-red-500 md:shadow-[0_0_80px_rgba(239,68,68,0.4)]' : pendingEvent.type === 'positive' ? 'bg-green-950 border-green-500 md:shadow-[0_0_80px_rgba(34,197,94,0.4)]' : 'bg-blue-950 border-blue-500 md:shadow-[0_0_80px_rgba(59,130,246,0.4)]'}`}
                         >
                             <AlertCircle className={`w-20 h-20 mx-auto mb-6 ${pendingEvent.type === 'negative' ? 'text-red-400' : pendingEvent.type === 'positive' ? 'text-green-400' : 'text-blue-400'}`} />
                             <h2 className="text-3xl font-black mb-4 text-white uppercase tracking-tight">{pendingEvent.title}</h2>
                             <p className="text-lg text-slate-300 mb-8">{pendingEvent.description}</p>
                             <Button 
                                 onClick={() => setPendingEvent(null)} 
-                                className="w-full font-black py-7 text-lg bg-white text-slate-900 hover:bg-slate-200 shadow-xl"
+                                className="w-full font-black py-7 text-lg bg-white text-slate-900 hover:bg-slate-200 shadow-md md:shadow-xl"
                             >
                                 Entendido
                             </Button>
@@ -436,32 +440,37 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                 )}
             </AnimatePresence>
 
-            {/* CABEÇALHO GLOBAL */}
-            <header className="w-full flex flex-col sm:flex-row justify-between items-center p-4 md:p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md relative z-10 gap-4">
-                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
-                    <Button variant="ghost" size="icon" onClick={handleExit} className="text-slate-400 hover:text-white bg-slate-800 rounded-full"><ArrowLeft /></Button>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-600 p-2 rounded-xl"><Building className="text-white w-5 h-5" /></div>
+            {/* CABEÇALHO GLOBAL ATUALIZADO */}
+            <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
+                {/* Mobile: Título centralizado com botão Voltar absoluto à esquerda. Desktop: Alinhado à esquerda. */}
+                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start">
+                    <Button variant="ghost" size="icon" onClick={handleExit} className="text-slate-400 hover:text-white bg-white/5 rounded-full absolute left-0 md:static md:mr-4"><ArrowLeft /></Button>
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="bg-blue-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg md:shadow-blue-900/20"><Building className="text-white w-4 h-4 md:w-5 md:h-5" /></div>
                         <div className="flex flex-col">
-                            <span className="font-black text-lg tracking-tight leading-none">Gestão Urbana</span>
+                            <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Gestão Urbana</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 sm:gap-6">
-                    <EnemHelpPanel /> {/* <-- BOTÃO DE AJUDA DO ENEM AQUI */}
-                    <div className="w-px h-6 bg-slate-700 hidden sm:block" />
+                {/* Container de Status */}
+                <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
+                    {/* Botão do ENEM renderiza apenas no Dashboard (Fase de Seleção) */}
+                    {phase === 'selection' && (
+                        <>
+                            <EnemHelpPanel />
+                            <div className="w-px h-6 bg-white/10 hidden md:block" />
+                        </>
+                    )}
                     
-                    <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-blue-400" />
-                        {/* Como "month" já avançou no state, mas a UI reflete o mês que acabou de fechar: */}
-                        <span className="font-bold text-slate-300 hidden sm:inline">Mês {Math.min(gameState.month - 1, maxMonths)}/{maxMonths}</span>
-                        <span className="font-bold text-slate-300 sm:hidden">{Math.min(gameState.month - 1, maxMonths)}/{maxMonths}</span>
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-white/5 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-white/10">
+                        <Calendar className="w-4 h-4 text-blue-400" />
+                        <span className="font-bold text-slate-200 text-sm">Mês {Math.min(gameState.month - 1, maxMonths)}/{maxMonths}</span>
                     </div>
-                    <div className="w-px h-6 bg-slate-700" />
-                    <div className="flex items-center gap-2">
-                        <Coins className="w-6 h-6 text-yellow-400" />
-                        <motion.span key={`budget-${gameState.budget}`} initial={{ scale: 1.5, color: '#fff' }} animate={{ scale: 1, color: '#facc15' }} className="font-black text-xl sm:text-2xl text-yellow-400">{gameState.budget}M</motion.span>
+                    
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20">
+                        <Coins className="w-4 h-4 md:w-5 md:h-5 text-yellow-400" />
+                        <motion.span key={`budget-${gameState.budget}`} initial={{ scale: 1.2 }} animate={{ scale: 1 }} className="font-black text-sm md:text-lg text-yellow-400">{gameState.budget}M</motion.span>
                     </div>
                 </div>
             </header>
@@ -478,10 +487,10 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                 <p className="text-slate-400 mt-2 text-lg">Analise as opções e aprove 1 projeto para este mês.</p>
                             </div>
                             
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <motion.div whileHover={!isMobile ? { scale: 1.05 } : {}} whileTap={{ scale: 0.95 }}>
                                 <Button 
                                     onClick={() => executeTurn()} 
-                                    className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-8 px-8 rounded-2xl shadow-xl text-lg"
+                                    className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-8 px-8 rounded-2xl shadow-md md:shadow-xl text-lg"
                                 >
                                     <FastForward className="mr-3 w-6 h-6 text-yellow-400" /> Poupar Verba e Avançar
                                 </Button>
@@ -495,16 +504,17 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                     return (
                                         <motion.div
                                             key={card.id}
-                                            initial={{ opacity: 0, rotateY: 90, scale: 0.8, y: 100 }}
+                                            // Animação complexa no desktop, fade-in simples no mobile
+                                            initial={isMobile ? { opacity: 0, y: 20 } : { opacity: 0, rotateY: 90, scale: 0.8, y: 100 }}
                                             animate={{ opacity: 1, rotateY: 0, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.8, y: -50 }}
-                                            transition={{ delay: idx * 0.15, type: "spring", stiffness: 200, damping: 20 }}
-                                            whileHover={canAfford ? { y: -20, scale: 1.03 } : {}}
-                                            className={`flex flex-col rounded-[2.5rem] p-8 border-4 transition-colors shadow-2xl bg-slate-900 min-h-[400px] ${
+                                            exit={isMobile ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: -50 }}
+                                            transition={isMobile ? { duration: 0.3 } : { delay: idx * 0.15, type: "spring", stiffness: 200, damping: 20 }}
+                                            whileHover={canAfford && !isMobile ? { y: -20, scale: 1.03 } : {}}
+                                            className={`flex flex-col rounded-[2.5rem] p-8 border-4 transition-colors shadow-lg md:shadow-2xl bg-slate-900 min-h-[400px] ${
                                                 canAfford 
-                                                ? card.type === 'build' ? 'border-blue-500 hover:border-blue-400 shadow-[0_20px_50px_rgba(59,130,246,0.2)]'
-                                                : card.type === 'policy' ? 'border-purple-500 hover:border-purple-400 shadow-[0_20px_50px_rgba(168,85,247,0.2)]'
-                                                : 'border-green-500 hover:border-green-400 shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
+                                                ? card.type === 'build' ? 'border-blue-500 hover:border-blue-400 md:shadow-[0_20px_50px_rgba(59,130,246,0.2)]'
+                                                : card.type === 'policy' ? 'border-purple-500 hover:border-purple-400 md:shadow-[0_20px_50px_rgba(168,85,247,0.2)]'
+                                                : 'border-green-500 hover:border-green-400 md:shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
                                                 : 'border-slate-800 opacity-60 grayscale'
                                             }`}
                                         >
@@ -541,7 +551,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                                 disabled={!canAfford}
                                                 className={`w-full font-black rounded-2xl py-8 text-xl transition-transform active:scale-90 mt-auto ${
                                                     canAfford 
-                                                    ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-[0_0_30px_rgba(255,255,255,0.4)]' 
+                                                    ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-md md:shadow-[0_0_30px_rgba(255,255,255,0.4)]' 
                                                     : 'bg-slate-800 text-slate-500'
                                                 }`}
                                             >
@@ -559,7 +569,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
             {/* FASE 2: RESOLUÇÃO (O que aconteceu no mês) */}
             {phase === 'resolution' && (
                 <main className="flex-grow flex flex-col items-center justify-center p-4 relative z-10">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-[2.5rem] shadow-2xl overflow-hidden">
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-[2.5rem] shadow-xl md:shadow-2xl overflow-hidden">
                         
                         <div className="bg-slate-950 p-8 border-b border-slate-800 flex justify-between items-center">
                             <div>
@@ -578,7 +588,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                         </h3>
                                         <button 
                                             onClick={() => setShowCollapseInfo(true)} 
-                                            className="bg-slate-700 text-slate-300 hover:bg-blue-500 hover:text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer shadow-md"
+                                            className="bg-slate-700 text-slate-300 hover:bg-blue-500 hover:text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer shadow-sm md:shadow-md"
                                         >
                                             ?
                                         </button>
@@ -637,7 +647,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                 ))}
                             </div>
                             
-                            <Button onClick={nextMonth} className="w-full bg-green-600 hover:bg-green-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all hover:scale-105 active:scale-95">
+                            <Button onClick={nextMonth} className="w-full bg-green-600 hover:bg-green-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg md:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all hover:scale-105 active:scale-95">
                                 {gameState.month > maxMonths ? (
                                     <>Terminar o Mandato </>
                                 ) : (

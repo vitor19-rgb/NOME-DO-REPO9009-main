@@ -52,7 +52,7 @@ interface PhaseData {
     trivia: { title: string; text: string };
 }
 
-// --- DADOS DAS FASES (AGORA COM PERGUNTAS DIRETAS NO DESAFIO) --- //
+// --- DADOS DAS FASES --- //
 const PHASES: PhaseData[] = [
     {
         title: "Missão 1: A Base da Rede Urbana",
@@ -71,7 +71,7 @@ const PHASES: PhaseData[] = [
             { id: 'centro_zona', text: 'Centro de Zona' },
             { id: 'centro_local', text: 'Centro Local' },
             { id: 'vila', text: 'Vila Rural' },
-            { id: 'distrator_1', text: 'Capital' } // Erro proposital
+            { id: 'distrator_1', text: 'Capital' } 
         ],
         trivia: {
             title: "Centros de Zona e Locais",
@@ -86,7 +86,7 @@ const PHASES: PhaseData[] = [
             { id: 'n1', x: 20, y: 50, isDropzone: true, correctLabelId: 'metropole_regional', radius: 32 },
             { id: 'n2', x: 50, y: 50, isDropzone: true, correctLabelId: 'capital_regional', radius: 24 },
             { id: 'n3', x: 80, y: 50, isDropzone: true, correctLabelId: 'centro_sub', radius: 16 },
-            { id: 'n4', x: 80, y: 80, labelPredefinida: 'Centro Local', radius: 10 }, // Predefinido
+            { id: 'n4', x: 80, y: 80, labelPredefinida: 'Centro Local', radius: 10 }, 
         ],
         edges: [
             { from: 'n4', to: 'n3', thickness: 2 },
@@ -97,7 +97,7 @@ const PHASES: PhaseData[] = [
             { id: 'metropole_regional', text: 'Metrópole Reg.' },
             { id: 'capital_regional', text: 'Capital Regional' },
             { id: 'centro_sub', text: 'Centro Sub-reg.' },
-            { id: 'distrator_2', text: 'Megalópole' } // Erro proposital
+            { id: 'distrator_2', text: 'Megalópole' } 
         ],
         trivia: {
             title: "Capitais Regionais",
@@ -118,14 +118,13 @@ const PHASES: PhaseData[] = [
             { from: 'n2', to: 'n1', thickness: 8 },
             { from: 'n3', to: 'n1', thickness: 4 },
             { from: 'n4', to: 'n2', thickness: 5 },
-            // A ligação direta que quebra a hierarquia
             { from: 'n4', to: 'n1', thickness: 3, dashed: true }, 
         ],
         availableLabels: [
             { id: 'metropole_global', text: 'Metrópole Global' },
             { id: 'metropole_nacional', text: 'Metrópole Nacional' },
             { id: 'tecnopolo', text: 'Tecnopolo' },
-            { id: 'distrator_3', text: 'Distrito Histórico' } // Erro proposital
+            { id: 'distrator_3', text: 'Distrito Histórico' } 
         ],
         trivia: {
             title: "Avanço ENEM: A Quebra da Hierarquia Rígida",
@@ -164,12 +163,14 @@ const getErrorFeedback = (wrongLabel: LabelId): string => {
     }
 };
 
-// --- PAINEL DE AJUDA ENEM (DARK THEME) --- //
+// --- PAINEL DE AJUDA ENEM --- //
 const EnemHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-5 py-2 font-bold shadow-lg transition-colors">
-                <HelpCircle className="w-5 h-5 mr-2" /> O que cai no ENEM?
+            <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-3 md:px-5 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm transition-colors">
+                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" /> 
+                <span className="hidden sm:inline">O que cai no ENEM?</span>
+                <span className="sm:hidden">ENEM</span>
             </Button>
         </SheetTrigger>
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
@@ -243,7 +244,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
             });
             setActiveLabel(null); 
         } else {
-            // ERROU - Explicação detalhada do erro baseada na etiqueta errada selecionada
+            // ERROU 
             setScore(prev => Math.max(0, prev - 10));
             setAlertMessage({
                 title: 'Classificação Incorreta',
@@ -269,22 +270,21 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
             setCurrentPhaseIndex(prev => prev + 1);
             setPlacedLabels({});
             setActiveLabel(null);
-            setStatus('mission_briefing'); // Manda para o Briefing da nova fase!
+            setStatus('mission_briefing'); 
         } else {
             setStatus('victory');
         }
     };
 
     // --- TELAS SECUNDÁRIAS --- //
+    
+    // TELA INICIAL
     if (status === 'intro') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
-                    <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
-                    </div>
 
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-blue-600/20 p-5 rounded-3xl border border-blue-500/30">
@@ -313,7 +313,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         );
     }
 
-    // A TELA DE EXPLICAÇÃO DA FASE ANTES DE JOGAR
+    // CARD EXPLICATIVO ANTES DA MISSÃO
     if (status === 'mission_briefing') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -339,6 +339,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         );
     }
 
+    // RESULTADO FINAL (VITÓRIA)
     if (status === 'victory') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4">
@@ -418,29 +419,37 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                 )}
             </AnimatePresence>
 
-            <div className="w-full flex justify-end px-4 md:px-6 pt-4 relative z-20">
-                <EnemHelpPanel />
-            </div>
-
-            <header className="w-full p-4 md:p-6 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 relative z-20 flex flex-col sm:flex-row justify-between items-center shadow-sm mt-2 gap-4">
-                <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:bg-slate-800 rounded-full"><ArrowLeft /></Button>
-                    <div className="flex flex-col">
-                        <span className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-                            <MapIcon className="text-blue-400" size={24}/> Cartografia IBGE
-                        </span>
-                        <span className="text-xs text-blue-400 font-bold uppercase tracking-widest">Missão {currentPhaseIndex + 1} de {PHASES.length}</span>
+            {/* CABEÇALHO GLOBAL (RESPONSIVO E COM BOTÃO DO ENEM) */}
+            <header className="w-full p-3 md:p-6 bg-[#0A1024]/95 backdrop-blur-md border-b border-white/10 relative z-20 flex flex-col md:flex-row justify-between items-center shadow-xl md:shadow-2xl gap-3 md:gap-4 sticky top-0">
+                {/* Esquerda: Voltar + Título (Centrado no Mobile, Voltar Absoluto) */}
+                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start">
+                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full absolute left-0 md:static md:mr-4 shrink-0">
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                    </Button>
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="bg-blue-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg shadow-blue-900/20">
+                            <MapIcon className="text-white w-4 h-4 md:w-5 md:h-5" />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Cartografia IBGE</span>
+                            <span className="text-[10px] md:text-xs text-blue-400 font-bold uppercase tracking-widest mt-1 whitespace-nowrap">Missão {currentPhaseIndex + 1} de {PHASES.length}</span>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 bg-slate-950 px-6 py-2 rounded-xl border border-slate-800">
-                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Score:</span>
-                    <span className="font-black text-2xl text-yellow-400">{score} PTS</span>
+
+                {/* Direita: ENEM + Score */}
+                <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2 md:gap-4">
+                    <EnemHelpPanel /> {/* <-- MANTIDO AQUI NO DASHBOARD DO JOGO */}
+                    <div className="w-px h-6 bg-white/10 hidden md:block" />
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20 whitespace-nowrap">
+                        <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Score:</span>
+                        <span className="font-black text-sm md:text-lg text-yellow-400">{score} PTS</span>
+                    </div>
                 </div>
             </header>
 
             <main className="flex-grow flex flex-col max-w-5xl mx-auto w-full p-4 gap-6 relative z-10">
                 
-                {/* AQUI ESTÁ A PERGUNTA DIRETA AO JOGADOR! */}
                 <div className="bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
                     <h2 className="text-2xl font-black text-blue-400 mb-2">Desafio de Mapeamento</h2>
                     <p className="text-slate-300 font-medium text-lg">{phase.description}</p>
