@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Map as MapIcon, ArrowLeft, ShieldCheck, CheckCircle2, AlertTriangle, BookOpen, HelpCircle, MapPin, Search, MousePointerClick, Radio, SignalHigh } from 'lucide-react';
+import { Map as MapIcon, ArrowLeft, ShieldCheck, CheckCircle2, AlertTriangle, BookOpen, HelpCircle, MapPin, Search, MousePointerClick, Radio, SignalHigh, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -14,7 +14,11 @@ interface DetetiveIbgeGameProps {
     onSaveScore: (score: number) => void;
 }
 
-type LabelId = 'metropole_nacional' | 'metropole' | 'capital_regional' | 'centro_local' | 'vila';
+type LabelId = 
+    | 'metropole_global' | 'metropole_nacional' | 'metropole_regional' 
+    | 'tecnopolo' | 'capital_regional' | 'centro_sub' 
+    | 'centro_zona' | 'centro_local' | 'vila' 
+    | 'distrator_1' | 'distrator_2' | 'distrator_3';
 
 interface NodeDef {
     id: string;
@@ -40,6 +44,7 @@ interface LabelDef {
 
 interface PhaseData {
     title: string;
+    briefing: string; // Explicação antes de iniciar o mapa
     description: string;
     nodes: NodeDef[];
     edges: EdgeDef[];
@@ -47,101 +52,115 @@ interface PhaseData {
     trivia: { title: string; text: string };
 }
 
-// --- DADOS DAS FASES (AGORA COM 2 DROPZONES NAS FASES INICIAIS) --- //
+// --- DADOS DAS FASES (AGORA COM PERGUNTAS DIRETAS NO DESAFIO) --- //
 const PHASES: PhaseData[] = [
     {
-        title: "Fase 1: O Básico da Polarização",
-        description: "Analise os fluxos: as cidades menores enviam recursos para o centro. Identifique a classificação do nó central e de um dos nós menores que o alimentam.",
+        title: "Missão 1: A Base da Rede Urbana",
+        briefing: "Bem-vindo ao IBGE! O Brasil possui milhares de pequenos municípios. A base da rede urbana é formada por Vilas e pequenos Centros Locais que oferecem serviços essenciais (padarias, farmácias locais). Porém, quando os moradores precisam de serviços um pouco mais complexos (como um hospital secundário), viajam para uma cidade ligeiramente maior, chamada Centro de Zona.",
+        description: "Organize o caminho correto que uma pessoa faz ao sair de um lugar com poucos serviços até chegar a um local com mais serviços.",
         nodes: [
-            { id: 'n1', x: 50, y: 30, isDropzone: true, correctLabelId: 'metropole', radius: 26 },
-            { id: 'n2', x: 25, y: 75, isDropzone: true, correctLabelId: 'centro_local', radius: 14 },
-            { id: 'n3', x: 75, y: 75, labelPredefinida: 'Centro Local', radius: 14 },
+            { id: 'n1', x: 50, y: 30, isDropzone: true, correctLabelId: 'centro_zona', radius: 24 },
+            { id: 'n2', x: 50, y: 60, isDropzone: true, correctLabelId: 'centro_local', radius: 16 },
+            { id: 'n3', x: 50, y: 85, isDropzone: true, correctLabelId: 'vila', radius: 10 },
         ],
         edges: [
+            { from: 'n3', to: 'n2', thickness: 2 },
             { from: 'n2', to: 'n1', thickness: 4 },
-            { from: 'n3', to: 'n1', thickness: 4 },
         ],
         availableLabels: [
-            { id: 'metropole', text: 'Metrópole' },
-            { id: 'vila', text: 'Vila Agrícola' },
-            { id: 'capital_regional', text: 'Capital Regional' },
-            { id: 'centro_local', text: 'Centro Local' }
-        ],
-        trivia: {
-            title: "O Nó Central e a Base",
-            text: "Uma Metrópole polariza e atrai fluxos de uma vasta região. Já o Centro Local exerce influência apenas sobre a sua área rural imediata, dependendo da Metrópole para serviços complexos."
-        }
-    },
-    {
-        title: "Fase 2: A Ponte Regional",
-        description: "Neste cenário, há uma cidade que serve de 'ponte' entre a base e o topo. Identifique qual é a cidade intermediária e qual é a cidade principal que atrai todos os fluxos.",
-        nodes: [
-            { id: 'n1', x: 15, y: 50, isDropzone: true, correctLabelId: 'metropole', radius: 30 },
-            { id: 'n2', x: 50, y: 50, isDropzone: true, correctLabelId: 'capital_regional', radius: 20 },
-            { id: 'n3', x: 85, y: 25, labelPredefinida: 'Centro Local', radius: 12 },
-            { id: 'n4', x: 85, y: 75, labelPredefinida: 'Centro Local', radius: 12 },
-        ],
-        edges: [
-            { from: 'n2', to: 'n1', thickness: 6 },
-            { from: 'n3', to: 'n2', thickness: 3 },
-            { from: 'n4', to: 'n2', thickness: 3 },
-        ],
-        availableLabels: [
-            { id: 'capital_regional', text: 'Capital Regional' },
+            { id: 'centro_zona', text: 'Centro de Zona' },
             { id: 'centro_local', text: 'Centro Local' },
-            { id: 'metropole', text: 'Metrópole' },
-            { id: 'vila', text: 'Vila Isolada' }
+            { id: 'vila', text: 'Vila Rural' },
+            { id: 'distrator_1', text: 'Capital' } // Erro proposital
         ],
         trivia: {
-            title: "A Intermediária",
-            text: "As Capitais Regionais (ex: Campinas, Ribeirão Preto, Caruaru) servem como pontes. Elas oferecem serviços que não existem nos Centros Locais e conectam essas pequenas cidades às grandes Metrópoles."
+            title: "Centros de Zona e Locais",
+            text: "Os Centros de Zona exercem influência apenas sobre as cidades e vilas vizinhas. Eles são o primeiro nível de centralização para o cidadão do interior."
         }
     },
     {
-        title: "Fase 3: A Nova Rede Flexível",
-        description: "A tecnologia mudou a rede! Note a linha pontilhada ligando a base direto ao topo. Identifique os 3 níveis que faltam observando a direção das linhas.",
+        title: "Missão 2: O Comando Regional",
+        briefing: "Avançando na hierarquia! Agora vamos analisar as cidades médias e os grandes pólos regionais. Uma Capital Regional possui imenso poder de atração (shoppings e universidades), exercendo influência sobre dezenas de pequenos 'Centros Sub-regionais'. Mas a hierarquia dita que até as Capitais Regionais devem se reportar a uma gigante Metrópole Regional para decisões financeiras pesadas.",
+        description: "Organize a hierarquia correta das cidades, do nível menor até o maior poder de influência regional.",
         nodes: [
-            { id: 'n1', x: 50, y: 15, isDropzone: true, correctLabelId: 'metropole_nacional', radius: 36 },
-            { id: 'n2', x: 20, y: 50, isDropzone: true, correctLabelId: 'capital_regional', radius: 20 },
-            { id: 'n3', x: 80, y: 50, labelPredefinida: 'Metrópole Reg.', radius: 26 },
-            { id: 'n4', x: 20, y: 85, isDropzone: true, correctLabelId: 'centro_local', radius: 14 },
-            { id: 'n5', x: 80, y: 85, labelPredefinida: 'Vila', radius: 10 },
+            { id: 'n1', x: 20, y: 50, isDropzone: true, correctLabelId: 'metropole_regional', radius: 32 },
+            { id: 'n2', x: 50, y: 50, isDropzone: true, correctLabelId: 'capital_regional', radius: 24 },
+            { id: 'n3', x: 80, y: 50, isDropzone: true, correctLabelId: 'centro_sub', radius: 16 },
+            { id: 'n4', x: 80, y: 80, labelPredefinida: 'Centro Local', radius: 10 }, // Predefinido
         ],
         edges: [
+            { from: 'n4', to: 'n3', thickness: 2 },
+            { from: 'n3', to: 'n2', thickness: 4 },
             { from: 'n2', to: 'n1', thickness: 6 },
-            { from: 'n3', to: 'n1', thickness: 6 },
-            { from: 'n4', to: 'n2', thickness: 3 },
-            { from: 'n5', to: 'n3', thickness: 2 },
-            // Linha da Nova Hierarquia (Conexão direta)
+        ],
+        availableLabels: [
+            { id: 'metropole_regional', text: 'Metrópole Reg.' },
+            { id: 'capital_regional', text: 'Capital Regional' },
+            { id: 'centro_sub', text: 'Centro Sub-reg.' },
+            { id: 'distrator_2', text: 'Megalópole' } // Erro proposital
+        ],
+        trivia: {
+            title: "Capitais Regionais",
+            text: "São cidades como Campinas (SP) ou Caruaru (PE). Possuem enorme atração comercial e industrial, servindo de ponte antes das imensas Metrópoles."
+        }
+    },
+    {
+        title: "Missão 3: A Elite Global e a Rede Flexível",
+        briefing: "O topo da cadeia! Aqui estão as cidades que comandam a economia do país e do mundo. O mais importante para o ENEM: com a internet (Meio Técnico-Científico-Informacional), a hierarquia deixou de ser rígida! Hoje, uma cidade média comanda fluxos que podem ir diretamente à grande Metrópole Global, saltando intermediários.",
+        description: "Organize a hierarquia das cidades mais influentes, considerando do nível nacional até o nível global.",
+        nodes: [
+            { id: 'n1', x: 50, y: 20, isDropzone: true, correctLabelId: 'metropole_global', radius: 40 },
+            { id: 'n2', x: 25, y: 55, isDropzone: true, correctLabelId: 'metropole_nacional', radius: 30 },
+            { id: 'n3', x: 75, y: 55, isDropzone: true, correctLabelId: 'tecnopolo', radius: 20 },
+            { id: 'n4', x: 50, y: 85, labelPredefinida: 'Capital Regional', radius: 16 },
+        ],
+        edges: [
+            { from: 'n2', to: 'n1', thickness: 8 },
+            { from: 'n3', to: 'n1', thickness: 4 },
+            { from: 'n4', to: 'n2', thickness: 5 },
+            // A ligação direta que quebra a hierarquia
             { from: 'n4', to: 'n1', thickness: 3, dashed: true }, 
         ],
         availableLabels: [
+            { id: 'metropole_global', text: 'Metrópole Global' },
             { id: 'metropole_nacional', text: 'Metrópole Nacional' },
-            { id: 'centro_local', text: 'Centro Local' },
-            { id: 'vila', text: 'Vila Isolada' },
-            { id: 'capital_regional', text: 'Capital Regional' },
+            { id: 'tecnopolo', text: 'Tecnopolo' },
+            { id: 'distrator_3', text: 'Distrito Histórico' } // Erro proposital
         ],
         trivia: {
             title: "Avanço ENEM: A Quebra da Hierarquia Rígida",
-            text: "No passado, o esquema era rígido: você tinha que passar pela cidade média para chegar à grande. Hoje, o e-commerce e as telecomunicações permitem que pessoas de um Centro Local consumam serviços direto da Metrópole Nacional (linha pontilhada)."
+            text: "As Metrópoles Globais conectam o Brasil ao exterior. A sacada do ENEM é a linha pontilhada: a rede de telecomunicações permitiu que outras cidades acessem serviços globais sem passar pelos níveis do meio."
         }
     }
 ];
 
-// --- FEEDBACK DE ERROS DIDÁTICOS --- //
+// --- FEEDBACK ESPECÍFICO PARA CADA ERRO DIDÁTICO --- //
 const getErrorFeedback = (wrongLabel: LabelId): string => {
     switch (wrongLabel) {
         case 'vila':
-            return "Uma Vila é o nível mais básico. Ela não possui infraestrutura (hospitais, universidades) para atrair fluxos de outras cidades, apenas envia.";
+            return "Uma Vila Rural é a base absoluta da hierarquia. Ela não possui infraestrutura para atrair fluxos de outras cidades, apenas envia pessoas.";
         case 'centro_local':
-            return "Um Centro Local exerce influência apenas sobre sua própria área rural imediata. Repare que o ponto selecionado no mapa recebe/envia fluxos mais complexos.";
+            return "Um Centro Local oferece comércio básico (padarias, farmácias locais). Repare que a cidade selecionada exerce uma influência muito maior.";
+        case 'centro_zona':
+            return "O Centro de Zona atrai centros locais, mas não é uma Metrópole. O tamanho do círculo e a espessura da linha indicam o poder de influência.";
+        case 'centro_sub':
+            return "O Centro Sub-regional é menor que uma Capital Regional. Ele costuma estar subordinado diretamente a essas grandes cidades do interior.";
         case 'capital_regional':
-            return "Uma Capital Regional atua como ponte: ela atrai centros locais e se subordina a uma Metrópole. Verifique se o ponto selecionado faz esse 'meio de campo'.";
-        case 'metropole':
+            return "Uma Capital Regional atua como ponte clássica: atrai cidades menores e subordina-se à Metrópole. Analise a linha deste ponto no mapa.";
+        case 'metropole_regional':
         case 'metropole_nacional':
-            return "Metrópoles são os grandes nós da rede! Elas atraem fluxos de múltiplas cidades e capitais regionais. Este ponto no mapa não possui toda essa centralidade.";
+        case 'metropole_global':
+            return "Metrópoles são os grandes ímãs da rede urbana nacional! Elas comandam a economia. Este ponto no mapa não possui toda essa força.";
+        case 'tecnopolo':
+            return "Um Tecnopolo é focado exclusivamente em alta tecnologia e pólos universitários. A posição deste nó indica uma função urbana geral.";
+        case 'distrator_1':
+            return "Cuidado! Nem toda cidade no topo de uma pequena região é uma Capital. 'Capital' depende da divisão política dos estados.";
+        case 'distrator_2':
+            return "Megalópole é a união (conurbação) de duas Metrópoles vizinhas, crescendo até se encostarem. Aqui vemos apenas pólos distintos.";
+        case 'distrator_3':
+            return "Distritos ou Centros Históricos atraem turismo, mas essa não é uma categoria do IBGE para a rede de comando empresarial do Brasil.";
         default:
-            return "Essa não é a classificação hierárquica correta para as conexões deste ponto.";
+            return "Essa classificação hierárquica não bate com as conexões e o tamanho deste nó geográfico.";
     }
 };
 
@@ -161,18 +180,17 @@ const EnemHelpPanel = () => (
                     </div>
                     <h2 className="text-3xl font-black text-white">Revisão ENEM</h2>
                 </div>
-                
                 <div className="space-y-8 text-left">
                     <div>
                         <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">Hierarquia Urbana Clássica</h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
-                            É a organização das cidades em níveis de importância. No modelo antigo, uma Vila só se comunicava com o Centro Local, que se comunicava com a Capital Regional, até chegar à Metrópole. Era um <strong>esquema rígido e subordinado</strong>.
+                            É a organização das cidades em níveis. No modelo antigo, uma <strong>Vila</strong> se comunicava com o <strong>Centro Local</strong>, que ia para a <strong>Capital Regional</strong>, até chegar à <strong>Metrópole</strong>. Era um esquema rígido.
                         </p>
                     </div>
                     <div>
                         <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight">A Rede Urbana Moderna</h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
-                            Com a globalização, os avanços nos <strong>Meios de Transporte e Comunicação</strong> criaram uma rede flexível. Hoje, uma pessoa numa vila distante pode comprar produtos online diretamente de uma Metrópole Nacional, saltando os intermediários.
+                            Com os avanços no <strong>Meio Técnico-Científico-Informacional</strong> (internet/transportes), a rede tornou-se flexível. Hoje, uma indústria no interior pode fechar negócios online diretamente com a Metrópole Global.
                         </p>
                     </div>
                     <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 mt-6">
@@ -180,7 +198,7 @@ const EnemHelpPanel = () => (
                             <AlertTriangle className="w-5 h-5 text-yellow-500" /> Dica para a Prova
                         </h3>
                         <p className="text-sm text-slate-300">
-                            Nas provas do ENEM, fique atento a imagens com <strong>linhas interligadas</strong> (fluxos materiais e imateriais). A resposta correta quase sempre envolve a ideia de que o <strong>Meio Técnico-Científico-Informacional</strong> permitiu a desconcentração das redes e ligações diretas (flexíveis).
+                            Nas provas do ENEM, ao ver imagens de fluxos materiais e imateriais (linhas de mapa), a resposta quase sempre envolve o facto de a tecnologia ter quebrado a subordinação rígida das cidades.
                         </p>
                     </div>
                 </div>
@@ -191,19 +209,17 @@ const EnemHelpPanel = () => (
 
 // --- COMPONENTE PRINCIPAL --- //
 export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore }: DetetiveIbgeGameProps) {
-    const [status, setStatus] = useState<'intro' | 'playing' | 'phase_complete' | 'victory'>('intro');
+    const [status, setStatus] = useState<'intro' | 'mission_briefing' | 'playing' | 'phase_complete' | 'victory'>('intro');
     const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
     const [score, setScore] = useState(0);
     
     const [activeLabel, setActiveLabel] = useState<LabelDef | null>(null);
     const [placedLabels, setPlacedLabels] = useState<Record<string, LabelId>>({});
     
-    // Estado do Pop-up (Modal) de erro
     const [alertMessage, setAlertMessage] = useState<{ title: string, text: string, type: 'warning' | 'success' } | null>(null);
 
     const phase = PHASES[currentPhaseIndex];
 
-    // Clicar numa Dropzone do Mapa
     const handleZoneClick = (dropzoneId: string) => {
         if (!activeLabel) {
             toast({
@@ -222,15 +238,15 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
             setScore(prev => prev + 50);
             toast({
                 title: "Classificação Correta!",
-                description: `A cidade foi identificada como ${activeLabel.text}.`,
+                description: `A área foi identificada como ${activeLabel.text}.`,
                 className: "bg-emerald-900 border-emerald-500 text-white"
             });
             setActiveLabel(null); 
         } else {
-            // ERROU - Abre o Pop-up com a explicação do porquê
+            // ERROU - Explicação detalhada do erro baseada na etiqueta errada selecionada
             setScore(prev => Math.max(0, prev - 10));
             setAlertMessage({
-                title: 'Análise Incorreta',
+                title: 'Classificação Incorreta',
                 text: getErrorFeedback(activeLabel.id),
                 type: 'warning'
             });
@@ -238,15 +254,13 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         }
     };
 
-    // Verifica se a fase foi concluída
     useEffect(() => {
         if (status !== 'playing') return;
-
         const dropzones = phase.nodes.filter(n => n.isDropzone);
         const allFilledCorrectly = dropzones.every(dz => placedLabels[dz.id] === dz.correctLabelId);
 
         if (allFilledCorrectly && dropzones.length > 0) {
-            setTimeout(() => setStatus('phase_complete'), 800);
+            setTimeout(() => setStatus('phase_complete'), 1000);
         }
     }, [placedLabels, phase, status]);
 
@@ -255,7 +269,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
             setCurrentPhaseIndex(prev => prev + 1);
             setPlacedLabels({});
             setActiveLabel(null);
-            setStatus('playing');
+            setStatus('mission_briefing'); // Manda para o Briefing da nova fase!
         } else {
             setStatus('victory');
         }
@@ -285,14 +299,40 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                     <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-sm text-left mb-10">
                         <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-white"><Search size={20} className="text-blue-400"/> Como Jogar:</h3>
                         <ul className="space-y-3 text-slate-300 text-sm">
-                            <li>📍 <strong>Círculos Maiores:</strong> Representam metrópoles com maior infraestrutura e poder de atração.</li>
+                            <li>📍 <strong>Círculos Maiores:</strong> Representam cidades com maior infraestrutura e poder de atração.</li>
                             <li>🛣️ <strong>Linhas:</strong> Representam a atração e fluxo de pessoas e informações de uma cidade para a outra.</li>
                             <li>👆 <strong>Ação:</strong> Clique numa Etiqueta no seu inventário, depois <strong>clique no espaço "?"</strong> no mapa para identificá-la.</li>
                         </ul>
                     </div>
 
-                    <Button onClick={() => setStatus('playing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-105 transition-all">
-                        Iniciar Cartografia
+                    <Button onClick={() => setStatus('mission_briefing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:scale-105 transition-all">
+                        Iniciar Expedição
+                    </Button>
+                </motion.div>
+            </div>
+        );
+    }
+
+    // A TELA DE EXPLICAÇÃO DA FASE ANTES DE JOGAR
+    if (status === 'mission_briefing') {
+        return (
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+                
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full bg-slate-900 border-2 border-blue-500/30 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10 text-center">
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-blue-600/20 p-5 rounded-3xl border border-blue-500/30">
+                            <ClipboardList className="w-16 h-16 text-blue-400" />
+                        </div>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-black text-white mb-4">{phase.title}</h2>
+                    <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-inner text-left mb-8">
+                        <p className="text-slate-300 text-lg leading-relaxed">
+                            {phase.briefing}
+                        </p>
+                    </div>
+                    <Button onClick={() => setStatus('playing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 transition-all">
+                        Entrar no Mapa
                     </Button>
                 </motion.div>
             </div>
@@ -306,7 +346,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                     <ShieldCheck className="w-24 h-24 text-emerald-500 mx-auto mb-6" />
                     <h1 className="text-4xl md:text-5xl font-black text-emerald-400 mb-4">Rede Mapeada!</h1>
                     <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-                        Excelente trabalho analítico! Você compreendeu perfeitamente a dinâmica de subordinação da Hierarquia Urbana clássica e a flexibilidade da rede moderna.
+                        Excelente trabalho analítico! Você compreendeu perfeitamente a dinâmica de subordinação da Hierarquia Urbana clássica e a flexibilidade da rede moderna (ENEM).
                     </p>
                     <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl mb-8 shadow-inner">
                         <p className="text-sm text-slate-500 uppercase tracking-widest font-bold mb-2">Pontuação Cartográfica</p>
@@ -320,7 +360,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         );
     }
 
-    // --- TELA PRINCIPAL (JOGO & PHASE COMPLETE) --- //
+    // --- TELA PRINCIPAL (JOGO MAPA) --- //
     return (
         <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
             
@@ -371,7 +411,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                             </div>
 
                             <Button onClick={handleNextPhase} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-7 text-xl rounded-xl shadow-lg">
-                                {currentPhaseIndex === PHASES.length - 1 ? "Ver Resultado Final" : "Avançar no Mapa"}
+                                {currentPhaseIndex === PHASES.length - 1 ? "Ver Resultado Final" : "Avançar na Investigação"}
                             </Button>
                         </motion.div>
                     </motion.div>
@@ -389,7 +429,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                         <span className="font-black text-xl text-white tracking-tight flex items-center gap-2">
                             <MapIcon className="text-blue-400" size={24}/> Cartografia IBGE
                         </span>
-                        <span className="text-xs text-blue-400 font-bold uppercase tracking-widest">Fase {currentPhaseIndex + 1} de {PHASES.length}</span>
+                        <span className="text-xs text-blue-400 font-bold uppercase tracking-widest">Missão {currentPhaseIndex + 1} de {PHASES.length}</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 bg-slate-950 px-6 py-2 rounded-xl border border-slate-800">
@@ -400,16 +440,15 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
 
             <main className="flex-grow flex flex-col max-w-5xl mx-auto w-full p-4 gap-6 relative z-10">
                 
-                {/* Cabeçalho da Fase */}
+                {/* AQUI ESTÁ A PERGUNTA DIRETA AO JOGADOR! */}
                 <div className="bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
-                    <h2 className="text-2xl font-black text-blue-400 mb-2">{phase.title}</h2>
+                    <h2 className="text-2xl font-black text-blue-400 mb-2">Desafio de Mapeamento</h2>
                     <p className="text-slate-300 font-medium text-lg">{phase.description}</p>
                 </div>
 
                 {/* ÁREA DO MAPA (SVG + HTML OVERLAYS) */}
                 <div className="relative w-full aspect-square md:aspect-[16/9] bg-slate-950 rounded-3xl border-2 border-slate-800 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
                     
-                    {/* Camada 1: Linhas SVG conectando as Cidades */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-none">
                         {phase.edges.map((edge, idx) => {
                             const nodeFrom = phase.nodes.find(n => n.id === edge.from);
@@ -430,12 +469,10 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                         })}
                     </svg>
 
-                    {/* Camada 2: Cidades e Dropzones (HTML Absoluto) */}
                     {phase.nodes.map(node => {
                         const isFilled = node.isDropzone && placedLabels[node.id];
                         const labelText = isFilled ? phase.availableLabels.find(l => l.id === placedLabels[node.id])?.text : node.labelPredefinida;
 
-                        // Variáveis de controlo para as animações
                         const isActiveDropzone = node.isDropzone && !isFilled && activeLabel;
                         const isFilledAcerto = isFilled;
                         const isPredefinida = !!node.labelPredefinida;
@@ -446,11 +483,8 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                 className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center"
                                 style={{ left: `${node.x}%`, top: `${node.y}%` }}
                             >
-                                {/* Container do Círculo com Animações de Radar */}
                                 <div className="relative flex items-center justify-center">
-                                    
                                     <AnimatePresence>
-                                        {/* ANIMAÇÃO 1: Sonar quando o espaço vazio (?) está pronto a receber clique */}
                                         {isActiveDropzone && (
                                             <>
                                                 <motion.div 
@@ -469,8 +503,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                                 />
                                             </>
                                         )}
-                                        
-                                        {/* ANIMAÇÃO 2: Sonar Verde quando a cidade está corretamente identificada */}
                                         {isFilledAcerto && (
                                             <motion.div 
                                                 className="absolute rounded-full bg-emerald-400 opacity-30"
@@ -480,8 +512,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                                 transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
                                             />
                                         )}
-
-                                        {/* ANIMAÇÃO 3: Sonar Azul constante nas cidades que já vêm preenchidas (Radar vivo) */}
                                         {isPredefinida && (
                                             <motion.div 
                                                 className="absolute rounded-full bg-blue-400 opacity-20"
@@ -493,13 +523,12 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                         )}
                                     </AnimatePresence>
 
-                                    {/* O Círculo Geográfico Principal */}
                                     <motion.div 
                                         className={`rounded-full border-4 shadow-xl flex items-center justify-center transition-colors duration-300 relative z-10 ${
                                             isFilledAcerto ? 'bg-emerald-500 border-emerald-400' 
-                                            : isPredefinida ? 'bg-slate-800 border-blue-500/80' // Cidades fixas mais destacadas
+                                            : isPredefinida ? 'bg-slate-800 border-blue-500/80' 
                                             : isActiveDropzone ? 'bg-blue-950 border-blue-400'
-                                            : 'bg-slate-800 border-slate-600' // Dropzone inativo
+                                            : 'bg-slate-800 border-slate-600' 
                                         }`}
                                         style={{ 
                                             width: `${(node.radius || 16) * 2}px`, 
@@ -509,15 +538,13 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                                      : isPredefinida ? '0 0 15px rgba(59,130,246,0.3), inset 0 0 5px rgba(0,0,0,0.5)'
                                                      : '0 0 10px rgba(0,0,0,0.3), inset 0 0 5px rgba(0,0,0,0.5)'
                                         }}
-                                        // Animação de pulso base do círculo
                                         animate={
                                             isFilledAcerto ? { scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 2 } }
                                             : isActiveDropzone ? { scale: [1, 1.1, 1], transition: { repeat: Infinity, duration: 1, ease: "easeInOut" } }
                                             : isPredefinida ? { scale: [1, 1.03, 1], transition: { repeat: Infinity, duration: 2.5 } } 
-                                            : {} // Inativo não mexe
+                                            : {} 
                                         }
                                     >
-                                        {/* Ícones internos para dar mais vida aos nós */}
                                         {isFilledAcerto && (
                                             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 10 }}>
                                                 <CheckCircle2 className="text-slate-950 w-2/3 h-2/3" style={{ width: `${(node.radius || 16) * 1.3}px`, height: `${(node.radius || 16) * 1.3}px` }} />
@@ -535,7 +562,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                     </motion.div>
                                 </div>
 
-                                {/* O Rótulo de Texto (Em baixo da cidade) */}
                                 <div className="mt-4 relative z-20">
                                     {node.isDropzone && !isFilled ? (
                                         <motion.button 
@@ -567,7 +593,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                     })}
                 </div>
 
-                {/* INVENTÁRIO (CLIQUE PARA SELECIONAR) */}
+                {/* INVENTÁRIO */}
                 <div className="bg-slate-900 p-6 rounded-3xl shadow-lg border border-slate-800 relative z-30">
                     <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4 text-center flex items-center justify-center gap-2">
                         <MousePointerClick size={16}/> Inventário de Etiquetas
