@@ -44,7 +44,7 @@ interface LabelDef {
 
 interface PhaseData {
     title: string;
-    briefing: string; // Explicação antes de iniciar o mapa
+    briefing: string;
     description: string;
     nodes: NodeDef[];
     edges: EdgeDef[];
@@ -218,8 +218,19 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
     const [placedLabels, setPlacedLabels] = useState<Record<string, LabelId>>({});
     
     const [alertMessage, setAlertMessage] = useState<{ title: string, text: string, type: 'warning' | 'success' } | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
 
     const phase = PHASES[currentPhaseIndex];
+
+    // Detetar tamanho do ecrã para ajustar os gráficos
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        if (typeof window !== 'undefined') {
+            checkMobile();
+            window.addEventListener('resize', checkMobile);
+            return () => window.removeEventListener('resize', checkMobile);
+        }
+    }, []);
 
     const handleZoneClick = (dropzoneId: string) => {
         if (!activeLabel) {
@@ -234,7 +245,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         const dropzoneNode = phase.nodes.find(n => n.id === dropzoneId);
         
         if (dropzoneNode?.correctLabelId === activeLabel.id) {
-            // ACERTOU
             setPlacedLabels(prev => ({ ...prev, [dropzoneId]: activeLabel.id }));
             setScore(prev => prev + 50);
             toast({
@@ -244,7 +254,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
             });
             setActiveLabel(null); 
         } else {
-            // ERROU 
             setScore(prev => Math.max(0, prev - 10));
             setAlertMessage({
                 title: 'Classificação Incorreta',
@@ -278,13 +287,16 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
 
     // --- TELAS SECUNDÁRIAS --- //
     
-    // TELA INICIAL
     if (status === 'intro') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
+
+                    <div className="absolute top-6 right-6">
+                        <EnemHelpPanel />
+                    </div>
 
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-blue-600/20 p-5 rounded-3xl border border-blue-500/30">
@@ -313,7 +325,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         );
     }
 
-    // CARD EXPLICATIVO ANTES DA MISSÃO
     if (status === 'mission_briefing') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -339,7 +350,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
         );
     }
 
-    // RESULTADO FINAL (VITÓRIA)
     if (status === 'victory') {
         return (
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4">
@@ -419,14 +429,13 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                 )}
             </AnimatePresence>
 
-            {/* CABEÇALHO GLOBAL (RESPONSIVO E COM BOTÃO DO ENEM) */}
+            {/* CABEÇALHO GLOBAL */}
             <header className="w-full p-3 md:p-6 bg-[#0A1024]/95 backdrop-blur-md border-b border-white/10 relative z-20 flex flex-col md:flex-row justify-between items-center shadow-xl md:shadow-2xl gap-3 md:gap-4 sticky top-0">
-                {/* Esquerda: Voltar + Título (Centrado no Mobile, Voltar Absoluto) */}
-                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start">
+                <div className="flex items-center justify-between md:justify-start w-full md:w-auto relative">
                     <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full absolute left-0 md:static md:mr-4 shrink-0">
                         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
-                    <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 mx-auto md:mx-0">
                         <div className="bg-blue-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg shadow-blue-900/20">
                             <MapIcon className="text-white w-4 h-4 md:w-5 md:h-5" />
                         </div>
@@ -437,10 +446,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                     </div>
                 </div>
 
-                {/* Direita: ENEM + Score */}
                 <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2 md:gap-4">
-                    <EnemHelpPanel /> {/* <-- MANTIDO AQUI NO DASHBOARD DO JOGO */}
-                    <div className="w-px h-6 bg-white/10 hidden md:block" />
                     <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20 whitespace-nowrap">
                         <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Score:</span>
                         <span className="font-black text-sm md:text-lg text-yellow-400">{score} PTS</span>
@@ -450,19 +456,20 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
 
             <main className="flex-grow flex flex-col max-w-5xl mx-auto w-full p-4 gap-6 relative z-10">
                 
-                <div className="bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
-                    <h2 className="text-2xl font-black text-blue-400 mb-2">Desafio de Mapeamento</h2>
-                    <p className="text-slate-300 font-medium text-lg">{phase.description}</p>
+                <div className="bg-slate-900/80 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
+                    <h2 className="text-xl md:text-2xl font-black text-blue-400 mb-2">Desafio de Mapeamento</h2>
+                    <p className="text-sm md:text-lg text-slate-300 font-medium">{phase.description}</p>
                 </div>
 
-                {/* ÁREA DO MAPA (SVG + HTML OVERLAYS) */}
-                <div className="relative w-full aspect-square md:aspect-[16/9] bg-slate-950 rounded-3xl border-2 border-slate-800 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                {/* ÁREA DO MAPA - COMPACTA NO MOBILE PARA NÃO SOBREPOR */}
+                <div className="relative w-full aspect-[4/5] sm:aspect-square md:aspect-[16/9] bg-slate-950 rounded-3xl border-2 border-slate-800 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
                     
                     <svg className="absolute inset-0 w-full h-full pointer-events-none">
                         {phase.edges.map((edge, idx) => {
                             const nodeFrom = phase.nodes.find(n => n.id === edge.from);
                             const nodeTo = phase.nodes.find(n => n.id === edge.to);
                             if (!nodeFrom || !nodeTo) return null;
+                            const thickness = isMobile ? edge.thickness * 0.7 : edge.thickness;
                             return (
                                 <line 
                                     key={idx}
@@ -470,7 +477,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                     x2={`${nodeTo.x}%`} y2={`${nodeTo.y}%`}
                                     stroke="#3b82f6" 
                                     strokeOpacity={edge.dashed ? 0.8 : 0.4}
-                                    strokeWidth={edge.thickness}
+                                    strokeWidth={thickness}
                                     strokeDasharray={edge.dashed ? "10, 10" : "none"}
                                     strokeLinecap="round"
                                 />
@@ -485,6 +492,9 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                         const isActiveDropzone = node.isDropzone && !isFilled && activeLabel;
                         const isFilledAcerto = isFilled;
                         const isPredefinida = !!node.labelPredefinida;
+                        
+                        // Círculos menores no telemóvel para dar mais espaço
+                        const currentRadius = (node.radius || 16) * (isMobile ? 0.65 : 1);
 
                         return (
                             <div 
@@ -498,14 +508,14 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                             <>
                                                 <motion.div 
                                                     className="absolute rounded-full bg-blue-500 opacity-30"
-                                                    style={{ width: `${(node.radius || 16) * 4}px`, height: `${(node.radius || 16) * 4}px` }}
+                                                    style={{ width: `${currentRadius * 4}px`, height: `${currentRadius * 4}px` }}
                                                     initial={{ scale: 0.5, opacity: 0 }}
                                                     animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
                                                     transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut" }}
                                                 />
                                                 <motion.div 
                                                     className="absolute rounded-full bg-blue-500 opacity-20"
-                                                    style={{ width: `${(node.radius || 16) * 6}px`, height: `${(node.radius || 16) * 6}px` }}
+                                                    style={{ width: `${currentRadius * 6}px`, height: `${currentRadius * 6}px` }}
                                                     initial={{ scale: 0.5, opacity: 0 }}
                                                     animate={{ scale: [1, 1.5], opacity: [0.2, 0] }}
                                                     transition={{ repeat: Infinity, duration: 1.5, delay: 0.5, ease: "easeOut" }}
@@ -515,7 +525,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                         {isFilledAcerto && (
                                             <motion.div 
                                                 className="absolute rounded-full bg-emerald-400 opacity-30"
-                                                style={{ width: `${(node.radius || 16) * 4}px`, height: `${(node.radius || 16) * 4}px` }}
+                                                style={{ width: `${currentRadius * 4}px`, height: `${currentRadius * 4}px` }}
                                                 initial={{ scale: 0.5, opacity: 0 }}
                                                 animate={{ scale: [1, 1.4], opacity: [0.3, 0] }}
                                                 transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
@@ -524,7 +534,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                         {isPredefinida && (
                                             <motion.div 
                                                 className="absolute rounded-full bg-blue-400 opacity-20"
-                                                style={{ width: `${(node.radius || 16) * 3.5}px`, height: `${(node.radius || 16) * 3.5}px` }}
+                                                style={{ width: `${currentRadius * 3.5}px`, height: `${currentRadius * 3.5}px` }}
                                                 initial={{ scale: 0.8, opacity: 0 }}
                                                 animate={{ scale: [1, 1.3], opacity: [0.2, 0] }}
                                                 transition={{ repeat: Infinity, duration: 3, ease: "easeOut" }}
@@ -533,19 +543,19 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                     </AnimatePresence>
 
                                     <motion.div 
-                                        className={`rounded-full border-4 shadow-xl flex items-center justify-center transition-colors duration-300 relative z-10 ${
+                                        className={`rounded-full border-2 md:border-4 shadow-lg md:shadow-xl flex items-center justify-center transition-colors duration-300 relative z-10 ${
                                             isFilledAcerto ? 'bg-emerald-500 border-emerald-400' 
                                             : isPredefinida ? 'bg-slate-800 border-blue-500/80' 
                                             : isActiveDropzone ? 'bg-blue-950 border-blue-400'
                                             : 'bg-slate-800 border-slate-600' 
                                         }`}
                                         style={{ 
-                                            width: `${(node.radius || 16) * 2}px`, 
-                                            height: `${(node.radius || 16) * 2}px`,
-                                            boxShadow: isFilledAcerto ? '0 0 25px rgba(16,185,129,0.7), inset 0 0 10px rgba(0,0,0,0.5)'
-                                                     : isActiveDropzone ? '0 0 20px rgba(59,130,246,0.6), inset 0 0 10px rgba(0,0,0,0.5)'
-                                                     : isPredefinida ? '0 0 15px rgba(59,130,246,0.3), inset 0 0 5px rgba(0,0,0,0.5)'
-                                                     : '0 0 10px rgba(0,0,0,0.3), inset 0 0 5px rgba(0,0,0,0.5)'
+                                            width: `${currentRadius * 2}px`, 
+                                            height: `${currentRadius * 2}px`,
+                                            boxShadow: isFilledAcerto ? '0 0 15px rgba(16,185,129,0.5), inset 0 0 5px rgba(0,0,0,0.5)'
+                                                     : isActiveDropzone ? '0 0 15px rgba(59,130,246,0.5), inset 0 0 5px rgba(0,0,0,0.5)'
+                                                     : isPredefinida ? '0 0 10px rgba(59,130,246,0.2), inset 0 0 5px rgba(0,0,0,0.5)'
+                                                     : '0 0 5px rgba(0,0,0,0.3), inset 0 0 5px rgba(0,0,0,0.5)'
                                         }}
                                         animate={
                                             isFilledAcerto ? { scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 2 } }
@@ -556,37 +566,37 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                     >
                                         {isFilledAcerto && (
                                             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 10 }}>
-                                                <CheckCircle2 className="text-slate-950 w-2/3 h-2/3" style={{ width: `${(node.radius || 16) * 1.3}px`, height: `${(node.radius || 16) * 1.3}px` }} />
+                                                <CheckCircle2 className="text-slate-950" style={{ width: `${currentRadius * 1.3}px`, height: `${currentRadius * 1.3}px` }} />
                                             </motion.div>
                                         )}
                                         {isActiveDropzone && (
-                                            <MousePointerClick className="text-blue-200 animate-pulse" style={{ width: `${(node.radius || 16)}px`, height: `${(node.radius || 16)}px` }} />
+                                            <MousePointerClick className="text-blue-200 animate-pulse" style={{ width: `${currentRadius}px`, height: `${currentRadius}px` }} />
                                         )}
                                         {isPredefinida && node.radius && node.radius > 15 && (
-                                             <SignalHigh className="text-blue-400 opacity-60 animate-pulse" style={{ width: `${(node.radius || 16)}px`, height: `${(node.radius || 16)}px` }} />
+                                             <SignalHigh className="text-blue-400 opacity-60 animate-pulse" style={{ width: `${currentRadius}px`, height: `${currentRadius}px` }} />
                                         )}
                                         {isPredefinida && node.radius && node.radius <= 15 && (
-                                             <Radio className="text-blue-400 opacity-40" style={{ width: `${(node.radius || 16) * 0.8}px`, height: `${(node.radius || 16) * 0.8}px` }} />
+                                             <Radio className="text-blue-400 opacity-40" style={{ width: `${currentRadius * 0.8}px`, height: `${currentRadius * 0.8}px` }} />
                                         )}
                                     </motion.div>
                                 </div>
 
-                                <div className="mt-4 relative z-20">
+                                <div className="mt-2 md:mt-4 relative z-20">
                                     {node.isDropzone && !isFilled ? (
                                         <motion.button 
                                             onClick={() => handleZoneClick(node.id)}
-                                            className={`border-2 font-black px-5 py-2.5 rounded-xl shadow-lg min-w-[140px] text-center transition-all transform hover:scale-105 ${
+                                            className={`border-2 font-black px-2 md:px-5 py-1.5 md:py-2.5 rounded-lg md:rounded-xl shadow-md min-w-[75px] md:min-w-[140px] text-[10px] md:text-base text-center transition-all transform hover:scale-105 ${
                                                 activeLabel 
-                                                ? 'bg-blue-900 border-blue-400 text-blue-100 cursor-pointer shadow-[0_0_20px_rgba(59,130,246,0.5)]' 
-                                                : 'bg-slate-800/80 border-slate-600 border-dashed text-slate-500 cursor-pointer hover:bg-slate-700 hover:border-slate-400 hover:text-slate-300'
+                                                ? 'bg-blue-900 border-blue-400 text-blue-100 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                                                : 'bg-slate-800/80 border-slate-600 border-dashed text-slate-500 cursor-pointer hover:bg-slate-700 hover:border-slate-400'
                                             }`}
                                             animate={activeLabel ? { scale: [1, 1.03, 1], transition: { repeat: Infinity, duration: 1.5 } } : {}}
                                         >
-                                            {activeLabel ? 'Clique para Colar' : '?'}
+                                            {activeLabel ? (isMobile ? 'Colar' : 'Clique para Colar') : '?'}
                                         </motion.button>
                                     ) : (
                                         <motion.div 
-                                            className={`font-bold px-4 py-1.5 rounded-lg text-sm md:text-base whitespace-nowrap shadow-md border ${
+                                            className={`font-bold px-2 md:px-4 py-1 md:py-1.5 rounded-md md:rounded-lg text-[10px] md:text-base whitespace-nowrap shadow-sm border ${
                                             isFilled ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50' : 'bg-slate-900 text-blue-200 border-blue-900/50'
                                         }`}
                                             initial={isFilled ? { opacity: 0, y: 10 } : {}}
@@ -603,11 +613,11 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                 </div>
 
                 {/* INVENTÁRIO */}
-                <div className="bg-slate-900 p-6 rounded-3xl shadow-lg border border-slate-800 relative z-30">
-                    <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4 text-center flex items-center justify-center gap-2">
+                <div className="bg-slate-900 p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-lg border border-slate-800 relative z-30">
+                    <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs md:text-sm mb-4 text-center flex items-center justify-center gap-2">
                         <MousePointerClick size={16}/> Inventário de Etiquetas
                     </h3>
-                    <div className="flex flex-wrap justify-center gap-4 min-h-[60px]">
+                    <div className="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[60px]">
                         {phase.availableLabels.map((label) => {
                             const isPlaced = Object.values(placedLabels).includes(label.id);
                             if (isPlaced) return null;
@@ -618,11 +628,11 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                                 <motion.button
                                     key={label.id}
                                     onClick={() => setActiveLabel(isSelected ? null : label)}
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={!isMobile ? { scale: 1.05 } : {}}
                                     whileTap={{ scale: 0.95 }}
-                                    className={`font-black px-6 py-3.5 rounded-xl cursor-pointer shadow-md border-2 transition-all ${
+                                    className={`font-black px-3 md:px-6 py-2 md:py-3.5 rounded-lg md:rounded-xl cursor-pointer shadow-md border-2 transition-all text-[11px] md:text-base ${
                                         isSelected 
-                                        ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.6)]' 
+                                        ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.6)]' 
                                         : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-slate-400'
                                     }`}
                                 >
@@ -631,7 +641,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                             );
                         })}
                     </div>
-                    <p className="text-center text-blue-400 font-medium text-sm mt-5">
+                    <p className="text-center text-blue-400 font-medium text-xs md:text-sm mt-4 md:mt-5">
                         Passo 1: Clique na etiqueta | Passo 2: Clique no <strong>?</strong> no mapa.
                     </p>
                 </div>

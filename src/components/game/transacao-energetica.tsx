@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Zap, Wind, Sun, Droplet, Leaf, ArrowLeft, ShieldCheck, Map as MapIcon, Info, CheckCircle2, Lock, HelpCircle, BookOpen, ZoomIn, X } from 'lucide-react';
+import { AlertTriangle, Zap, Wind, Droplet, Leaf, ArrowLeft, ShieldCheck, Map as MapIcon, CheckCircle2, Lock, HelpCircle, BookOpen, ZoomIn, X, BatteryCharging, AlertCircle, Info, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
+// --- TIPAGENS --- //
 interface TransacaoEnergeticaGameProps {
     playerName: string;
     onReturnHome: () => void;
     onSaveScore: (score: number) => void;
 }
 
-type PlantType = 'hydro' | 'wind' | 'solar' | 'biomass';
+type PlantType = 'hydro' | 'wind' | 'biomass';
 type BiomeId = 'amazonia' | 'caatinga' | 'cerrado';
 
 interface PlantConfig {
@@ -27,66 +29,109 @@ interface BiomeConfig {
     name: string;
     image: string;
     description: string;
+    correctPlant: PlantType;
+    successTitle: string;
+    successText: string;
 }
 
+// --- DADOS (1 PARA 1) --- //
 const PLANTS: Record<PlantType, PlantConfig> = {
     hydro: { id: 'hydro', name: 'Hidrelétrica', icon: <Droplet size={28} />, color: 'text-blue-400 border-blue-500' },
     wind: { id: 'wind', name: 'Eólica', icon: <Wind size={28} />, color: 'text-cyan-300 border-cyan-400' },
-    solar: { id: 'solar', name: 'Solar', icon: <Sun size={28} />, color: 'text-yellow-400 border-yellow-500' },
     biomass: { id: 'biomass', name: 'Biomassa (Etanol)', icon: <Leaf size={28} />, color: 'text-emerald-400 border-emerald-500' }
 };
 
 const BIOMES: BiomeConfig[] = [
-    { id: 'amazonia', name: 'Amazônia', image: '/images/biomes/amazonia-satellite.png', description: 'Planície florestal densa e úmida.' },
-    { id: 'caatinga', name: 'Caatinga', image: '/images/biomes/caatinga-satellite.png', description: 'Semiárido com alta incidência solar e ventos.' },
-    { id: 'cerrado', name: 'Cerrado', image: '/images/biomes/cerrado-satellite.png', description: 'Savana plana focada no agronegócio.' }
+    { 
+        id: 'amazonia', 
+        name: 'Amazônia', 
+        image: '/images/biomes/amazonia-satellite.png', 
+        description: 'Planície florestal densa e úmida.',
+        correctPlant: 'hydro',
+        successTitle: 'Sucesso! Mas Cuidado... (ENEM)',
+        successText: 'Apesar de usarmos muita hidrelétrica aqui, construí-las na planície amazônica exige represas gigantescas, causando alagamento da floresta (emissão de metano) e impacto em comunidades ribeirinhas!'
+    },
+    { 
+        id: 'caatinga', 
+        name: 'Caatinga', 
+        image: '/images/biomes/caatinga-satellite.png', 
+        description: 'Semiárido com alta incidência solar e ventos.',
+        correctPlant: 'wind',
+        successTitle: 'Excelente! (Alerta ENEM)',
+        successText: 'O Nordeste tem os melhores ventos (Alísios) do país. Mas atenção nas provas: grandes parques eólicos podem alterar a rota de aves e causar grave poluição sonora para moradores locais.'
+    },
+    { 
+        id: 'cerrado', 
+        name: 'Cerrado', 
+        image: '/images/biomes/cerrado-satellite.png', 
+        description: 'Savana plana focada no agronegócio.',
+        correctPlant: 'biomass',
+        successTitle: 'Muito Bem! (Alerta ENEM)',
+        successText: 'O etanol da cana é renovável e forte no Centro-Sul. Mas cuidado: a expansão desordenada da cana-de-açúcar causa desmatamento do Cerrado e esgota os nutrientes do solo (lixiviação)!'
+    }
 ];
 
-const IMPACT_LIMIT = 50; 
+// MENSAGENS DIDÁTICAS PARA QUANDO O JOGADOR ERRA O BIOMA
+const ERROR_MESSAGES: Record<BiomeId, Partial<Record<PlantType, string>>> = {
+    amazonia: {
+        wind: 'Os ventos na planície amazônica são bloqueados pelo denso dossel da floresta. Para instalar pás eólicas rentáveis, seria necessário um desmatamento inaceitável.',
+        biomass: 'Substituir a floresta equatorial por monocultura de cana-de-açúcar destruiria a biodiversidade e secaria os "Rios Voadores" que irrigam todo o Brasil.'
+    },
+    caatinga: {
+        hydro: 'A Caatinga possui rios intermitentes (que secam na estiagem) e altíssima evaporação natural. Uma hidrelétrica aqui não teria água suficiente para girar as turbinas na maior parte do ano.',
+        biomass: 'A cana-de-açúcar exige imensa quantidade de água. Plantar biomassa no semiárido agravaria o estresse hídrico, desviando a água da população local.'
+    },
+    cerrado: {
+        hydro: 'O relevo do Cerrado é marcado por planaltos muito planos (chapadas). Construir uma represa hidrelétrica aqui exigiria alagar áreas imensuráveis, destruindo habitats inteiros.',
+        wind: 'Embora tenha ventos, priorizar mega parques eólicos no Cerrado gera conflito direto por terras com a agropecuária, intensificando a especulação fundiária.'
+    }
+};
 
-// --- COMPONENTE DO PAINEL DO ENEM --- //
-const EnemHelpPanel = () => (
+// --- PAINEL DE AJUDA UNIFICADO (COMO JOGAR + ENEM) --- //
+const GameHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="outline" className="bg-emerald-900/40 border-emerald-500/50 text-emerald-200 hover:bg-emerald-800 hover:text-white rounded-full px-5 py-2 font-bold shadow-lg transition-colors">
-                <HelpCircle className="w-5 h-5 mr-2" /> O que cai no ENEM?
+            <Button variant="ghost" className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-full w-9 h-9 md:w-10 md:h-10 p-0 flex items-center justify-center shadow-md transition-colors">
+                <HelpCircle className="w-5 h-5" />
             </Button>
         </SheetTrigger>
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
              <div className="p-8">
                 <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
-                    <div className="bg-emerald-500/20 p-3 rounded-xl border border-emerald-500/30">
-                        <BookOpen className="text-emerald-400 w-8 h-8"/>
+                    <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
+                        <Info className="text-blue-400 w-8 h-8"/>
                     </div>
-                    <h2 className="text-3xl font-black text-white">Revisão ENEM</h2>
+                    <h2 className="text-3xl font-black text-white">Guia da Missão</h2>
                 </div>
                 
                 <div className="space-y-8 text-left">
+                    {/* COMO JOGAR */}
                     <div>
-                        <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight">A Matriz Brasileira</h3>
+                        <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
+                        <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
+                            <li><strong>Escolha a Fonte:</strong> Selecione uma Matriz Energética no rodapé inferior.</li>
+                            <li><strong>Analise o Bioma:</strong> Clique na região que possui as melhores características geográficas (clima e relevo) para essa usina funcionar sem grandes danos.</li>
+                            <li><strong>Cuidado com Erros:</strong> Instalar uma usina no bioma errado causa impactos graves. Você só pode errar 3 vezes antes do Game Over!</li>
+                        </ul>
+                    </div>
+
+                    <hr className="border-slate-800" />
+
+                    {/* REVISÃO ENEM */}
+                    <div>
+                        <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight flex items-center gap-2">
+                            <BookOpen className="w-5 h-5" /> Revisão ENEM
+                        </h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
-                            O Brasil possui uma das matrizes elétricas <strong>mais renováveis do mundo</strong> (focada em Hidrelétricas), mas "energia limpa" (que não emite CO2 na geração) não significa "energia sem impacto ambiental".
+                            O Brasil possui uma das matrizes elétricas <strong>mais renováveis do mundo</strong> (focada em Hidrelétricas), mas "energia limpa" (que não emite carbono) não significa "energia sem impacto ambiental".
                         </p>
-                    </div>
-                    <div>
-                        <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">O Paradoxo Hidrelétrico</h3>
-                        <ul className="list-disc list-inside space-y-2 text-slate-300 text-[15px]">
-                            <li><strong>No Planalto (Sul/Sudeste):</strong> Excelentes quedas d'água, mas potencial esgotado.</li>
-                            <li><strong>Na Planície (Amazônia):</strong> Construir usinas aqui (ex: Belo Monte) exige <strong>alagamento de áreas gigantescas</strong>, o que expulsa comunidades tradicionais, inunda a biodiversidade e gera <strong>Gás Metano</strong> (CH4) devido à decomposição orgânica debaixo d'água.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-black text-xl text-yellow-400 mb-3 tracking-tight">O Potencial do Nordeste</h3>
-                        <ul className="list-disc list-inside space-y-2 text-slate-300 text-[15px]">
-                            <li>A região da <strong>Caatinga</strong> e o litoral nordestino são as principais apostas para o futuro devido aos constantes <strong>Ventos Alísios</strong> (Eólica) e à forte incidência solar.</li>
-                        </ul>
                     </div>
                     <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 mt-6">
                         <h3 className="font-black text-lg text-white mb-2 flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5 text-yellow-500" /> Dica para a Prova
                         </h3>
                         <p className="text-sm text-slate-300">
-                            Nas questões de Geografia e Ciências da Natureza, a banca do ENEM quer que você avalie o <strong>trade-off (custo-benefício) geográfico</strong>. Nunca assinale que a energia Hidrelétrica ou Eólica não tem impacto. Elas alteram microclimas, o curso dos rios e exigem vastas áreas de terra.
+                            Nas questões do ENEM, você deve avaliar o <strong>trade-off (custo-benefício) geográfico</strong>. Cada região possui uma vocação energética, mas todas geram impactos socioambientais locais que a prova vai cobrar de você!
                         </p>
                     </div>
                 </div>
@@ -97,134 +142,77 @@ const EnemHelpPanel = () => (
 
 // --- COMPONENTE PRINCIPAL --- //
 export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSaveScore }: TransacaoEnergeticaGameProps) {
-    const [impact, setImpact] = useState(0);
     const [selectedPlant, setSelectedPlant] = useState<PlantType | null>(null);
-    const [lockedBiomes, setLockedBiomes] = useState<{ id: BiomeId, plant: PlantType }[]>([]);
-    const [status, setStatus] = useState<'intro' | 'playing' | 'gameover' | 'victory'>('intro');
-    const [alertMessage, setAlertMessage] = useState<{ title: string, text: string, type: 'success' | 'warning' | 'critical' } | null>(null);
+    const [solvedBiomes, setSolvedBiomes] = useState<BiomeId[]>([]);
     
-    // ESTADO: Controla a imagem que está expandida em ecrã inteiro
+    // Sistema de Erros
+    const [errorCount, setErrorCount] = useState(0);
+    const maxErrors = 3;
+
+    const [status, setStatus] = useState<'intro' | 'playing' | 'victory' | 'gameover'>('intro');
+    const [alertMessage, setAlertMessage] = useState<{ title: string, text: string, type: 'success' | 'error' } | null>(null);
+    const [shakeBiome, setShakeBiome] = useState<BiomeId | null>(null);
     const [expandedImage, setExpandedImage] = useState<string | null>(null);
+    const [score, setScore] = useState(0);
 
+    // Checa vitória após fechar o alerta
     useEffect(() => {
-        if (status !== 'playing' || alertMessage) return;
-
-        if (impact >= IMPACT_LIMIT) {
-            setStatus('gameover');
-        } else if (lockedBiomes.length === 3) {
-            setStatus('victory');
+        if (status === 'playing' && solvedBiomes.length === 3 && !alertMessage) {
+            setTimeout(() => setStatus('victory'), 500);
         }
-    }, [lockedBiomes, impact, status, alertMessage]);
+    }, [solvedBiomes, alertMessage, status]);
+
+    // Checa Game Over após fechar o alerta de erro
+    useEffect(() => {
+        if (status === 'playing' && errorCount >= maxErrors && !alertMessage) {
+            setTimeout(() => setStatus('gameover'), 500);
+        }
+    }, [errorCount, alertMessage, status]);
 
     const handleInstall = (biomeId: BiomeId) => {
-        if (!selectedPlant || status !== 'playing' || lockedBiomes.some(b => b.id === biomeId)) return;
+        if (status !== 'playing' || solvedBiomes.includes(biomeId) || errorCount >= maxErrors) return;
 
-        let isSuccess = false;
-        let addedImpact = 0;
-        let alertConfig = { title: '', text: '', type: 'success' as const };
+        if (!selectedPlant) {
+            toast({
+                title: "Ação Inválida",
+                description: "Selecione uma Matriz Energética no inventário abaixo primeiro.",
+                className: "bg-slate-800 border-slate-600 text-white"
+            });
+            return;
+        }
 
-        // --- CAATINGA ---
-        if (biomeId === 'caatinga' && (selectedPlant === 'wind' || selectedPlant === 'solar')) {
-            isSuccess = true;
-            addedImpact = 0;
-            alertConfig = {
-                title: 'Estratégia Perfeita!',
-                text: 'A Caatinga e o litoral nordestino possuem a maior incidência solar do Brasil e os melhores ventos alísios. Geração limpa garantida com baixíssimo impacto espacial!',
+        const biome = BIOMES.find(b => b.id === biomeId);
+        
+        if (biome && biome.correctPlant === selectedPlant) {
+            // ACERTOU
+            setSolvedBiomes(prev => [...prev, biomeId]);
+            setScore(prev => prev + 50);
+            setSelectedPlant(null);
+            
+            // Dispara a mensagem educativa do ENEM de sucesso
+            setAlertMessage({
+                title: biome.successTitle,
+                text: biome.successText,
                 type: 'success'
-            };
-        } 
-        else if (biomeId === 'caatinga' && selectedPlant === 'hydro') {
-            isSuccess = false;
-            addedImpact = 15;
-            alertConfig = {
-                title: 'Rios Intermitentes e Evaporação',
-                text: 'No clima semiárido, os rios secam em parte do ano (intermitentes). Uma represa aqui alagaria vales férteis (brejos) e a água evaporaria rapidamente pelo calor extremo.',
-                type: 'warning'
-            };
-        }
-        else if (biomeId === 'caatinga' && selectedPlant === 'biomass') {
-            isSuccess = false;
-            addedImpact = 20;
-            alertConfig = {
-                title: 'Estresse Hídrico Grave',
-                text: 'A cana-de-açúcar exige muita irrigação. Desviar a pouca água disponível no sertão para produzir combustível em vez de alimentos gera graves conflitos sociais e ambientais.',
-                type: 'critical'
-            };
-        }
+            });
+        } else {
+            // ERROU 
+            const newErrors = errorCount + 1;
+            setErrorCount(newErrors);
+            setShakeBiome(biomeId);
+            setScore(prev => Math.max(0, prev - 10));
+            
+            const specificError = ERROR_MESSAGES[biomeId]?.[selectedPlant] || "Essa matriz não é ideal para as características geográficas deste bioma!";
 
-        // --- CERRADO ---
-        else if (biomeId === 'cerrado' && selectedPlant === 'biomass') {
-            isSuccess = true;
-            addedImpact = 10;
-            alertConfig = {
-                title: 'Correto, mas com Ressalvas!',
-                text: 'Dica ENEM: O Cerrado lidera a produção de cana. Porém, o avanço intenso dessa monocultura causa desmatamento, perda de biodiversidade e esgotamento/laterização do solo.',
-                type: 'warning'
-            };
-        } 
-        else if (biomeId === 'cerrado' && selectedPlant === 'hydro') {
-            isSuccess = false;
-            addedImpact = 20;
-            alertConfig = {
-                title: 'Alagamento de Chapadas',
-                text: 'Apesar de ser o "berço das águas", o relevo de planalto plano (chapadas) faz com que as represas alaguem áreas imensas, destruindo matas de galeria e expulsando populações tradicionais.',
-                type: 'warning'
-            };
-        }
-        else if (biomeId === 'cerrado' && (selectedPlant === 'wind' || selectedPlant === 'solar')) {
-            isSuccess = false;
-            addedImpact = 10;
-            alertConfig = {
-                title: 'Conflito pelo Uso da Terra',
-                text: 'Embora viável, a instalação de mega parques eólicos e solares no Cerrado compete por terras planas usadas para agricultura, intensificando a especulação fundiária e a fragmentação do habitat.',
-                type: 'warning'
-            };
-        }
+            setAlertMessage({
+                title: "Combinação Incorreta!",
+                text: specificError,
+                type: 'error'
+            });
 
-        // --- AMAZÔNIA ---
-        else if (biomeId === 'amazonia' && selectedPlant === 'solar') {
-            isSuccess = true;
-            addedImpact = 0;
-            alertConfig = {
-                title: 'Visão Sustentável!',
-                text: 'Para proteger a floresta, a melhor solução não são megaobras, mas sim sistemas descentralizados (microrredes solares) para abastecer comunidades ribeirinhas e isoladas sem desmatar.',
-                type: 'success'
-            };
-        } 
-        else if (biomeId === 'amazonia' && selectedPlant === 'hydro') {
-            isSuccess = false;
-            addedImpact = 30;
-            alertConfig = {
-                title: 'PEGADINHA DO ENEM (ALERTA)!',
-                text: 'A Amazônia é uma PLANÍCIE. Hidrelétricas aqui (ex: Belo Monte) exigem alagar áreas gigantescas! A floresta submersa apodrece e emite Gás Metano (CH4), piorando o aquecimento global.',
-                type: 'critical'
-            };
-        } 
-        else if (biomeId === 'amazonia' && selectedPlant === 'wind') {
-            isSuccess = false;
-            addedImpact = 15;
-            alertConfig = {
-                title: 'Ventos Bloqueados',
-                text: 'O denso dossel das grandes árvores funciona como uma barreira que reduz a velocidade dos ventos. Seria necessário desmatar imensas clareiras para as pás eólicas girarem.',
-                type: 'warning'
-            };
+            setSelectedPlant(null);
+            setTimeout(() => setShakeBiome(null), 500);
         }
-        else if (biomeId === 'amazonia' && selectedPlant === 'biomass') {
-            isSuccess = false;
-            addedImpact = 25;
-            alertConfig = {
-                title: 'Ameaça aos Rios Voadores',
-                text: 'Derrubar a floresta úmida para plantar monoculturas de combustível anula a transpiração das árvores. Isso seca os "Rios Voadores", prejudicando o regime de chuvas de todo o Brasil central!',
-                type: 'critical'
-            };
-        }
-
-        if (isSuccess) {
-            setLockedBiomes(prev => [...prev, { id: biomeId, plant: selectedPlant }]);
-        }
-        setImpact(prev => prev + addedImpact);
-        setSelectedPlant(null); 
-        setAlertMessage(alertConfig); 
     };
 
     // --- TELAS SECUNDÁRIAS --- //
@@ -235,7 +223,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
                     
                     <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
+                        <GameHelpPanel />
                     </div>
 
                     <div className="flex justify-center mb-6 mt-4">
@@ -245,20 +233,18 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-center mb-6">Matriz Energética</h1>
                     <p className="text-slate-300 text-lg text-center mb-10">
-                        Ministro <strong>{playerName}</strong>, o desafio é abastecer o Brasil minimizando danos. Encontre a <strong>fonte ideal de energia para as características de cada Bioma</strong>.
+                        Ministro <strong>{playerName}</strong>, o desafio é abastecer o Brasil associando cada Matriz Energética ao seu Bioma ideal, compreendendo os impactos cobrados no ENEM.
                     </p>
 
                     <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 shadow-lg text-left mb-10">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-yellow-400"><Info size={20}/> Instruções do Desafio</h3>
-                        <ul className="space-y-3 text-slate-300 text-sm">
-                            <li><strong>1. Escolha a Fonte:</strong> Selecione uma usina no baralho.</li>
-                            <li><strong>2. Escolha o Bioma:</strong> Clique na região onde ela causará menos impacto e terá mais rendimento. Pode clicar na <strong>Lupa</strong> para ampliar a imagem do satélite e analisar o terreno.</li>
-                            <li><strong>3. Cuidado com o Impacto:</strong> Escolhas erradas ou <strong className="text-yellow-400">Pegadinhas do ENEM</strong> aumentarão drasticamente o Impacto. Se chegar a {IMPACT_LIMIT}%, é Game Over!</li>
-                        </ul>
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-yellow-400"><Target size={20}/> Seu Objetivo</h3>
+                        <p className="text-slate-300 text-[15px] leading-relaxed">
+                            Existem 3 biomas e 3 matrizes de energia. O seu dever é fazer o <strong>encaixe perfeito</strong> entre eles. Instalar uma usina na região com a geografia errada causará impactos severos e, após 3 erros, você será demitido!
+                        </p>
                     </div>
 
                     <Button onClick={() => setStatus('playing')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all">
-                        Iniciar Projeto Energético
+                        Iniciar Transição
                     </Button>
                 </motion.div>
             </div>
@@ -268,16 +254,15 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
     if (status === 'gameover') {
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative">
-                    {/* Botão do ENEM removido desta tela a pedido */}
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative z-10">
                     <AlertTriangle className="w-24 h-24 text-red-500 mx-auto mb-6 animate-pulse" />
                     <h1 className="text-4xl md:text-5xl font-black text-red-500 mb-4">Desastre Ambiental!</h1>
                     <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-                        A implantação energética foi feita sem planejamento geográfico. O Limite de Impacto de {IMPACT_LIMIT}% foi estourado.
+                        Você cometeu {maxErrors} erros de planeamento. A implantação de usinas incompatíveis com os biomas causou graves danos aos ecossistemas brasileiros.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button onClick={onReturnHome} variant="ghost" className="text-slate-400 hover:text-white py-6">Voltar ao Menu</Button>
-                        <Button onClick={() => { setImpact(0); setLockedBiomes([]); setStatus('playing'); }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6">Tentar Novamente</Button>
+                        <Button onClick={() => { setErrorCount(0); setSolvedBiomes([]); setScore(0); setStatus('playing'); }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6">Tentar Novamente</Button>
                     </div>
                 </motion.div>
             </div>
@@ -285,31 +270,33 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
     }
 
     if (status === 'victory') {
-        const finalScore = 150 - impact; 
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white p-4">
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
-                    {/* Botão do ENEM removido desta tela a pedido */}
                     <ShieldCheck className="w-24 h-24 text-green-400 mx-auto mb-6" />
                     <h1 className="text-4xl md:text-5xl font-black text-green-400 mb-4">Matriz Sustentável!</h1>
                     <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-                        Excelente! Você encontrou a fonte de energia viável para cada Bioma, conhecendo profundamente os impactos socioambientais.
+                        Excelente! Você encontrou a fonte de energia viável para cada Bioma e compreendeu perfeitamente as ressalvas cobradas nas provas do ENEM.
                     </p>
                     <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl mb-8">
-                        <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">Índice de Sustentabilidade</p>
-                        <p className="text-6xl font-black text-emerald-400 drop-shadow-md">+{finalScore} pts</p>
+                        <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">Pontuação Final</p>
+                        <p className="text-6xl font-black text-yellow-400 drop-shadow-md">+{score} pts</p>
                     </div>
-                    <Button onClick={() => { onSaveScore(finalScore); }} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">Concluir Missão</Button>
+                    <Button onClick={() => onSaveScore(score)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">
+                        Salvar Pontuação e Voltar
+                    </Button>
                 </motion.div>
             </div>
         );
     }
 
     // --- TELA PRINCIPAL (JOGO) --- //
+    const progressPercent = (solvedBiomes.length / 3) * 100;
+
     return (
         <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
             
-            {/* MODAL PARA A IMAGEM EM ECRÃ INTEIRO */}
+            {/* Modal de Zoom da Imagem */}
             <AnimatePresence>
                 {expandedImage && (
                     <motion.div 
@@ -323,7 +310,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         <motion.img 
                             initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}
                             src={expandedImage} 
-                            alt="Bioma em Detalhe" 
+                            alt="Bioma" 
                             className="max-w-full max-h-[90vh] rounded-[2rem] object-contain shadow-[0_0_50px_rgba(0,0,0,0.8)] border-2 border-slate-800" 
                             onClick={(e) => e.stopPropagation()} 
                         />
@@ -331,23 +318,21 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 )}
             </AnimatePresence>
 
-            {/* ALERTA DE JOGADA (Pegadinhas do ENEM) */}
+            {/* Modal de Sucesso ou Erro Específico */}
             <AnimatePresence>
                 {alertMessage && (
                     <motion.div 
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                        className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
                     >
                         <motion.div 
                             initial={{ scale: 0.5, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}
                             className={`max-w-xl w-full p-8 rounded-3xl border-2 shadow-2xl text-center ${
-                                alertMessage.type === 'critical' ? 'bg-red-950 border-red-500 shadow-[0_0_80px_rgba(239,68,68,0.4)]' 
-                                : alertMessage.type === 'warning' ? 'bg-amber-950 border-amber-500 shadow-[0_0_80px_rgba(245,158,11,0.4)]'
+                                alertMessage.type === 'error' ? 'bg-red-950 border-red-500 shadow-[0_0_80px_rgba(239,68,68,0.4)]' 
                                 : 'bg-emerald-950 border-emerald-500 shadow-[0_0_80px_rgba(16,185,129,0.4)]'
                             }`}
                         >
-                            {alertMessage.type === 'critical' ? <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-red-400" />
-                            : alertMessage.type === 'warning' ? <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-amber-400" />
+                            {alertMessage.type === 'error' ? <AlertCircle className="w-20 h-20 mx-auto mb-6 text-red-400" />
                             : <CheckCircle2 className="w-20 h-20 mx-auto mb-6 text-emerald-400" />}
                             
                             <h2 className="text-2xl font-black mb-4 text-white uppercase tracking-tight">{alertMessage.title}</h2>
@@ -363,69 +348,91 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 )}
             </AnimatePresence>
 
-            {/* BOTÃO DO ENEM ACIMA DO HEADER NO JOGO */}
-            <div className="w-full flex justify-end px-4 md:px-6 pt-4 relative z-20">
-                <EnemHelpPanel />
-            </div>
+            {/* CABEÇALHO GLOBAL RESPONSIVO */}
+            <header className="w-full p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/95 backdrop-blur-md relative z-20 flex flex-col md:flex-row justify-between items-center shadow-xl md:shadow-2xl gap-3 md:gap-4 sticky top-0">
+                {/* Esquerda: Voltar + Título */}
+                <div className="flex items-center justify-between md:justify-start w-full md:w-auto relative">
+                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full absolute left-0 md:static md:mr-4 shrink-0">
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                    </Button>
+                    <div className="flex items-center gap-2 md:gap-3 mx-auto md:mx-0">
+                        <div className="bg-emerald-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg shadow-emerald-900/20">
+                            <Zap className="text-white w-4 h-4 md:w-5 md:h-5" />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Matriz Energética</span>
+                        </div>
+                    </div>
+                </div>
 
-            <header className="w-full p-4 md:p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md relative z-10 mt-2">
-                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-slate-800 rounded-full"><ArrowLeft /></Button>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-emerald-600 p-2 rounded-xl"><Zap className="text-white w-5 h-5" /></div>
-                            <span className="font-black text-lg tracking-tight hidden sm:block">Matriz Energética</span>
+                {/* Direita: Erros + Meta + Score + Botão de Ajuda */}
+                <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2 md:gap-4">
+                    
+                    <GameHelpPanel />
+
+                    <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border transition-colors ${errorCount > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/10'}`}>
+                        <AlertTriangle className={`w-4 h-4 ${errorCount > 0 ? 'text-red-400' : 'text-slate-400'}`} />
+                        <span className={`font-bold text-[10px] md:text-sm ${errorCount > 0 ? 'text-red-400' : 'text-slate-300'}`}>Erros: {errorCount}/{maxErrors}</span>
+                    </div>
+
+                    <div className="hidden md:flex flex-col w-32 md:w-40 space-y-1 ml-2">
+                        <div className="flex justify-between text-[10px] md:text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                            <span>Meta Limpa</span>
+                            <span>{Math.round(progressPercent)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2.5 md:h-3 overflow-hidden border border-slate-700">
+                            <motion.div 
+                                className="bg-gradient-to-r from-emerald-600 to-green-400 h-full" 
+                                animate={{ width: `${progressPercent}%` }} 
+                                transition={{ type: 'spring', bounce: 0.3 }} 
+                            />
                         </div>
                     </div>
 
-                    <div className="flex-1 w-full flex flex-col sm:flex-row items-center gap-6 sm:px-8">
-                        <div className="w-full space-y-1">
-                            <div className="flex justify-between text-sm font-bold text-emerald-400">
-                                <span>Biomas Abastecidos</span>
-                                <span>{lockedBiomes.length} / 3</span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
-                                <motion.div className="bg-gradient-to-r from-emerald-600 to-green-400 h-full" animate={{ width: `${(lockedBiomes.length / 3) * 100}%` }} transition={{ type: 'spring' }} />
-                            </div>
-                        </div>
-                        <div className="w-full space-y-1">
-                            <div className="flex justify-between text-sm font-bold text-red-400">
-                                <span>Impacto Ambiental Acumulado</span>
-                                <span>{impact}% / {IMPACT_LIMIT}%</span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
-                                <motion.div className="bg-gradient-to-r from-red-600 to-orange-400 h-full" animate={{ width: `${(impact / IMPACT_LIMIT) * 100}%` }} transition={{ type: 'spring' }} />
-                            </div>
-                        </div>
+                    <div className="w-px h-6 bg-white/10 hidden md:block mx-2" />
+                    
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20 whitespace-nowrap">
+                        <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Score:</span>
+                        <span className="font-black text-sm md:text-lg text-yellow-400">{score} PTS</span>
                     </div>
                 </div>
             </header>
 
-            <main className="flex-grow flex flex-col max-w-6xl mx-auto w-full p-4 md:p-8 gap-8 relative z-10">
+            <main className="flex-grow flex flex-col max-w-6xl mx-auto w-full p-4 md:p-8 gap-6 md:gap-8 relative z-10">
                 
-                <div className="text-center bg-slate-900 border border-slate-800 py-4 rounded-2xl shadow-lg">
-                    {selectedPlant ? (
-                        <p className="text-emerald-400 font-bold animate-pulse text-lg flex items-center justify-center gap-2">
-                            <MapIcon /> Clique no Bioma ideal para instalar a Usina {PLANTS[selectedPlant].name}...
-                        </p>
-                    ) : (
-                        <p className="text-slate-400 font-medium text-lg flex items-center justify-center gap-2">
-                            1. Selecione uma Usina no painel inferior.
-                        </p>
-                    )}
+                {/* PERGUNTA MAIS LÓGICA E EXPLÍCITA AQUI */}
+                <div className="bg-slate-900/80 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
+                    <h2 className="text-xl md:text-2xl font-black text-emerald-400 mb-2">Desafio Geográfico</h2>
+                    <p className="text-sm md:text-base text-slate-300 font-medium mb-4">
+                        Considerando o clima e o relevo, qual matriz energética apresenta o melhor custo-benefício socioambiental para cada bioma?
+                    </p>
+                    
+                    <div className="inline-flex items-center justify-center bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 w-full sm:w-auto">
+                        {selectedPlant ? (
+                            <span className="text-amber-400 font-bold animate-pulse text-sm md:text-base flex items-center gap-2">
+                                <MapIcon size={18}/> Clique no bioma ideal para instalar a Usina {PLANTS[selectedPlant].name}...
+                            </span>
+                        ) : (
+                            <span className="text-slate-400 font-medium text-sm md:text-base flex items-center gap-2">
+                                <BatteryCharging size={18}/> Passo 1: Selecione uma Energia no painel inferior.
+                            </span>
+                        )}
+                    </div>
                 </div>
 
+                {/* BIOMAS (CENTRO) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow">
                     {BIOMES.map((biome) => {
-                        const lockedState = lockedBiomes.find(b => b.id === biome.id);
-                        const isLocked = !!lockedState;
+                        const isSolved = solvedBiomes.includes(biome.id);
                         
                         return (
-                            <div 
+                            <motion.div 
                                 key={biome.id}
+                                animate={shakeBiome === biome.id ? { x: [-10, 10, -10, 10, 0] } : {}}
+                                transition={{ duration: 0.4 }}
                                 onClick={() => handleInstall(biome.id)}
-                                className={`relative rounded-3xl overflow-hidden border-4 transition-all duration-300 flex flex-col justify-between p-6 min-h-[320px] shadow-xl group ${
-                                    isLocked ? 'border-emerald-500 scale-[0.98]' 
+                                className={`relative rounded-3xl overflow-hidden border-4 transition-all duration-300 flex flex-col justify-between p-6 min-h-[300px] shadow-xl group ${
+                                    isSolved ? 'border-emerald-500 scale-[0.98]' 
                                     : selectedPlant ? 'border-amber-400 cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(251,191,36,0.3)]' 
                                     : 'border-slate-800' 
                                 }`}
@@ -435,9 +442,8 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                                     backgroundPosition: 'center'
                                 }}
                             >
-                                <div className={`absolute inset-0 transition-colors duration-500 ${isLocked ? 'bg-emerald-950/80 backdrop-blur-[2px]' : selectedPlant ? 'bg-black/40' : 'bg-black/60'}`} />
+                                <div className={`absolute inset-0 transition-colors duration-500 ${isSolved ? 'bg-emerald-950/80 backdrop-blur-[2px]' : 'bg-black/60 group-hover:bg-black/40'}`} />
 
-                                {/* BOTÃO DE LUPA PARA EXPANDIR A IMAGEM */}
                                 <button 
                                     onClick={(e) => { 
                                         e.stopPropagation(); 
@@ -451,37 +457,39 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                                 <div className="relative z-10 flex justify-between items-start mt-2">
                                     <div>
                                         <h2 className="text-3xl font-black text-white drop-shadow-md tracking-tight mb-1">{biome.name}</h2>
-                                        {!isLocked && <p className="text-sm text-slate-200 font-medium drop-shadow-sm leading-relaxed max-w-[85%]">{biome.description}</p>}
+                                        {!isSolved && <p className="text-sm text-slate-200 font-medium drop-shadow-sm leading-relaxed max-w-[85%]">{biome.description}</p>}
                                     </div>
                                 </div>
 
-                                {isLocked && (
+                                {isSolved && (
                                     <div className="absolute top-4 right-16 bg-emerald-500 p-2 rounded-full text-slate-900 shadow-lg z-20">
                                         <CheckCircle2 size={24} />
                                     </div>
                                 )}
 
-                                {isLocked && lockedState && (
-                                    <div className="relative z-10 flex flex-col items-center justify-center mt-auto bg-slate-950/80 p-4 rounded-2xl border border-emerald-500/50">
-                                        <span className="text-emerald-400 mb-2">{PLANTS[lockedState.plant].icon}</span>
+                                {isSolved && (
+                                    <div className="relative z-10 flex flex-col items-center justify-center mt-auto bg-slate-950/80 p-4 rounded-2xl border border-emerald-500/50 shadow-inner">
+                                        <span className="text-emerald-400 mb-2 scale-125">{PLANTS[biome.correctPlant].icon}</span>
                                         <span className="text-sm font-black text-emerald-400 uppercase tracking-widest text-center">
-                                            {PLANTS[lockedState.plant].name} Instalada
+                                            {PLANTS[biome.correctPlant].name} Instalada
                                         </span>
-                                        <span className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest"><Lock size={10} className="inline mr-1"/> Bioma Seguro</span>
+                                        <span className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest flex items-center justify-center"><Lock size={12} className="mr-1"/> Resolvido</span>
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         );
                     })}
                 </div>
 
-                <div className="mt-auto bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
-                    <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4 text-center">Fontes de Energia Disponíveis</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* CARTAS DE ENERGIA (RODAPÉ) */}
+                <div className="mt-auto bg-slate-900/80 p-5 md:p-6 rounded-3xl border border-slate-800 shadow-md">
+                    <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs md:text-sm mb-4 text-center">Cartas de Energia (Selecione 1)</h3>
+                    <div className="grid grid-cols-3 gap-3 md:gap-4">
                         {(Object.keys(PLANTS) as PlantType[]).map((key) => {
                             const plant = PLANTS[key];
                             const isSelected = selectedPlant === key;
-                            const isAlreadyUsed = lockedBiomes.some(b => b.plant === key);
+                            // Se algum bioma cuja energia correta é esta já foi resolvido, desabilita a carta.
+                            const isAlreadyUsed = solvedBiomes.some(b => BIOMES.find(bio => bio.id === b)?.correctPlant === key);
 
                             return (
                                 <motion.div
@@ -491,16 +499,16 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                                     onClick={() => {
                                         if (!isAlreadyUsed) setSelectedPlant(isSelected ? null : key);
                                     }}
-                                    className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all shadow-lg ${
-                                        isAlreadyUsed ? 'bg-slate-950 border-slate-800 opacity-30 cursor-not-allowed' 
+                                    className={`flex flex-col items-center justify-center p-4 md:p-6 rounded-2xl border-2 transition-all shadow-lg ${
+                                        isAlreadyUsed ? 'bg-slate-950 border-slate-800 opacity-40 cursor-not-allowed grayscale' 
                                         : isSelected ? 'bg-emerald-950/40 border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer' 
                                         : 'bg-slate-900 border-slate-700 hover:border-slate-500 cursor-pointer'
                                     }`}
                                 >
-                                    <div className={`${isAlreadyUsed ? 'text-slate-600' : plant.color.split(' ')[0]} mb-3`}>
+                                    <div className={`${isAlreadyUsed ? 'text-slate-500' : plant.color.split(' ')[0]} mb-2 md:mb-3`}>
                                         {plant.icon}
                                     </div>
-                                    <span className={`font-black uppercase tracking-widest text-sm text-center ${isSelected ? 'text-emerald-400' : isAlreadyUsed ? 'text-slate-600' : 'text-slate-300'}`}>
+                                    <span className={`font-black uppercase tracking-widest text-[10px] md:text-sm text-center ${isSelected ? 'text-emerald-400' : isAlreadyUsed ? 'text-slate-500' : 'text-slate-300'}`}>
                                         {plant.name}
                                     </span>
                                 </motion.div>

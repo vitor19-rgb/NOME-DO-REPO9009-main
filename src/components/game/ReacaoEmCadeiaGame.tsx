@@ -9,7 +9,7 @@ import {
   Trees, Flame, Factory, Sun, 
   Tractor, ArrowDownToLine, HeartCrack, Wind, 
   Leaf, CloudRain, Mountain, ShieldAlert,
-  ArrowRight, RefreshCw, CheckCircle2, ShieldBan, HelpCircle, ZoomIn, X, BookOpen, AlertCircle
+  ArrowRight, ArrowLeft, RefreshCw, CheckCircle2, ShieldBan, HelpCircle, ZoomIn, X, BookOpen, AlertCircle, Info, AlertTriangle
 } from 'lucide-react';
 
 // --- UTILITÁRIOS --- //
@@ -29,7 +29,7 @@ interface PhaseData {
     id: string;
     name: string;
     theme: string;
-    question: string; // Nova propriedade para a pergunta da tela
+    question: string;
     satelliteImg: string;
     soilImg: string;
     expectedOrder: EventCard[];
@@ -122,11 +122,68 @@ const PHASES: PhaseData[] = [
     }
 ];
 
+// --- PAINEL DE AJUDA UNIFICADO (COMO JOGAR + ENEM) --- //
+const GameHelpPanel = () => (
+    <Sheet>
+        <SheetTrigger asChild>
+            <Button variant="ghost" className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-full w-9 h-9 md:w-10 md:h-10 p-0 flex items-center justify-center shadow-md transition-colors shrink-0">
+                <HelpCircle className="w-5 h-5" />
+            </Button>
+        </SheetTrigger>
+        <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
+             <div className="p-8 h-full overflow-y-auto">
+                <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
+                    <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
+                        <Info className="text-blue-400 w-8 h-8"/>
+                    </div>
+                    <h2 className="text-3xl font-black text-white">Guia da Missão</h2>
+                </div>
+                
+                <div className="space-y-8 text-left pb-8">
+                    {/* COMO JOGAR */}
+                    <div>
+                        <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
+                        <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
+                            <li><strong>Leia a Pergunta:</strong> Identifique o processo de degradação ambiental exigido.</li>
+                            <li><strong>Analise o Sistema:</strong> O ecossistema é conectado. Qual evento causa o próximo?</li>
+                            <li><strong>Ordene as Cartas:</strong> Clique nas cartas na base da tela na exata <strong>ordem cronológica</strong> em que os desastres acontecem.</li>
+                            <li><strong>Cuidado:</strong> Um erro na ordem causará falha na simulação!</li>
+                        </ul>
+                    </div>
+
+                    <hr className="border-slate-800" />
+
+                    {/* REVISÃO ENEM */}
+                    <div>
+                        <h3 className="font-black text-xl text-orange-400 mb-3 tracking-tight flex items-center gap-2">
+                            <BookOpen className="w-5 h-5" /> Para que serve no ENEM?
+                        </h3>
+                        <p className="text-slate-300 leading-relaxed text-[15px]">
+                            O ENEM quase nunca cobra definições isoladas de biomas. A banca exige que você compreenda <strong>processos sistêmicos</strong> (Relação de Causa e Efeito).
+                        </p>
+                    </div>
+                    <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 mt-6">
+                        <h3 className="font-black text-lg text-white mb-3 flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-yellow-500" /> Foco da Prova
+                        </h3>
+                        <ul className="space-y-4 text-[14px] text-slate-300">
+                            <li><strong className="text-white">Laterização:</strong> Processo em que a chuva lava os nutrientes do solo após o desmatamento no Cerrado, deixando uma "crosta de ferro".</li>
+                            <li><strong className="text-white">Desertificação:</strong> Como o pisoteio do gado (pecuária) compacta o solo frágil da Caatinga, impedindo a água de entrar.</li>
+                            <li><strong className="text-white">Mudanças Climáticas:</strong> A quebra do ciclo de umidade ("Rios Voadores") na Amazônia gera seca para o resto do país.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </SheetContent>
+    </Sheet>
+);
+
 interface ReacaoEmCadeiaGameProps {
     onFinishGame: (bonusScore: number) => void;
+    onReturnHome: () => void; // <--- NOVA PROPRIEDADE ADICIONADA AQUI
 }
 
-export default function ReacaoEmCadeiaGame({ onFinishGame }: ReacaoEmCadeiaGameProps) {
+export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: ReacaoEmCadeiaGameProps) {
     const [phaseIndex, setPhaseIndex] = useState(0);
     const [placedCards, setPlacedCards] = useState<EventCard[]>([]);
     const [availableCards, setAvailableCards] = useState<EventCard[]>([]);
@@ -184,8 +241,21 @@ export default function ReacaoEmCadeiaGame({ onFinishGame }: ReacaoEmCadeiaGameP
 
     if (gameState === 'intro') {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-4xl mx-auto mt-10">
-                <ShieldBan className="w-20 h-20 text-orange-500 mb-6" />
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-4xl mx-auto mt-10 relative">
+                
+                {/* BOTÃO DE VOLTAR NO CANTO SUPERIOR ESQUERDO NA INTRO */}
+                <div className="absolute top-6 left-6">
+                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full shrink-0">
+                        <ArrowLeft className="w-5 h-5" />
+                    </Button>
+                </div>
+
+                {/* BOTÃO DE AJUDA NO CANTO SUPERIOR DIREITO NA INTRO */}
+                <div className="absolute top-6 right-6">
+                    <GameHelpPanel />
+                </div>
+
+                <ShieldBan className="w-20 h-20 text-orange-500 mb-6 mt-4" />
                 <h2 className="text-4xl font-black text-white mb-2">Desafio Final: Efeito Dominó</h2>
                 <h3 className="text-2xl text-orange-400 mb-6">{currentPhase.name} - {currentPhase.theme}</h3>
                 <p className="text-slate-300 text-lg max-w-2xl mb-10 leading-relaxed">
@@ -230,35 +300,28 @@ export default function ReacaoEmCadeiaGame({ onFinishGame }: ReacaoEmCadeiaGameP
     );
 
     return (
-        <div className="w-full max-w-5xl mx-auto mt-6 px-4 flex flex-col gap-6 relative">
+        <div className="w-full max-w-5xl mx-auto mt-6 px-4 flex flex-col gap-6 relative pb-10">
             
-            {/* CABEÇALHO */}
-            <div className="flex justify-between items-center bg-slate-900/60 border border-white/10 p-4 rounded-2xl backdrop-blur-md">
-                <div className="flex flex-col">
-                    <h3 className="text-sm text-slate-400 uppercase tracking-widest font-bold">Bioma: {currentPhase.name}</h3>
-                    <h2 className="text-xl font-black text-orange-400">{currentPhase.theme}</h2>
+            {/* CABEÇALHO DO JOGO (AGORA COM BOTÃO DE VOLTAR) */}
+            <div className="flex justify-between items-center bg-slate-900/60 border border-white/10 p-4 rounded-2xl backdrop-blur-md shadow-md">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full shrink-0">
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                    </Button>
+                    <div className="flex flex-col">
+                        <h3 className="text-[10px] md:text-sm text-slate-400 uppercase tracking-widest font-bold">Bioma: {currentPhase.name}</h3>
+                        <h2 className="text-lg md:text-xl font-black text-orange-400">{currentPhase.theme}</h2>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
-                     <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" className="text-slate-400 hover:text-white rounded-full">
-                                <HelpCircle size={24} />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent className="bg-slate-900 text-white">
-                             <div className="p-4">
-                                <h2 className="text-2xl font-bold mb-4">Dica ENEM</h2>
-                                <p className="text-slate-300">Entender processos de degradação como a <strong>Laterização</strong> ou <strong>Desertificação</strong> é essencial para questões de impactos ambientais e uso do solo.</p>
-                             </div>
-                        </SheetContent>
-                     </Sheet>
+                     <GameHelpPanel /> 
                 </div>
             </div>
 
-            {/* PAINEL DE PERGUNTA - NOVO */}
-            <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl flex items-center gap-3">
-                <AlertCircle className="text-blue-400 shrink-0" />
-                <p className="text-blue-100 font-medium md:text-lg">{currentPhase.question}</p>
+            {/* PAINEL DE PERGUNTA */}
+            <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl flex items-center gap-3 shadow-sm">
+                <AlertCircle className="text-blue-400 shrink-0 w-6 h-6 md:w-8 md:h-8" />
+                <p className="text-blue-100 font-medium text-sm md:text-lg leading-snug">{currentPhase.question}</p>
             </div>
 
             {/* SIMULADOR VISUAL */}
