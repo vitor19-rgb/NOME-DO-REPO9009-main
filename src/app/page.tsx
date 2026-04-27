@@ -5,9 +5,9 @@ import MainHub from '@/components/game/MainHub';
 import MeioAmbienteGame from '@/components/game/MeioAmbienteGame';
 import MacrocefaliaUrbanaGame from '@/components/game/macrocefalia-urbana';
 import TransacaoEnergeticaGame from '@/components/game/transacao-energetica';
-import DetetiveIbgeGame from '@/components/game/DetetiveIbgeGame'; // <-- IMPORTAÇÃO DO NOVO JOGO
+import DetetiveIbgeGame from '@/components/game/DetetiveIbgeGame';
 import { Button } from '@/components/ui/button';
-import { Trophy, ArrowRight, Home, Globe } from 'lucide-react';
+import { Trophy, Home, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // --- LÓGICA GLOBAL DE RANKING --- //
@@ -37,8 +37,9 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
-  // ESTADO PARA SOMA CUMULATIVA E NOME DA TRILHA
+  // ESTADOS PARA PONTUAÇÃO E RESULTADO
   const [accumulatedScore, setAccumulatedScore] = useState(0);
+  const [maxTrackScore, setMaxTrackScore] = useState(0); // <- NOVO: Guarda o limite máximo de pontos
   const [finalTrackName, setFinalTrackName] = useState("");
   
   const isAdvancingRef = useRef(false);
@@ -58,6 +59,7 @@ export default function App() {
 
   // ========================================================= //
   // TRILHA 1: MEIO AMBIENTE (Biomas + Cadeia -> Energia)
+  // Máximo Possível: Biomas (825) + Efeito Dominó (200) + Energia (150) = 1175 pts
   // ========================================================= //
   if (currentScreen === 'meio_ambiente') {
       return (
@@ -82,7 +84,8 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma o jogo de Energia
-                setFinalTrackName('Trilha Meio Ambiente'); // Define o nome para a tela final
+                setMaxTrackScore(1175); // <- Define o máximo da Trilha 1
+                setFinalTrackName('Trilha Meio Ambiente');
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -92,6 +95,7 @@ export default function App() {
 
   // ========================================================= //
   // TRILHA 2: URBANIZAÇÃO (Macrocefalia -> Detetive IBGE)
+  // Máximo Possível: Macrocefalia (~600) + Detetive (450) = 1050 pts
   // ========================================================= //
   if (currentScreen === 'urbanizacao') {
       return (
@@ -116,7 +120,8 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma o jogo do IBGE
-                setFinalTrackName('Trilha Urbanização'); // Define o nome para a tela final
+                setMaxTrackScore(1050); // <- Define o máximo da Trilha 2
+                setFinalTrackName('Trilha Urbanização');
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -128,16 +133,45 @@ export default function App() {
   // TELA GLOBAL: RESULTADO FINAL DA TRILHA
   // ========================================================= //
   if (currentScreen === 'resultado_final') {
+      const percentage = Math.min((accumulatedScore / maxTrackScore) * 100, 100);
+      let feedbackMessage = "";
+      let feedbackColor = "";
+
+      if (percentage >= 90) { feedbackMessage = "Desempenho Extraordinário!"; feedbackColor = "text-emerald-400"; }
+      else if (percentage >= 70) { feedbackMessage = "Ótimo Trabalho!"; feedbackColor = "text-blue-400"; }
+      else if (percentage >= 50) { feedbackMessage = "Bom, mas pode melhorar!"; feedbackColor = "text-yellow-400"; }
+      else { feedbackMessage = "Continue Estudando!"; feedbackColor = "text-red-400"; }
+
       return (
-          <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-emerald-500/50 rounded-[2.5rem] p-10 text-center shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+          <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
+              
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-emerald-500/50 rounded-[2.5rem] p-8 md:p-12 text-center shadow-[0_0_50px_rgba(16,185,129,0.2)] relative z-10">
                   <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-6" />
-                  <h1 className="text-4xl font-black mb-2">Expedição Concluída!</h1>
-                  <p className="text-slate-400 text-lg mb-8">Agente {playerName}, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
+                  <h1 className="text-4xl md:text-5xl font-black mb-2 text-white">Expedição Concluída!</h1>
+                  <p className="text-slate-400 text-lg mb-8">Agente <strong>{playerName}</strong>, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
                   
-                  <div className="bg-slate-950/50 rounded-3xl p-8 border border-slate-800 mb-10">
-                      <p className="text-sm uppercase tracking-widest text-emerald-400 font-bold mb-2">Soma Total de Pontos</p>
-                      <p className="text-7xl font-black text-white">{accumulatedScore} pts</p>
+                  <div className="bg-slate-950/80 rounded-3xl p-8 border border-slate-800 mb-10 shadow-inner">
+                      <div className="flex items-center justify-center gap-2 mb-4">
+                          <Target className={`w-5 h-5 ${feedbackColor}`} />
+                          <p className={`text-sm uppercase tracking-widest font-bold ${feedbackColor}`}>{feedbackMessage}</p>
+                      </div>
+                      
+                      <div className="flex items-baseline justify-center gap-3 mb-6">
+                          <p className="text-6xl md:text-7xl font-black text-white">{accumulatedScore}</p>
+                          <p className="text-2xl md:text-3xl font-bold text-slate-500">/ {maxTrackScore} pts</p>
+                      </div>
+
+                      {/* BARRA DE PROGRESSO VISUAL */}
+                      <div className="w-full bg-slate-800 rounded-full h-4 md:h-5 overflow-hidden border border-slate-700 relative">
+                          <motion.div 
+                              initial={{ width: 0 }} 
+                              animate={{ width: `${percentage}%` }} 
+                              transition={{ duration: 1.5, ease: "easeOut" }}
+                              className="bg-gradient-to-r from-emerald-600 to-green-400 h-full relative" 
+                          />
+                      </div>
+                      <p className="text-right text-slate-400 text-sm mt-3 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
                   </div>
 
                   <Button 
@@ -145,9 +179,9 @@ export default function App() {
                         saveScore(playerName, accumulatedScore, finalTrackName);
                         setCurrentScreen('hub');
                     }}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg transition-all"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105 active:scale-95"
                   >
-                      Salvar no Ranking e Sair <Home className="ml-2" />
+                      Salvar no Ranking e Sair <Home className="ml-3" />
                   </Button>
               </motion.div>
           </div>
