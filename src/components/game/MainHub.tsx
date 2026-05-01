@@ -232,7 +232,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     <h2 className="text-3xl font-bold text-center text-white mb-12">Modos de Jogo</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <GameModeCard icon={<Globe size={40}/>} title="Meio Ambiente e Impactos" description="Biomas, Impactos Ambientais/Urbanos, Desenvolvimento Sustentável." onClick={() => handleModeSelection('meio_ambiente', true)} enabled={true} />
-                        <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Metropolização, Migrações Pendulares, Hierarquia Urbana, Segregação." onClick={() => handleModeSelection('urbanizacao', true)} enabled={true} />
+                        <GameModeCard icon={<Building size={40}/>} title="Urbanização" description="Metropolização, Migrações Pendulares, Hierarquia Urbana." onClick={() => handleModeSelection('urbanizacao', true)} enabled={true} />
                         <GameModeCard icon={<BookOpen size={40}/>} title="Geografia Agrária" description="Estrutura Fundiária, Agronegócio, Agricultura Familiar, Revolução Verde." onClick={() => handleModeSelection('agraria', false)} enabled={false} />
                         <GameModeCard icon={<Cloud size={40}/>} title="Fenômenos Naturais" description="Explore os tipos climáticos e fenômenos naturais." onClick={() => handleModeSelection('fenomenos', false)} enabled={false} />
                     </div>
