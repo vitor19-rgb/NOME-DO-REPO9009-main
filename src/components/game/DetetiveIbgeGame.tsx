@@ -179,6 +179,7 @@ const EnemHelpPanel = () => (
                     <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
                         <BookOpen className="text-blue-400 w-8 h-8"/>
                     </div>
+                    
                     <h2 className="text-3xl font-black text-white">Revisão ENEM</h2>
                 </div>
                 <div className="space-y-8 text-left">
@@ -293,10 +294,6 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
-
-                    <div className="absolute top-6 right-6">
-                        <EnemHelpPanel />
-                    </div>
 
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-blue-600/20 p-5 rounded-3xl border border-blue-500/30">
@@ -451,6 +448,8 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
                         <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Score:</span>
                         <span className="font-black text-sm md:text-lg text-yellow-400">{score} PTS</span>
                     </div>
+                    {/* BOTÃO ADICIONADO AO LADO DO SCORE! */}
+                    <EnemHelpPanel />
                 </div>
             </header>
 
