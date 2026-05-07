@@ -200,7 +200,7 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
             <SheetTrigger asChild>
                 <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm transition-colors">
                     <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> 
-                    <span className="hidden sm:inline">Ajuda e ENEM</span>
+                    <span className="hidden sm:inline">O que cai no ENEM?</span>
                     <span className="sm:hidden">ENEM</span>
                 </Button>
             </SheetTrigger>
