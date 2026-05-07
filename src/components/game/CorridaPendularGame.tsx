@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
     Bus, Home, Building, CheckCircle2, XCircle, 
     BookOpen, MapPin, ArrowRight, Info,
-    User, HelpCircle, ArrowLeft, AlertTriangle, RefreshCw
+    User, HelpCircle, ArrowLeft, AlertTriangle, RefreshCw, LogOut, MousePointerClick
 } from 'lucide-react';
 
 interface CorridaPendularGameProps {
@@ -16,28 +16,28 @@ interface CorridaPendularGameProps {
     onSaveScore?: (score: number) => void;
 }
 
-// --- BANCO DE QUESTÕES (FOCO ENEM) ---
+// --- BANCO DE QUESTÕES (SIMPLIFICADO E FÁCIL DE ENTENDER) ---
 const QUIZ_QUESTIONS = [
     {
         id: 1,
         context: "Saindo de Casa (05:30 AM)",
-        question: "Baseado no conceito geográfico, como podemos definir a 'Migração Pendular' nas grandes metrópoles?",
+        question: "O que significa o termo 'Migração Pendular' nas grandes cidades?",
         options: [
             { 
-                text: "A mudança definitiva de uma família do campo para a cidade em busca de emprego.", 
-                feedback: "Incorreto. A mudança definitiva de domicílio (especialmente do campo para a cidade) é chamada de Êxodo Rural. A migração pendular não é definitiva, é um movimento de 'ir e vir' diário." 
+                text: "Mudar de vez do campo para a cidade grande para procurar trabalho.", 
+                feedback: "Incorreto. Mudar de vez é o chamado 'Êxodo Rural'. A migração pendular não é uma mudança definitiva." 
             },
             { 
-                text: "O deslocamento diário (vai e volta) de trabalhadores entre a cidade onde moram e a cidade onde trabalham.", 
-                feedback: "Exatamente! A Migração Pendular é o movimento diário semelhante a um pêndulo (vai e volta) que milhões de pessoas fazem todos os dias para trabalhar ou estudar na metrópole." 
+                text: "A viagem de ir e voltar todos os dias entre a cidade onde a pessoa mora e a cidade onde trabalha.", 
+                feedback: "Exatamente! É o movimento diário, igual ao pêndulo de um relógio, que milhões de pessoas fazem para trabalhar ou estudar." 
             },
             { 
-                text: "A viagem sazonal de trabalhadores agrícolas durante a época de colheita.", 
-                feedback: "Incorreto. Essa viagem ligada às colheitas (como a dos 'bóias-frias') é chamada de Transumância ou Migração Sazonal, e não acontece diariamente nas cidades." 
+                text: "A viagem que os trabalhadores rurais fazem apenas na época de colheita.", 
+                feedback: "Incorreto. Essa viagem das colheitas acontece de tempos em tempos e não é uma rotina diária das cidades." 
             },
             { 
-                text: "O retorno de aposentados para suas cidades natais no interior.", 
-                feedback: "Incorreto. O retorno definitivo à cidade natal é conhecido como Migração de Retorno, um fenômeno demográfico diferente da rotina diária pendular." 
+                text: "A volta dos idosos e aposentados para as suas cidades natais no interior.", 
+                feedback: "Incorreto. O retorno definitivo ao local de origem tem outro nome: Migração de Retorno." 
             }
         ],
         correctIndex: 1
@@ -45,23 +45,23 @@ const QUIZ_QUESTIONS = [
     {
         id: 2,
         context: "Preso no Trânsito (07:00 AM)",
-        question: "Muitos trabalhadores demoram horas no trânsito. Qual fator urbano empurra a população para morar tão longe do centro?",
+        question: "Por que muitos trabalhadores são obrigados a morar tão longe do centro, passando horas no trânsito?",
         options: [
             { 
-                text: "A Especulação Imobiliária, que encarece o custo de vida nas áreas centrais.", 
-                feedback: "Correto! A Especulação Imobiliária torna o solo urbano nas áreas centrais muito caro. Isso causa a 'Segregação Socioespacial', empurrando a população de menor renda para as periferias." 
+                text: "Porque o custo de vida e os imóveis no centro são muito caros (Especulação Imobiliária).", 
+                feedback: "Correto! Como morar no centro custa muito dinheiro, a população mais pobre é empurrada para as periferias (bairros mais distantes)." 
             },
             { 
-                text: "A falta total de terrenos vazios no Brasil.", 
-                feedback: "Incorreto. Existem muitos terrenos vazios (lotes ociosos) nas áreas centrais, mas eles são mantidos sem uso justamente por Especulação Imobiliária, esperando valorizar para dar lucro." 
+                text: "Porque não existem mais terrenos vazios nas partes centrais das cidades.", 
+                feedback: "Incorreto. Existem muitos terrenos vazios no centro, mas os donos os deixam parados esperando o preço subir para vender mais caro." 
             },
             { 
-                text: "A preferência cultural do brasileiro por morar em áreas mais afastadas e com engarrafamentos.", 
-                feedback: "Incorreto. A ida para a periferia distante não é uma 'preferência' por calmaria, mas sim uma dura imposição econômica impulsionada pelo alto custo de vida no centro metropolitano." 
+                text: "Porque o trabalhador prefere a tranquilidade da periferia, mesmo com o trânsito.", 
+                feedback: "Incorreto. Morar longe não é uma escolha por gosto, mas sim uma necessidade imposta pela falta de dinheiro para pagar aluguéis caros." 
             },
             { 
-                text: "A proibição legal de construir prédios residenciais nos centros urbanos.", 
-                feedback: "Incorreto. Não há proibição legal; pelo contrário, o centro é a área mais verticalizada (com mais prédios). O grande obstáculo é o preço cobrado para morar lá." 
+                text: "Porque a lei proíbe a construção de casas e apartamentos no centro das cidades.", 
+                feedback: "Incorreto. A lei não proíbe. Na verdade, o centro é o lugar com mais prédios construídos." 
             }
         ],
         correctIndex: 0
@@ -69,47 +69,71 @@ const QUIZ_QUESTIONS = [
     {
         id: 3,
         context: "Chegando ao Centro (08:30 AM)",
-        question: "Por que a maioria dos empregos e bons hospitais se concentra no Centro, obrigando esse deslocamento em massa?",
+        question: "Por que a maioria dos empregos, faculdades e bons hospitais ficam no centro da cidade?",
         options: [
             { 
-                text: "Devido à Reforma Agrária que distribuiu terras igualitariamente.", 
-                feedback: "Incorreto. A Reforma Agrária trata da distribuição de terras no espaço rural. Além disso, a estrutura fundiária brasileira é historicamente muito concentrada, e não igualitária." 
+                text: "Por causa da Reforma Agrária.", 
+                feedback: "Incorreto. A Reforma Agrária fala sobre a divisão de terras no campo, e não sobre os serviços nas cidades." 
             },
             { 
-                text: "Por causa da Desconcentração Industrial iniciada nos anos 90.", 
-                feedback: "Incorreto. A 'Desconcentração Industrial' é a fuga de fábricas das metrópoles para o interior. Isso na verdade ajuda a espalhar empregos, contrariando a concentração no centro." 
+                text: "Porque as indústrias estão fugindo das cidades grandes.", 
+                feedback: "Incorreto. A fuga de fábricas (desconcentração) acontece, mas não explica por que o centro atrai tantas pessoas todos os dias." 
             },
             { 
-                text: "Devido à Macrocefalia Urbana, que concentra investimentos, infraestrutura e trabalho num único núcleo.", 
-                feedback: "Resposta Exata! A Macrocefalia Urbana é o inchaço de um único ponto da metrópole. Isso gera um desequilíbrio: a periferia vira 'cidade-dormitório', e o centro monopoliza a economia." 
+                text: "Porque o centro concentra quase todos os investimentos e infraestrutura (Macrocefalia Urbana).", 
+                feedback: "Resposta Exata! Esse inchaço do centro (Macrocefalia) deixa a periferia sem serviços, obrigando todos a viajarem para lá." 
             },
             { 
-                text: "Porque as prefeituras periféricas proíbem a abertura de empresas e comércios.", 
-                feedback: "Incorreto. As prefeituras não proíbem; inclusive oferecem incentivos (como isenção de impostos) para atrair indústrias, mas o poder e a infraestrutura continuam centralizados na metrópole." 
+                text: "Porque as prefeituras dos bairros mais pobres não deixam abrir lojas.", 
+                feedback: "Incorreto. As prefeituras não proíbem lojas, mas os grandes negócios preferem ficar no centro onde há mais estrutura." 
             }
         ],
         correctIndex: 2
     },
     {
         id: 4,
-        context: "Voltando Exausto (19:00 PM)",
-        question: "Qual é a principal consequência social da Migração Pendular exaustiva para a classe trabalhadora?",
+        context: "Fim do Expediente (18:00 PM)",
+        question: "Como chamamos as cidades vizinhas que servem basicamente para os trabalhadores dormirem?",
         options: [
             { 
-                text: "Aumento da produtividade e do tempo livre para lazer.", 
-                feedback: "Incorreto. Ao perder horas no trânsito, ocorre exatamente o oposto: o tempo livre desaparece, o cansaço aumenta e a produtividade no trabalho acaba despencando." 
+                text: "Metrópoles Globais.", 
+                feedback: "Incorreto. Metrópoles globais são as cidades mais poderosas e ricas, não as cidades apenas de moradia." 
             },
             { 
-                text: "Diminuição da poluição atmosférica nas grandes cidades.", 
-                feedback: "Incorreto. O movimento diário simultâneo de milhões de carros, motos e ônibus (queimando combustíveis fósseis) é o principal causador do aumento da poluição nas metrópoles." 
+                text: "Cidades-Dormitório.", 
+                feedback: "Correto! As Cidades-Dormitório ficam na região metropolitana. As pessoas saem de manhã para trabalhar no centro e só voltam para dormir." 
             },
             { 
-                text: "Melhoria na qualidade de vida devido ao contato diário com diferentes cidades.", 
-                feedback: "Incorreto. Longe de ser um 'passeio', o transporte público superlotado e os engarrafamentos representam um fator brutal de precarização da qualidade de vida e adoecimento." 
+                text: "Tecnopolos.", 
+                feedback: "Incorreto. Tecnopolos são lugares focados em alta tecnologia e universidades de ponta." 
             },
             { 
-                text: "Esgotamento físico e redução severa do tempo disponível para descanso, família e estudos.", 
-                feedback: "Correto! Perder de 3 a 4 horas por dia no transporte afeta diretamente a saúde (estresse, cansaço) e rouba o tempo que o trabalhador utilizaria para estudar ou ficar com a família." 
+                text: "Distritos Turísticos.", 
+                feedback: "Incorreto. Distritos turísticos são voltados para viagens de lazer, e não para abrigar a massa de trabalhadores." 
+            }
+        ],
+        correctIndex: 1
+    },
+    {
+        id: 5,
+        context: "Voltando Exausto (20:00 PM)",
+        question: "Qual é o principal problema que essa rotina de viagem diária (Migração Pendular) causa na vida do trabalhador?",
+        options: [
+            { 
+                text: "O aumento do tempo livre para se divertir.", 
+                feedback: "Incorreto. Passando 3 ou 4 horas num ônibus, o trabalhador acaba perdendo quase todo o seu tempo livre." 
+            },
+            { 
+                text: "A diminuição do lixo e da poluição na cidade.", 
+                feedback: "Incorreto. O uso em massa de ônibus e carros todos os dias aumenta muito a poluição do ar." 
+            },
+            { 
+                text: "A melhora na qualidade de vida por visitar cidades diferentes.", 
+                feedback: "Incorreto. Enfrentar transporte público lotado todos os dias piora, e muito, a saúde e a qualidade de vida." 
+            },
+            { 
+                text: "Cansaço extremo e falta de tempo para descansar, estudar ou ficar com a família.", 
+                feedback: "Correto! Perder horas preciosas do dia no trânsito gera estresse e tira a chance de o trabalhador estudar e melhorar de vida." 
             }
         ],
         correctIndex: 3
@@ -153,14 +177,12 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                 setStatus('victory');
             }
         } else {
-            // Tentar novamente (errou e quer refazer)
             setSelectedAnswer(null);
             setIsCorrect(null);
             setStatus('playing');
         }
     };
 
-    // --- NOVA AÇÃO: PULAR QUESTÃO APÓS ERRAR ---
     const handleSkipQuestion = () => {
         if (currentQIndex + 1 < QUIZ_QUESTIONS.length) {
             setCurrentQIndex(prev => prev + 1);
@@ -172,28 +194,51 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
         }
     };
 
+    // --- PAINEL DE AJUDA / REVISÃO ENEM NO HEADER ---
     const EnemHelpPanel = () => (
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" className="bg-blue-900/40 border-blue-500/50 text-blue-200 hover:bg-blue-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm transition-colors">
                     <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> 
-                    <span className="hidden sm:inline">O que cai no ENEM?</span>
+                    <span className="hidden sm:inline">Ajuda e ENEM</span>
                     <span className="sm:hidden">ENEM</span>
                 </Button>
             </SheetTrigger>
             <SheetContent className="bg-slate-900 text-white border-l-slate-700 w-full sm:max-w-lg p-0">
                 <div className="p-6 h-full overflow-y-auto">
+                    
+                    {/* SESSÃO: COMO JOGAR */}
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-blue-500/20 p-2 rounded-lg">
+                            <MousePointerClick className="text-blue-400" size={24}/>
+                        </div>
+                        <h2 className="text-2xl font-black text-white">Como Jogar</h2>
+                    </div>
+                    <div className="space-y-4 text-left mb-8">
+                        <p className="text-slate-300 leading-relaxed text-[15px]">
+                            Acompanhe a rotina diária de um trabalhador. O seu objetivo é fazer o <strong>Ônibus chegar ao trabalho</strong> respondendo ao Quiz.
+                        </p>
+                        <ul className="space-y-3 text-[14px] text-slate-300 bg-slate-800/50 p-5 rounded-2xl border border-slate-700/50">
+                            <li><strong>Passo 1:</strong> Leia a situação atual da viagem (ex: Preso no Trânsito).</li>
+                            <li><strong>Passo 2:</strong> Escolha a alternativa correta.</li>
+                            <li><strong>Passo 3:</strong> Se acertar, ganha <strong>25 Pontos</strong>. Se errar, perde <strong>10 Pontos</strong> (mas pode tentar de novo ou pular).</li>
+                        </ul>
+                    </div>
+
+                    <hr className="border-slate-800 my-6" />
+
+                    {/* SESSÃO: REVISÃO ENEM */}
                     <div className="flex items-center gap-3 mb-6">
                         <div className="bg-green-500/20 p-2 rounded-lg">
                             <BookOpen className="text-green-400" size={24}/>
                         </div>
-                        <h2 className="text-2xl font-black text-white">Revisão ENEM</h2>
+                        <h2 className="text-2xl font-black text-white">O que cai no ENEM?</h2>
                     </div>
                     <div className="space-y-6 text-left pb-8">
                         <div>
                             <h3 className="font-bold text-lg text-green-400 mb-2">A Pegada das Provas</h3>
                             <p className="text-slate-300 leading-relaxed text-[15px]">
-                                No ENEM, a <strong>Migração Pendular</strong> raramente aparece como uma simples definição. Ela é cobrada como uma <strong>consequência</strong> da má gestão urbana e da desigualdade.
+                                No ENEM, a <strong>Migração Pendular</strong> raramente aparece só como uma definição. A prova quer que você saiba que isso é um <strong>problema social</strong> causado pelo crescimento desordenado das cidades.
                             </p>
                         </div>
                         <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700/50 mt-4">
@@ -201,9 +246,9 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                                 <AlertTriangle className="w-5 h-5 text-yellow-500" /> Conceitos Chave
                             </h3>
                             <ul className="space-y-3 text-[14px] text-slate-300">
-                                <li><strong className="text-white">Segregação Socioespacial:</strong> Terrenos centrais caros empurram os mais pobres para áreas periféricas.</li>
-                                <li><strong className="text-white">Macrocefalia Urbana:</strong> Concentração excessiva de serviços, empresas e infraestrutura num único polo (o centro).</li>
-                                <li><strong className="text-white">Impacto:</strong> Perda de qualidade de vida, exaustão, trânsito caótico e poluição (ilhas de calor).</li>
+                                <li><strong className="text-white">Segregação:</strong> Terrenos caros no centro empurram os mais pobres para áreas afastadas.</li>
+                                <li><strong className="text-white">Cidade-Dormitório:</strong> Municípios vizinhos que abrigam trabalhadores, mas têm poucos empregos próprios.</li>
+                                <li><strong className="text-white">Impacto na Saúde:</strong> Perda de qualidade de vida, exaustão e falta de tempo.</li>
                             </ul>
                         </div>
                     </div>
@@ -232,19 +277,19 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                                 <BookOpen size={20}/> O que é Migração Pendular?
                             </h3>
                             <p className="text-sm text-slate-300 mb-5 leading-relaxed">
-                                Imagine um pêndulo de um relógio antigo que vai e volta o dia todo. A <strong>Migração Pendular</strong> é exatamente isso: o movimento diário de milhões de trabalhadores que saem de suas casas na periferia de manhã para trabalhar no centro, e retornam à noite.
+                                Imagine um pêndulo de um relógio antigo que vai e volta o dia todo. A <strong>Migração Pendular</strong> é exatamente isso: o movimento de vai e volta diário de milhões de trabalhadores que saem das suas casas para trabalhar no centro.
                             </p>
                             
                             <h3 className="font-black text-blue-400 flex items-center gap-2 mb-3 text-lg">
                                 <MapPin size={20}/> Por que isso acontece?
                             </h3>
                             <p className="text-sm text-slate-300 leading-relaxed">
-                                A culpa é da <strong>Segregação Socioespacial</strong>. Morar no centro, perto do trabalho, é muito caro. A população de menor renda é "empurrada" para bairros distantes e cidades vizinhas (cidades-dormitório), sendo obrigada a gastar horas no transporte público todos os dias.
+                                Morar no centro, perto do trabalho, é muito caro. A população é obrigada a viver em bairros distantes ou cidades vizinhas (as cidades-dormitório) e a perder horas no trânsito todos os dias.
                             </p>
                         </div>
 
                         <Button onClick={() => setStatus('playing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-7 text-xl rounded-xl transition-transform hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.3)]">
-                            Entendi! Embarcar no Ônibus
+                            Entendi! Iniciar a Viagem
                         </Button>
                     </motion.div>
                 </div>
@@ -260,12 +305,12 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                         
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-left mb-8">
                             <p className="text-slate-300 text-sm leading-relaxed">
-                                Você compreendeu perfeitamente o ciclo da <strong>Migração Pendular</strong>. O custo de vida encarece o centro, empurrando as pessoas para longe (Segregação). Como os empregos ficam no centro (Macrocefalia), o trabalhador gasta sua vida no transporte público.
+                                Você compreendeu perfeitamente a <strong>Migração Pendular</strong>. O custo de vida encarece o centro e empurra as pessoas para longe. Assim, o trabalhador gasta uma grande parte da sua vida preso no transporte público.
                             </p>
                         </div>
 
                         <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 mb-8 flex flex-col items-center">
-                            <span className="text-sm text-slate-500 uppercase tracking-widest font-bold mb-2">Pontuação da Avaliação</span>
+                            <span className="text-sm text-slate-500 uppercase tracking-widest font-bold mb-2">Sua Pontuação</span>
                             <span className="text-6xl font-black text-yellow-400 drop-shadow-md">{score} pts</span>
                         </div>
 
@@ -283,6 +328,8 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
         }
 
         if (status === 'feedback' && selectedAnswer !== null) {
+            const clickedOption = currentQuestion.options[selectedAnswer];
+
             return (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 shadow-2xl">
@@ -294,7 +341,7 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                             )}
                             <div>
                                 <h2 className={`text-2xl font-black ${isCorrect ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {isCorrect ? 'Análise Correta!' : 'Atenção!'}
+                                    {isCorrect ? 'Você Acertou!' : 'Atenção!'}
                                 </h2>
                                 <p className="text-slate-400 text-sm font-bold mt-1">
                                     {isCorrect ? '+25 PTS' : '-10 PTS (Penalidade)'}
@@ -304,12 +351,12 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
 
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                                <Info className="text-blue-400"/> {isCorrect ? 'Explicação da sua Resposta:' : 'Ops... Pense um pouco mais!'}
+                                <Info className="text-blue-400"/> {isCorrect ? 'Por que você acertou:' : 'Dica para você pensar:'}
                             </h3>
                             <p className="text-slate-300 leading-relaxed text-base md:text-lg bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
                                 {isCorrect 
-                                    ? currentQuestion.options[selectedAnswer].feedback 
-                                    : "Parece que a opção que escolheu não é a mais adequada ao contexto do ENEM. Lembre-se do que aprendemos na introdução e tente outra alternativa para descobrir o conceito correto!"
+                                    ? clickedOption.feedback 
+                                    : "Parece que a opção que escolheu não está certa. Lembre-se do texto de introdução e tente uma nova alternativa!"
                                 }
                             </p>
                         </div>
@@ -320,19 +367,18 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                                 className={`flex-1 text-white font-black py-7 text-lg rounded-xl flex items-center justify-center gap-2 transition-transform hover:scale-105 ${isCorrect ? 'bg-blue-600 hover:bg-blue-500' : 'bg-amber-600 hover:bg-amber-500'}`}
                             >
                                 {isCorrect 
-                                    ? (currentQIndex + 1 < QUIZ_QUESTIONS.length ? <>Próxima Questão <ArrowRight size={20}/></> : 'Finalizar Expedição') 
+                                    ? (currentQIndex + 1 < QUIZ_QUESTIONS.length ? <>Próxima Pergunta <ArrowRight size={20}/></> : 'Finalizar Jogo') 
                                     : <>Tentar Novamente <RefreshCw size={20}/></>
                                 } 
                             </Button>
                             
-                            {/* --- NOVO BOTÃO: PULAR QUESTÃO (apenas se errou) --- */}
                             {!isCorrect && (
                                 <Button 
                                     variant="outline" 
                                     onClick={handleSkipQuestion} 
                                     className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 py-7 text-lg rounded-xl flex items-center justify-center gap-2"
                                 >
-                                    Próxima Questão <ArrowRight size={20}/>
+                                    Pular Pergunta <ArrowRight size={20}/>
                                 </Button>
                             )}
                         </div>
@@ -388,7 +434,7 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                                 <div className="inline-flex items-center gap-2 bg-blue-900/30 text-blue-300 px-4 py-1.5 rounded-full text-sm font-bold border border-blue-500/30 mb-4 shadow-sm">
                                     <MapPin size={16}/> {currentQuestion.context}
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight drop-shadow-md">
+                                <h2 className="text-xl md:text-3xl font-black text-white leading-tight drop-shadow-md">
                                     {currentQuestion.question}
                                 </h2>
                             </div>
@@ -417,9 +463,9 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                                             onClick={() => handleAnswer(index)}
                                             className={`text-left p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 font-medium md:text-lg shadow-sm ${btnStyle}`}
                                         >
-                                            <div className="flex gap-4 items-start">
+                                            <div className="flex gap-3 md:gap-4 items-start">
                                                 <span className="font-black opacity-50 mt-0.5">{String.fromCharCode(65 + index)}.</span>
-                                                <span>{option.text}</span>
+                                                <span className="leading-relaxed">{option.text}</span>
                                             </div>
                                         </button>
                                     );
@@ -436,7 +482,6 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
 
     return (
         <main className="min-h-screen bg-[#020617] text-white flex flex-col overflow-x-hidden">
-            {/* CABEÇALHO PADRÃO DO JOGO */}
             <header className="bg-[#0A1024]/95 border-b border-white/10 px-4 md:px-8 py-4 flex justify-between items-center shadow-2xl sticky top-0 z-50 backdrop-blur-md w-full">
                 <div className="flex items-center gap-3">
                     <button onClick={() => onComplete && onComplete()} className="flex items-center gap-3 transition-transform active:scale-95 group">
