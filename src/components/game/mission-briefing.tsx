@@ -100,7 +100,7 @@ export function MissionBriefing({ landscapeId, detailId }: MissionBriefingProps)
           </div>
           
           <p className="text-white/80 text-base leading-relaxed mb-6 font-medium">
-            O GeoAnalyst detectou <span className="text-blue-400 font-bold">10 elementos geográficos</span>. Valide as características observadas.
+            O BioGuesser detectou <span className="text-blue-400 font-bold">10 elementos geográficos</span>. Valide as características observadas.
           </p>
           
           <div className="space-y-3 pt-4 border-t border-white/10">
