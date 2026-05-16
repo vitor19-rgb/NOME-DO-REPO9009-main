@@ -6,7 +6,8 @@ import MeioAmbienteGame from '@/components/game/MeioAmbienteGame';
 import MacrocefaliaUrbanaGame from '@/components/game/macrocefalia-urbana';
 import TransacaoEnergeticaGame from '@/components/game/transacao-energetica';
 import DetetiveIbgeGame from '@/components/game/DetetiveIbgeGame';
-import CorridaPendularGame from '@/components/game/CorridaPendularGame'; // <-- 1. IMPORTAMOS O NOVO JOGO AQUI
+import CorridaPendularGame from '@/components/game/CorridaPendularGame'; 
+import EfeitoDominoGlobalGame from '@/components/game/EfeitoDominoGlobalGame'; // <-- IMPORTAMOS O NOVO JOGO AQUI
 import { Button } from '@/components/ui/button';
 import { Trophy, Home, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -35,8 +36,8 @@ export const saveScore = (name: string, score: number, mode: string) => {
 
 // --- COMPONENTE ROOT / CONTAINER --- //
 export default function App() {
-  // 2. ADICIONAMOS 'corrida_pendular' AOS ESTADOS POSSÍVEIS
-  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'resultado_final'>('hub');
+  // ADICIONAMOS 'geopolitica' AOS ESTADOS POSSÍVEIS
+  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
   // ESTADOS PARA PONTUAÇÃO E RESULTADO
@@ -122,7 +123,6 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma o jogo do IBGE
-                // 3. MUDAMOS O DIRECIONAMENTO AQUI: Vai para a Corrida em vez do Resultado Final
                 setCurrentScreen('corrida_pendular'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -130,7 +130,6 @@ export default function App() {
       );
   }
 
-  // 4. ADICIONAMOS O BLOCO DO NOVO JOGO (CORRIDA PENDULAR)
   if (currentScreen === 'corrida_pendular') {
       return (
           <CorridaPendularGame 
@@ -139,9 +138,29 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma os pontos da Corrida
-                setMaxTrackScore(1550); // Define o novo máximo da Trilha 2 (com o terceiro jogo)
+                setMaxTrackScore(1550); // Define o novo máximo da Trilha 2
                 setFinalTrackName('Trilha Urbanização');
-                setCurrentScreen('resultado_final'); // Agora sim, vai para o Resultado Final!
+                setCurrentScreen('resultado_final'); // Vai para o Resultado Final!
+                setTimeout(() => isAdvancingRef.current = false, 500);
+            }} 
+          />
+      );
+  }
+
+  // ========================================================= //
+  // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
+  // ========================================================= //
+  if (currentScreen === 'geopolitica') {
+      return (
+          <EfeitoDominoGlobalGame 
+            playerName={playerName} 
+            onComplete={handleBackToHub} 
+            onSaveScore={(score) => {
+                isAdvancingRef.current = true;
+                setAccumulatedScore(score); 
+                setMaxTrackScore(100); // Pontuação máxima da Trilha de Geopolítica
+                setFinalTrackName('Trilha Geopolítica Global');
+                setCurrentScreen('resultado_final'); // Envia para o painel de resultados
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
           />

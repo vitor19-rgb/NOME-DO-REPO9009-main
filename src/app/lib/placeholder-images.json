@@ -71,6 +71,13 @@
       "description": "Análise de solo do Pantanal, evidenciando características de hidromorfismo e sedimentos trazidos pelos constantes alagamentos.",
       "imageUrl": "/images/biomes/pantanal-soil.png",
       "imageHint": "pantanal flooded hidromorphic soil profile"
+    },
+
+    {
+      "id": "news-placeholder",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geopilitica/news-placeholder.png",
+      "imageHint": "geopolitics breaking news placeholder"
     }
   ]
 }
