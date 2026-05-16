@@ -25,7 +25,6 @@ const fadeUpItem = {
 // --- TELA DE CARREGAMENTO GLOBAL --- //
 const LoadingScreen = () => (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white relative overflow-hidden">
-        {/* Fundo a pulsar lentamente */}
         <motion.div 
             animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.3, 0.1] }} 
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -156,7 +155,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
 
     if (isLoading) return <LoadingScreen />;
 
-    // --- NOVA TELA: SIMULAÇÃO DE LOGIN DO GOOGLE --- //
+    // --- TELA: SIMULAÇÃO DE LOGIN DO GOOGLE --- //
     if (view === 'fake_login') {
         return (
             <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -329,10 +328,10 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     {initialPlayerName && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
                             <span className="text-slate-400 text-sm hidden sm:inline bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50">
-                                Jogador: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
+                                Estudante: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
                             </span>
                             <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-xs md:text-sm transition-colors">
-                                Trocar Estudante
+                                Alterar Registo
                             </Button>
                         </motion.div>
                     )}
@@ -428,12 +427,14 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             onClick={() => handleModeSelection('agraria', false)} 
                             enabled={false} 
                         />
+                        
+                        {/* --- CARD DE GEOPOLÍTICA GLOBAL TOTALMENTE HABILITADO AGORA --- */}
                         <GameModeCard 
                             icon={<Cloud size={56} className="drop-shadow-md"/>} 
                             title="Geopolítica Global" 
-                            description="Analise mapas mundiais, entenda blocos econômicos e os grandes conflitos contemporâneos." 
-                            onClick={() => handleModeSelection('fenomenos', false)} 
-                            enabled={false} 
+                            description="Descubra as reações em cadeia ligando os maiores conflitos mundiais com a economia diária do Brasil." 
+                            onClick={() => handleModeSelection('geopolitica', true)} 
+                            enabled={true} 
                         />
                     </motion.div>
                  </div>
@@ -452,7 +453,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </motion.div>
                     
                     <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-3 px-6 rounded-full border border-slate-800">
-                        Desenvolvido por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murrilo, Luiz, Pedro Henrique e Fabiano</span>
+                        Desenvolvido com orgulho por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murrilo, Luiz e Pedro Henrique Fabiano</span>
                     </motion.div>
                 </div>
             </footer>
