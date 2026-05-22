@@ -78,6 +78,31 @@
       "description": "Imagem placeholder para notícias da seção geopolítica.",
       "imageUrl": "/images/geopilitica/news-placeholder.png",
       "imageHint": "geopolitics breaking news placeholder"
+    },
+    {
+      "id": "news-placeholder2",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geopilitica/seca.jpeg",
+      "imageHint": "geopolitics breaking news placeholder"
+    },
+     {
+      "id": "news-placeholder3",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geopilitica/imposto.jpeg",
+      "imageHint": "geopolitics breaking news placeholder"
+    },
+     {
+      "id": "news-placeholder4",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geopilitica/ia.jpeg",
+      "imageHint": "geopolitics breaking news placeholder"
+    },
+     {
+      "id": "news-placeholder5",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geopilitica/brumaidnho.jpeg",
+      "imageHint": "geopolitics breaking news placeholder"
     }
+      
   ]
 }
