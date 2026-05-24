@@ -280,6 +280,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                                             </span>
                                             <div className="flex flex-col">
                                                 <span className="text-white font-black text-lg md:text-xl">{entry.name}</span>
+                                                {/* É AQUI QUE O NOME DA TRILHA APARECE! */}
                                                 <span className="text-blue-400 font-bold text-xs uppercase tracking-widest">{entry.mode || 'Missão Concluída'}</span>
                                             </div>
                                         </div>
@@ -428,7 +429,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             enabled={false} 
                         />
                         
-                        {/* --- CARD DE GEOPOLÍTICA GLOBAL TOTALMENTE HABILITADO AGORA --- */}
                         <GameModeCard 
                             icon={<Cloud size={56} className="drop-shadow-md"/>} 
                             title="Geopolítica Global" 
@@ -453,7 +453,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </motion.div>
                     
                     <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-3 px-6 rounded-full border border-slate-800">
-                        Desenvolvido por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
+                        Desenvolvido  por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
                     </motion.div>
                 </div>
             </footer>

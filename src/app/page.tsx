@@ -150,6 +150,9 @@ export default function App() {
   // ========================================================= //
   // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
   // ========================================================= //
+ // ========================================================= //
+  // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
+  // ========================================================= //
   if (currentScreen === 'geopolitica') {
       return (
           <EfeitoDominoGlobalGame 
@@ -158,15 +161,16 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(score); 
-                setMaxTrackScore(100); // Pontuação máxima da Trilha de Geopolítica
-                setFinalTrackName('Trilha Geopolítica Global');
-                setCurrentScreen('resultado_final'); // Envia para o painel de resultados
+                
+                setMaxTrackScore(500); 
+                setFinalTrackName('Trilha Geopolítica'); 
+                
+                setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
           />
       );
   }
-
   // ========================================================= //
   // TELA GLOBAL: RESULTADO FINAL DA TRILHA
   // ========================================================= //

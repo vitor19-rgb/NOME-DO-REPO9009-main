@@ -814,7 +814,7 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                                 </p>
                             </div>
 
-                            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 flex flex-col items-center">
+                       <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 flex flex-col items-center">
                                 <span className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Pontuação Final Adquirida</span>
                                 <span className="text-5xl font-black text-yellow-400 drop-shadow-md">{score} PTS</span>
                             </div>
