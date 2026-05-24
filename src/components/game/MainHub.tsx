@@ -453,7 +453,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </motion.div>
                     
                     <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-3 px-6 rounded-full border border-slate-800">
-                        Desenvolvido com orgulho por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murrilo, Luiz e Pedro Henrique Fabiano</span>
+                        Desenvolvido por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
                     </motion.div>
                 </div>
             </footer>
