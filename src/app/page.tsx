@@ -87,7 +87,7 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma o jogo de Energia
-                setMaxTrackScore(1175); // Define o máximo da Trilha 1
+                setMaxTrackScore(1575); // Define o máximo da Trilha 1
                 setFinalTrackName('Trilha Meio Ambiente');
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
@@ -138,7 +138,7 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(prev => prev + score); // Soma os pontos da Corrida
-                setMaxTrackScore(1550); // Define o novo máximo da Trilha 2
+                setMaxTrackScore(1850); // Define o novo máximo da Trilha 2
                 setFinalTrackName('Trilha Urbanização');
                 setCurrentScreen('resultado_final'); // Vai para o Resultado Final!
                 setTimeout(() => isAdvancingRef.current = false, 500);
