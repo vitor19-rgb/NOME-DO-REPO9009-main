@@ -213,40 +213,65 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
     }
 
     if (view === 'name_input') {
-        return (
-            <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
-                
-                <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 20 }} className="bg-slate-900/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-slate-700/50 max-w-md w-full text-center shadow-[0_0_80px_rgba(16,185,129,0.15)] relative z-10">
-                    <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: "spring" }} className="flex justify-center mb-6">
-                        <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 p-5 rounded-full border border-emerald-500/30 shadow-inner">
-                            <ShieldCheck className="text-emerald-400 w-10 h-10" />
-                        </div>
-                    </motion.div>
-                    
-                    <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Login Aprovado!</h2>
-                    <p className="text-slate-400 mb-8 leading-relaxed font-medium">Conta conectada com sucesso. Como quer ser chamado no Ranking dos Estudantes?</p>
-                    
-                    <Input 
-                        type="text" 
-                        placeholder="Ex: João Silva" 
-                        value={playerName}
-                        onChange={(e) => setPlayerName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
-                        className="bg-slate-950/50 border-slate-700 text-white font-black text-xl py-8 mb-8 text-center rounded-2xl shadow-inner focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-                        maxLength={15}
-                    />
-                    
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <Button onClick={() => setView('home')} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 py-7 text-lg rounded-xl font-bold transition-all">Voltar</Button>
-                        <Button onClick={handleStartGame} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-lg rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-all">
-                            Salvar Perfil
-                        </Button>
+    return (
+        <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
+            
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: "spring", damping: 20 }}
+                className="bg-slate-900/90 backdrop-blur-xl p-5 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] border border-slate-700/50 max-w-sm md:max-w-md w-full text-center shadow-[0_0_80px_rgba(16,185,129,0.15)] relative z-10"
+            >
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1, type: "spring" }}
+                    className="flex justify-center mb-5 md:mb-6"
+                >
+                    <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 p-4 md:p-5 rounded-full border border-emerald-500/30 shadow-inner">
+                        <ShieldCheck className="text-emerald-400 w-8 h-8 md:w-10 md:h-10" />
                     </div>
                 </motion.div>
-            </div>
-        )
-    }
+                
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                    Login Aprovado!
+                </h2>
+
+                <p className="text-slate-400 mb-6 text-sm sm:text-base leading-relaxed font-medium px-1">
+                    Conta conectada com sucesso. Como quer ser chamado no Ranking dos Estudantes?
+                </p>
+                
+                <Input 
+                    type="text" 
+                    placeholder="Ex: João Silva" 
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
+                    className="bg-slate-950/50 border-slate-700 text-white font-black text-base sm:text-lg md:text-xl py-5 sm:py-6 md:py-8 mb-6 text-center rounded-xl md:rounded-2xl shadow-inner focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
+                    maxLength={15}
+                />
+                
+               <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+    <Button
+        onClick={() => setView('home')}
+        variant="outline"
+        className="flex-1 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 py-3 md:py-7 text-sm md:text-lg rounded-xl font-bold transition-all min-h-[48px] md:min-h-[64px]"
+    >
+        Voltar
+    </Button>
+
+    <Button
+        onClick={handleStartGame}
+        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 md:py-7 text-sm md:text-lg rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-all min-h-[48px] md:min-h-[64px]"
+    >
+        Salvar Perfil
+    </Button>
+</div>
+            </motion.div>
+        </div>
+    )
+}
 
     if (view === 'ranking') {
         return (
@@ -332,7 +357,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                                 Estudante: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
                             </span>
                             <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-xs md:text-sm transition-colors">
-                                Alterar Registo
+                                Sair do Perfil
                             </Button>
                         </motion.div>
                     )}
