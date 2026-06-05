@@ -102,6 +102,12 @@
       "description": "Imagem placeholder para notícias da seção geopolítica.",
       "imageUrl": "/images/geopilitica/brumaidnho.jpeg",
       "imageHint": "geopolitics breaking news placeholder"
+    },
+     {
+      "id": "news-placeholder6",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geografia/agricultura-familiar.png",
+      "imageHint": "geopolitics breaking news placeholder"
     }
       
   ]

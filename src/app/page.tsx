@@ -7,7 +7,9 @@ import MacrocefaliaUrbanaGame from '@/components/game/macrocefalia-urbana';
 import TransacaoEnergeticaGame from '@/components/game/transacao-energetica';
 import DetetiveIbgeGame from '@/components/game/DetetiveIbgeGame';
 import CorridaPendularGame from '@/components/game/CorridaPendularGame'; 
-import EfeitoDominoGlobalGame from '@/components/game/EfeitoDominoGlobalGame'; // <-- IMPORTAMOS O NOVO JOGO AQUI
+import EfeitoDominoGlobalGame from '@/components/game/EfeitoDominoGlobalGame';
+// --- IMPORTAÇÃO DO NOVO JOGO DE GEOGRAFIA AGRÁRIA --- //
+import EscudoDaVerdadeGame from '@/components/game/EscudoDaVerdadeGame'; 
 import { Button } from '@/components/ui/button';
 import { Trophy, Home, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -36,8 +38,8 @@ export const saveScore = (name: string, score: number, mode: string) => {
 
 // --- COMPONENTE ROOT / CONTAINER --- //
 export default function App() {
-  // ADICIONAMOS 'geopolitica' AOS ESTADOS POSSÍVEIS
-  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'resultado_final'>('hub');
+  // ADICIONAMOS 'agraria' AOS ESTADOS POSSÍVEIS DA TELA
+  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
   // ESTADOS PARA PONTUAÇÃO E RESULTADO
@@ -62,7 +64,6 @@ export default function App() {
 
   // ========================================================= //
   // TRILHA 1: MEIO AMBIENTE (Biomas + Cadeia -> Energia)
-  // Máximo Possível: Biomas (825) + Efeito Dominó (200) + Energia (150) = 1175 pts
   // ========================================================= //
   if (currentScreen === 'meio_ambiente') {
       return (
@@ -71,7 +72,7 @@ export default function App() {
             onBackToHub={handleBackToHub} 
             onSaveScore={(score) => {
                 isAdvancingRef.current = true; 
-                setAccumulatedScore(score); // Salva Biomas + Cadeia
+                setAccumulatedScore(score); 
                 setCurrentScreen('energia'); 
                 setTimeout(() => isAdvancingRef.current = false, 500); 
             }} 
@@ -86,8 +87,8 @@ export default function App() {
             onReturnHome={handleBackToHub} 
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
-                setAccumulatedScore(prev => prev + score); // Soma o jogo de Energia
-                setMaxTrackScore(1575); // Define o máximo da Trilha 1
+                setAccumulatedScore(prev => prev + score); 
+                setMaxTrackScore(1575); 
                 setFinalTrackName('Trilha Meio Ambiente');
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
@@ -98,7 +99,6 @@ export default function App() {
 
   // ========================================================= //
   // TRILHA 2: URBANIZAÇÃO (Macrocefalia -> Detetive IBGE -> Corrida Pendular)
-  // Máximo Possível: Macrocefalia (~600) + Detetive (450) + Corrida (~500) = 1550 pts
   // ========================================================= //
   if (currentScreen === 'urbanizacao') {
       return (
@@ -107,8 +107,8 @@ export default function App() {
             onReturnHome={handleBackToHub} 
             onSaveScore={(score) => {
                 isAdvancingRef.current = true; 
-                setAccumulatedScore(score); // Salva Macrocefalia
-                setCurrentScreen('detetive_ibge'); // Avança para Detetive IBGE
+                setAccumulatedScore(score); 
+                setCurrentScreen('detetive_ibge'); 
                 setTimeout(() => isAdvancingRef.current = false, 500); 
             }} 
           />
@@ -122,7 +122,7 @@ export default function App() {
             onReturnHome={handleBackToHub} 
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
-                setAccumulatedScore(prev => prev + score); // Soma o jogo do IBGE
+                setAccumulatedScore(prev => prev + score); 
                 setCurrentScreen('corrida_pendular'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -137,10 +137,10 @@ export default function App() {
             onComplete={handleBackToHub} 
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
-                setAccumulatedScore(prev => prev + score); // Soma os pontos da Corrida
-                setMaxTrackScore(1850); // Define o novo máximo da Trilha 2
+                setAccumulatedScore(prev => prev + score); 
+                setMaxTrackScore(1850); 
                 setFinalTrackName('Trilha Urbanização');
-                setCurrentScreen('resultado_final'); // Vai para o Resultado Final!
+                setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
           />
@@ -148,9 +148,6 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
-  // ========================================================= //
- // ========================================================= //
   // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
   // ========================================================= //
   if (currentScreen === 'geopolitica') {
@@ -171,6 +168,30 @@ export default function App() {
           />
       );
   }
+
+  // ========================================================= //
+  // TRILHA 4: GEOGRAFIA AGRÁRIA (Escudo da Verdade)
+  // ========================================================= //
+  if (currentScreen === 'agraria') {
+      return (
+          <EscudoDaVerdadeGame 
+            playerName={playerName} 
+            onComplete={handleBackToHub} 
+            onSaveScore={(score) => {
+                isAdvancingRef.current = true;
+                setAccumulatedScore(score); 
+                
+                // São 5 cartas a 50 pontos cada, somando o máximo de 250 pontos na Fase 1
+                setMaxTrackScore(650); 
+                setFinalTrackName('Trilha Geografia Agrária'); 
+                
+                setCurrentScreen('resultado_final'); 
+                setTimeout(() => isAdvancingRef.current = false, 500);
+            }} 
+          />
+      );
+  }
+
   // ========================================================= //
   // TELA GLOBAL: RESULTADO FINAL DA TRILHA
   // ========================================================= //

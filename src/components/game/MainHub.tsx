@@ -446,12 +446,12 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             onClick={() => handleModeSelection('urbanizacao', true)} 
                             enabled={true} 
                         />
-                        <GameModeCard 
+                       <GameModeCard 
                             icon={<BookOpen size={56} className="drop-shadow-md"/>} 
                             title="Geografia Agrária" 
                             description="Entenda a Estrutura Fundiária, a revolução verde e o balanço entre o Agronegócio e a Agricultura Familiar." 
-                            onClick={() => handleModeSelection('agraria', false)} 
-                            enabled={false} 
+                            onClick={() => handleModeSelection('agraria', true)} 
+                            enabled={true} 
                         />
                         
                         <GameModeCard 
