@@ -34,71 +34,70 @@ interface CardItem {
   explanation: string;
 }
 
-// --- DADOS DA FASE 1 (15 Cartas: 9 Verdades, 6 Mitos) ---
+// TIPAGEM DAS FASES
+type PhaseType = {
+  id: number;
+  title: string;
+  imageSrc: string;
+  cards: CardItem[];
+};
+
+// --- DADOS DA FASE 1 (15 Cartas: Agricultura Familiar) ---
 const INITIAL_CARDS: CardItem[] = [
   // --- 9 VERDADES ---
   {
     id: "c1",
     text: "Produz cerca de 70% da comida que chega à nossa mesa.",
     type: "truth",
-    explanation:
-      "Correto! A agricultura familiar é a base do abastecimento alimentar interno do Brasil.",
+    explanation: "Correto! A agricultura familiar é a base do abastecimento alimentar interno do Brasil.",
   },
   {
     id: "c2",
     text: "Absorve a maior parte da mão de obra no campo.",
     type: "truth",
-    explanation:
-      "Exato! Por ser menos mecanizada que o agronegócio, ela gera muito mais empregos diretos.",
+    explanation: "Exato! Por ser menos mecanizada que o agronegócio, ela gera muito mais empregos diretos.",
   },
   {
     id: "c3",
     text: "Garante a diversidade de alimentos no mercado interno.",
     type: "truth",
-    explanation:
-      "Correto! Enquanto o agronegócio foca em monocultura (soja, milho), a familiar planta feijão, mandioca, hortaliças, etc.",
+    explanation: "Correto! Enquanto o agronegócio foca em monocultura (soja, milho), a familiar planta feijão, mandioca, hortaliças, etc.",
   },
   {
     id: "c4",
     text: "É a principal fonte de renda para a maioria dos municípios pequenos.",
     type: "truth",
-    explanation:
-      "Correto! A economia de muitas cidades do interior gira em torno do pequeno produtor.",
+    explanation: "Correto! A economia de muitas cidades do interior gira em torno do pequeno produtor.",
   },
   {
     id: "c5",
     text: "Preserva mais a biodiversidade local que o agronegócio.",
     type: "truth",
-    explanation:
-      "Exato! O uso de policulturas e técnicas tradicionais agride menos o meio ambiente.",
+    explanation: "Exato! O uso de policulturas e técnicas tradicionais agride menos o meio ambiente.",
   },
   {
     id: "c6",
     text: "Sofre com a falta de assistência técnica e crédito rural.",
     type: "truth",
-    explanation:
-      "Correto! Historicamente, o Estado brasileiro privilegia os grandes latifundiários nas políticas de crédito.",
+    explanation: "Correto! Historicamente, o Estado brasileiro privilegia os grandes latifundiários nas políticas de crédito.",
   },
   {
     id: "c7",
     text: "Utiliza predominantemente mão de obra do próprio núcleo familiar.",
     type: "truth",
-    explanation:
-      "Correto! A gestão e o trabalho são divididos entre os membros da família.",
+    explanation: "Correto! A gestão e o trabalho são divididos entre os membros da família.",
   },
   {
     id: "c8",
     text: "Tem forte ligação com a posse histórica e cultural da terra.",
     type: "truth",
-    explanation:
-      "Exato! Muitos pequenos produtores têm uma relação de ancestralidade com o lote que cultivam.",
+    explanation: "Exato! Muitos pequenos produtores têm uma relação de ancestralidade com o lote que cultivam.",
   },
   {
     id: "c9",
     text: "É essencial para a segurança alimentar do país.",
     type: "truth",
-    explanation:
-      "Perfeito! Sem a agricultura familiar, o Brasil enfrentaria escassez de alimentos básicos.",
+    explanation: "Perfeito! Sem a agricultura familiar, o Brasil enfrentaria escassez de alimentos básicos.",
   },
 
   // --- 6 MITOS ---
@@ -106,44 +105,151 @@ const INITIAL_CARDS: CardItem[] = [
     id: "c10",
     text: "Recebe a maior fatia dos financiamentos do governo.",
     type: "myth",
-    explanation:
-      "Mito! O agronegócio exportador é quem recebe a esmagadora maioria do crédito (ex: Plano Safra).",
+    explanation: "Mito! O agronegócio exportador é quem recebe a esmagadora maioria do crédito (ex: Plano Safra).",
   },
   {
     id: "c11",
     text: "Seu foco principal é a exportação de commodities para a Ásia.",
     type: "myth",
-    explanation:
-      "Mito! O foco da agricultura familiar é o mercado interno. Quem exporta commodities é o grande agronegócio.",
+    explanation: "Mito! O foco da agricultura familiar é o mercado interno. Quem exporta commodities é o grande agronegócio.",
   },
   {
     id: "c12",
     text: "Ocupa as maiores e mais extensas propriedades de terra do Brasil.",
     type: "myth",
-    explanation:
-      "Mito! Eles ocupam a menor parcela das terras (minifúndios). A maior parte das terras férteis está nos latifúndios.",
+    explanation: "Mito! Eles ocupam a menor parcela das terras (minifúndios). A maior parte das terras férteis está nos latifúndios.",
   },
   {
     id: "c13",
     text: "É altamente mecanizada e utiliza drones em larga escala.",
     type: "myth",
-    explanation:
-      "Mito! A agricultura familiar costuma ter baixo nível tecnológico devido à falta de capital.",
+    explanation: "Mito! A agricultura familiar costuma ter baixo nível tecnológico devido à falta de capital.",
   },
   {
     id: "c14",
     text: "Planta principalmente soja para a fabricação de ração.",
     type: "myth",
-    explanation:
-      "Mito! O foco da agricultura familiar é a comida (arroz, feijão, alface). A soja é o foco do latifúndio.",
+    explanation: "Mito! O foco da agricultura familiar é a comida (arroz, feijão, alface). A soja é o foco do latifúndio.",
   },
   {
     id: "c15",
     text: "É responsável pelo grande desmatamento da Amazônia.",
     type: "myth",
-    explanation:
-      "Mito! O grande desmatamento é causado pelo avanço da fronteira agrícola (gado e soja) dos grandes produtores.",
+    explanation: "Mito! O grande desmatamento é causado pelo avanço da fronteira agrícola (gado e soja) dos grandes produtores.",
   },
+];
+
+// --- DADOS DA FASE 2 (15 Cartas: Agronegócio) ---
+const AGRONEGOCIO_CARDS: CardItem[] = [
+  // --- 9 VERDADES (Conectar ao Centro) ---
+  {
+    id: "f2-v1",
+    text: "Baseia-se na monocultura de 'commodities' como soja e milho.",
+    type: "truth",
+    explanation: "Correto! O agronegócio foca em plantar um único produto em vasta escala para o mercado internacional."
+  },
+  {
+    id: "f2-v2",
+    text: "Foco absoluto no mercado externo (exportação) e ração animal.",
+    type: "truth",
+    explanation: "Correto! A maior parte da produção não vai para o prato do brasileiro, mas sim para navios cargueiros."
+  },
+  {
+    id: "f2-v3",
+    text: "Alta mecanização, gerando pouquíssimos empregos por hectare.",
+    type: "truth",
+    explanation: "Correto! O uso de tratores, drones e colheitadeiras substituiu massivamente o trabalho braçal no campo."
+  },
+  {
+    id: "f2-v4",
+    text: "Recebe a maior parte dos financiamentos e subsídios do Plano Safra.",
+    type: "truth",
+    explanation: "Correto! Apesar de empregar menos, o grande capital atrai a esmagadora maioria do crédito agrícola do governo."
+  },
+  {
+    id: "f2-v5",
+    text: "Apresenta alta concentração de terras (Latifúndios).",
+    type: "truth",
+    explanation: "Correto! O modelo é sustentado por imensas propriedades nas mãos de poucos donos ou empresas."
+  },
+  {
+    id: "f2-v6",
+    text: "Avança intensamente sobre as fronteiras agrícolas do Cerrado e Amazônia.",
+    type: "truth",
+    explanation: "Correto! A expansão da soja e da pecuária é o principal vetor de ocupação e desmatamento nestes biomas."
+  },
+  {
+    id: "f2-v7",
+    text: "Integra o campo com a indústria e bolsas de valores (Complexo Agroindustrial).",
+    type: "truth",
+    explanation: "Correto! Hoje, o campo não está isolado. Ele depende de laboratórios, indústrias químicas e do mercado financeiro."
+  },
+  {
+    id: "f2-v8",
+    text: "Utiliza intensivamente agrotóxicos e fertilizantes químicos.",
+    type: "truth",
+    explanation: "Correto! O Brasil é um dos maiores consumidores de defensivos agrícolas do mundo devido às monoculturas."
+  },
+  {
+    id: "f2-v9",
+    text: "Possui forte influência política, atuando através da 'Bancada Ruralista'.",
+    type: "truth",
+    explanation: "Correto! O setor possui forte representação no Congresso Nacional para aprovar leis que favoreçam a expansão agrícola."
+  },
+
+  // --- 6 MITOS (Rejeitar / Jogar fora) ---
+  {
+    id: "f2-m1",
+    text: "É o setor responsável por garantir a comida barata na mesa dos brasileiros.",
+    type: "myth",
+    explanation: "Mito! O agronegócio foca na exportação de commodities. Quem alimenta o Brasil no dia a dia é a agricultura familiar."
+  },
+  {
+    id: "f2-m2",
+    text: "Protege ativamente a biodiversidade e evita o desmatamento.",
+    type: "myth",
+    explanation: "Cuidado! A expansão da fronteira agrícola é a principal causa histórica do desmatamento de biomas brasileiros."
+  },
+  {
+    id: "f2-m3",
+    text: "É formado majoritariamente por pequenas cooperativas de camponeses.",
+    type: "myth",
+    explanation: "Incorreto! O agronegócio é amplamente dominado por grandes latifundiários e multinacionais (tradings)."
+  },
+  {
+    id: "f2-m4",
+    text: "Absorve a maior parte da mão de obra desempregada das cidades.",
+    type: "myth",
+    explanation: "Erro! Por ser extremamente mecanizado e tecnológico, o agronegócio gera muito poucos empregos diretos no campo."
+  },
+  {
+    id: "f2-m5",
+    text: "Resolveu o problema da desigualdade na distribuição de terras no Brasil.",
+    type: "myth",
+    explanation: "Mito! Pelo contrário, o avanço do agronegócio moderno intensificou a concentração fundiária e os conflitos no campo."
+  },
+  {
+    id: "f2-m6",
+    text: "Prioriza o cultivo diversificado (policultura) para evitar o esgotamento do solo.",
+    type: "myth",
+    explanation: "Incorreto! A base do agronegócio brasileiro é a monocultura (plantar um único item em áreas gigantescas)."
+  }
+];
+
+// --- ESTRUTURA DE FASES (Array que contém todas as fases) ---
+const PHASES: PhaseType[] = [
+  {
+    id: 1,
+    title: "Agricultura Familiar",
+    imageSrc: "/images/geografia/agricultura-familiar.png",
+    cards: INITIAL_CARDS
+  },
+  {
+    id: 2,
+    title: "A Máquina de Exportação (Agronegócio)",
+    imageSrc: "/images/geografia/agronegocio.png",
+    cards: AGRONEGOCIO_CARDS
+  }
 ];
 
 export default function EscudoDaVerdadeGame({
@@ -152,9 +258,12 @@ export default function EscudoDaVerdadeGame({
   onSaveScore,
 }: EscudoDaVerdadeProps) {
   // --- ESTADOS DO JOGO ---
-  const [status, setStatus] = useState<"intro" | "playing" | "victory">(
-    "intro"
-  );
+  const [status, setStatus] = useState<"intro" | "playing" | "phase_transition" | "victory">("intro");
+  
+  // ESTADO DA FASE
+  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+  const currentPhase = PHASES[currentPhaseIndex];
+
   const [score, setScore] = useState(0);
   const [availableCards, setAvailableCards] = useState<CardItem[]>([]);
   const [shieldedCards, setShieldedCards] = useState<CardItem[]>([]);
@@ -183,19 +292,21 @@ export default function EscudoDaVerdadeGame({
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Inicializa o baralho embaralhado
+  // BUG CORRIGIDO AQUI: Apenas verifica a condição de vitória e transição
   useEffect(() => {
-    setAvailableCards([...INITIAL_CARDS].sort(() => Math.random() - 0.5));
-  }, []);
-
-  // 2. Deteta Condição de Vitória (Fim do Baralho)
-  useEffect(() => {
-    if (availableCards.length === 0 && status === "playing") {
-      setTimeout(() => setStatus("victory"), 800);
+    // Só prossegue para validação se o jogo estiver a correr E as cartas tiverem acabado
+    if (status === "playing" && availableCards.length === 0) {
+      if (currentPhaseIndex < PHASES.length - 1) {
+        // Se existir uma próxima fase, vai para a transição
+        setTimeout(() => setStatus("phase_transition"), 800);
+      } else {
+        // Se for a última fase, vai para a vitória final
+        setTimeout(() => setStatus("victory"), 800);
+      }
     }
-  }, [availableCards.length, status]);
+  }, [availableCards.length, status, currentPhaseIndex]);
 
-  // 3. Sistema de Punição Educativa
+  // --- SISTEMAS DE EFEITOS VISUAIS E AVISOS ---
   const triggerError = (title: string, desc: string, cardId: string) => {
     setFlashRed(true);
     setTimeout(() => setFlashRed(false), 300);
@@ -206,7 +317,6 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setDragErrorCardId(null), 400);
   };
 
-  // 4. Sistema de Feedback Visual para acertos
   const triggerSuccess = (points: number, clientX: number, clientY: number) => {
     setFlashGreen(true);
     setTimeout(() => setFlashGreen(false), 300);
@@ -215,59 +325,46 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setFloatingPoints(null), 800);
   };
 
-  // 5. Mostrar erro de área inválida
   const showAreaError = (x: number, y: number) => {
     setAreaError({ show: true, x, y });
     setTimeout(() => setAreaError({ show: false, x: 0, y: 0 }), 800);
   };
 
-  // --- FUNÇÃO PARA PROCESSAR O DROP (DRAG END) - CORRIGIDA ---
+  // --- FUNÇÃO PARA PROCESSAR O DROP ---
   const processDrop = (card: CardItem, dropX: number, dropY: number, offsetX: number, velocityX: number): boolean => {
     if (!dropzoneRef.current) return false;
 
     const dropzoneRect = dropzoneRef.current.getBoundingClientRect();
 
-    // ZONA DO ESCUDO - Com margem para aceitar verdades
     const isInsideCenter =
       dropX >= dropzoneRect.left - 150 &&
       dropX <= dropzoneRect.right + 150 &&
       dropY >= dropzoneRect.top - 150 &&
       dropY <= dropzoneRect.bottom + 150;
 
-    // Para ser considerado um SWIPE válido, precisa de:
-    // 1. Distância mínima de 80px OU velocidade alta (> 500 px/s)
-    // 2. Não pode estar dentro da área do escudo (senão é tentativa de proteger)
     const isSwipeValid = (Math.abs(offsetX) > 80 || Math.abs(velocityX) > 500) && !isInsideCenter;
 
-    // Para VERDADES: aceita em qualquer lugar que esteja dentro da zona do escudo
     if (card.type === "truth") {
       if (isInsideCenter) {
-        // SUCESSO: Verdade - carta some e ganha pontos
         setAvailableCards((prev) => prev.filter((c) => c.id !== card.id));
         setShieldedCards((prev) => [...prev, card]);
         setScore((prev) => prev + 50);
         triggerSuccess(50, dropX, dropY);
         return true;
       } else {
-        // Só dá erro se soltar MUITO longe do escudo
         triggerError("Proteja a verdade!", "Arraste a VERDADE para perto do ESCUDO no centro da tela!", card.id);
         showAreaError(dropX, dropY);
         return false;
       }
     } 
-    // Para MITOS
     else {
-      // Mito SÓ pode ser removido com SWIPE válido (fora da área do escudo)
       if (isSwipeValid) {
-        // SWIPE válido = acerto (remove o mito)
         setAvailableCards((prev) => prev.filter((c) => c.id !== card.id));
         setScore((prev) => prev + 25);
         triggerSuccess(25, dropX, dropY);
         return true;
       } 
       else {
-        // Qualquer outra situação = erro
-        // Se tentou jogar no escudo, mensagem específica
         if (isInsideCenter) {
           triggerError("Isso é um Mito!", "MITOS NÃO podem ser protegidos pelo escudo! Faça um SWIPE para o LADO (fora do escudo) para descartar.", card.id);
         } else {
@@ -344,12 +441,15 @@ export default function EscudoDaVerdadeGame({
           <div className="bg-amber-600 p-2 rounded-full shadow-lg group-hover:-translate-x-1 transition-transform">
             <ArrowLeft className="text-white w-5 h-5" />
           </div>
-          <span className="font-black text-xl hidden md:inline">Fase 1: Geografia Agrária</span>
-          <span className="font-black text-xl md:hidden">Fase 1</span>
+          <span className="font-black text-xl hidden md:inline">Fase {currentPhaseIndex + 1}: Geografia Agrária</span>
+          <span className="font-black text-xl md:hidden">Fase {currentPhaseIndex + 1}</span>
         </button>
         
         <div className="flex items-center gap-3">
-          {/* Botão "O que cai no ENEM?" - NOVO */}
+          <div className="hidden sm:flex text-slate-400 font-bold text-xs uppercase tracking-widest bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
+            Fase {currentPhaseIndex + 1}/{PHASES.length}
+          </div>
+          
           <button
             onClick={() => setShowEnemModal(true)}
             className="hidden md:flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 px-3 py-2 rounded-xl transition-all duration-200 group border border-amber-500/30"
@@ -359,7 +459,6 @@ export default function EscudoDaVerdadeGame({
             <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">O que cai no ENEM?</span>
           </button>
           
-          {/* Versão mobile do botão ENEM (apenas ícone) */}
           <button
             onClick={() => setShowEnemModal(true)}
             className="md:hidden bg-amber-500/20 hover:bg-amber-500/30 p-2 rounded-xl transition-all duration-200 group border border-amber-500/30"
@@ -368,11 +467,10 @@ export default function EscudoDaVerdadeGame({
             <BookOpen className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
           </button>
           
-          {/* Botão de Informação da Agricultura Familiar ( ! ) */}
           <button
             onClick={() => setShowInfoModal(true)}
             className="bg-amber-500/20 hover:bg-amber-500/30 p-2 rounded-xl transition-all duration-200 group border border-amber-500/30"
-            title="Informações sobre Agricultura Familiar"
+            title="Informações sobre o Tema"
           >
             <Info className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
           </button>
@@ -417,7 +515,6 @@ export default function EscudoDaVerdadeGame({
               </div>
 
               <div className="space-y-6 text-slate-300">
-                {/* Por que estudar isso? */}
                 <div className="bg-amber-950/30 p-5 rounded-2xl border border-amber-500/30">
                   <h3 className="text-amber-400 font-bold text-lg mb-3 flex items-center gap-2">
                     📚 Por que estudar isso?
@@ -429,7 +526,6 @@ export default function EscudoDaVerdadeGame({
                   </p>
                 </div>
 
-                {/* ⚠️ Tópicos Frequentes na Prova */}
                 <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
                   <h3 className="text-amber-400 font-bold text-lg mb-3">⚠️ Tópicos Frequentes na Prova:</h3>
                   <ul className="space-y-3 text-sm">
@@ -464,7 +560,6 @@ export default function EscudoDaVerdadeGame({
                   </ul>
                 </div>
 
-                {/* Dica de Mestre */}
                 <div className="bg-emerald-950/30 p-4 rounded-xl border border-emerald-500/30 text-center">
                   <p className="text-sm text-emerald-300">
                     💡 <strong>Dica de Mestre:</strong> Ao completar os relatórios deste jogo, você estará exercitando exatamente o raciocínio de 
@@ -485,7 +580,7 @@ export default function EscudoDaVerdadeGame({
         )}
       </AnimatePresence>
 
-      {/* MODAL DE INFORMAÇÕES DA AGRICULTURA FAMILIAR ( ! ) */}
+      {/* MODAL DE INFORMAÇÕES ( ! ) DINÂMICO PARA CADA FASE */}
       <AnimatePresence>
         {showInfoModal && (
           <motion.div
@@ -505,7 +600,7 @@ export default function EscudoDaVerdadeGame({
               <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
                   <Tractor className="w-8 h-8 text-emerald-400" />
-                  <h2 className="text-2xl md:text-3xl font-black text-white">Agricultura Familiar</h2>
+                  <h2 className="text-2xl md:text-3xl font-black text-white">{currentPhase.title}</h2>
                 </div>
                 <button
                   onClick={() => setShowInfoModal(false)}
@@ -515,50 +610,87 @@ export default function EscudoDaVerdadeGame({
                 </button>
               </div>
 
+              {/* RENDERIZAÇÃO DINÂMICA: FASE 1 ou FASE 2 */}
               <div className="space-y-6 text-slate-300">
-                <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                  <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5" />
-                    O que é Agricultura Familiar?
-                  </h3>
-                  <p className="leading-relaxed">
-                    A agricultura familiar é um modelo de produção rural onde a gestão, a propriedade e a maior parte do trabalho 
-                    são realizados por pessoas que possuem laços de parentesco ou convivência. No Brasil, ela é responsável por 
-                    garantir a segurança alimentar da população, produzindo a maior parte dos alimentos que chegam à mesa dos brasileiros.
-                  </p>
-                </div>
+                {currentPhase.id === 1 ? (
+                  // CONTEÚDO DA FASE 1 (Agricultura Familiar)
+                  <>
+                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5" />
+                        O que é Agricultura Familiar?
+                      </h3>
+                      <p className="leading-relaxed">
+                        A agricultura familiar é um modelo de produção rural onde a gestão, a propriedade e a maior parte do trabalho 
+                        são realizados por pessoas que possuem laços de parentesco ou convivência. No Brasil, ela é responsável por 
+                        garantir a segurança alimentar da população, produzindo a maior parte dos alimentos que chegam à mesa dos brasileiros.
+                      </p>
+                    </div>
 
-                <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                  <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-start gap-2">🌱 <span><strong>Abastecimento interno:</strong> Produz cerca de 70% da comida consumida no Brasil</span></li>
-                    <li className="flex items-start gap-2">👨‍🌾 <span><strong>Geração de empregos:</strong> Absorve a maior parte da mão de obra no campo</span></li>
-                    <li className="flex items-start gap-2">🥬 <span><strong>Diversidade alimentar:</strong> Cultiva feijão, mandioca, hortaliças, frutas, etc.</span></li>
-                    <li className="flex items-start gap-2">🏘️ <strong>Economia local:</strong> Principal fonte de renda de milhares de municípios pequenos</li>
-                    <li className="flex items-start gap-2">🌳 <strong>Sustentabilidade:</strong> Preserva mais a biodiversidade que o agronegócio</li>
-                    <li className="flex items-start gap-2">⚠️ <strong>Desafios:</strong> Sofre com falta de assistência técnica e crédito rural</li>
-                    <li className="flex items-start gap-2">👪 <strong>Mão de obra familiar:</strong> Trabalho dividido entre os membros da família</li>
-                    <li className="flex items-start gap-2">📜 <strong>Ligação cultural:</strong> Forte relação com a posse histórica da terra</li>
-                    <li className="flex items-start gap-2">🍽️ <strong>Segurança alimentar:</strong> Essencial para evitar fome e escassez</li>
-                  </ul>
-                </div>
+                    <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🌱 <span><strong>Abastecimento interno:</strong> Produz cerca de 70% da comida consumida no Brasil</span></li>
+                        <li className="flex items-start gap-2">👨‍🌾 <span><strong>Geração de empregos:</strong> Absorve a maior parte da mão de obra no campo</span></li>
+                        <li className="flex items-start gap-2">🥬 <span><strong>Diversidade alimentar:</strong> Cultiva feijão, mandioca, hortaliças, frutas, etc.</span></li>
+                        <li className="flex items-start gap-2">🏘️ <strong>Economia local:</strong> Principal fonte de renda de milhares de municípios pequenos</li>
+                        <li className="flex items-start gap-2">🌳 <strong>Sustentabilidade:</strong> Preserva mais a biodiversidade que o agronegócio</li>
+                        <li className="flex items-start gap-2">⚠️ <strong>Desafios:</strong> Sofre com falta de assistência técnica e crédito rural</li>
+                        <li className="flex items-start gap-2">👪 <strong>Mão de obra familiar:</strong> Trabalho dividido entre os membros da família</li>
+                      </ul>
+                    </div>
 
-                <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
-                  <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS sobre Agricultura Familiar:</h3>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-start gap-2">💰 <span><strong>Financiamento:</strong> NÃO recebe a maior fatia dos financiamentos (quem recebe é o agronegócio)</span></li>
-                    <li className="flex items-start gap-2">📦 <span><strong>Exportação:</strong> NÃO foca em exportação de commodities (foco é o mercado interno)</span></li>
-                    <li className="flex items-start gap-2">🏞️ <span><strong>Tamanho da terra:</strong> NÃO ocupa as maiores propriedades (são minifúndios)</span></li>
-                    <li className="flex items-start gap-2">🤖 <span><strong>Tecnologia:</strong> NÃO é altamente mecanizada (baixo nível tecnológico)</span></li>
-                    <li className="flex items-start gap-2">🌽 <span><strong>Cultivo:</strong> NÃO planta principalmente soja (planta alimentos, não commodities)</span></li>
-                    <li className="flex items-start gap-2">🌲 <span><strong>Desmatamento:</strong> NÃO é responsável pelo desmatamento da Amazônia (quem causa é o agronegócio)</span></li>
-                  </ul>
-                </div>
+                    <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
+                      <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS sobre Agricultura Familiar:</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">💰 <span><strong>Financiamento:</strong> NÃO recebe a maior fatia dos financiamentos (quem recebe é o agronegócio)</span></li>
+                        <li className="flex items-start gap-2">📦 <span><strong>Exportação:</strong> NÃO foca em exportação de commodities</span></li>
+                        <li className="flex items-start gap-2">🏞️ <span><strong>Tamanho da terra:</strong> NÃO ocupa as maiores propriedades (são minifúndios)</span></li>
+                        <li className="flex items-start gap-2">🤖 <span><strong>Tecnologia:</strong> NÃO é altamente mecanizada (baixo nível tecnológico)</span></li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  // CONTEÚDO DA FASE 2 (Agronegócio)
+                  <>
+                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                        <Tractor className="w-5 h-5" />
+                        O que é o Agronegócio?
+                      </h3>
+                      <p className="leading-relaxed">
+                        O agronegócio (ou <em>agribusiness</em>) é uma rede complexa que envolve desde a produção no campo até à indústria, laboratórios e mercado financeiro. No Brasil, baseia-se na produção em larga escala de "commodities" (como soja, milho e carne) focada principalmente na exportação e no lucro.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🌍 <span><strong>Exportação:</strong> Foco absoluto no mercado externo e ração animal</span></li>
+                        <li className="flex items-start gap-2">🚜 <span><strong>Alta mecanização:</strong> Usa muita tecnologia e gera POUCOS empregos diretos</span></li>
+                        <li className="flex items-start gap-2">🗺️ <span><strong>Latifúndios:</strong> Baseado na concentração de grandes extensões de terra</span></li>
+                        <li className="flex items-start gap-2">🧪 <span><strong>Agroquímicos:</strong> Uso intensivo de defensivos e fertilizantes</span></li>
+                        <li className="flex items-start gap-2">🏭 <span><strong>Integração:</strong> O campo está altamente ligado à indústria e bolsas de valores</span></li>
+                        <li className="flex items-start gap-2">🏛️ <span><strong>Poder político:</strong> Forte influência através da Bancada Ruralista</span></li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
+                      <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS sobre o Agronegócio:</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🍽️ <span><strong>Mesa do brasileiro:</strong> NÃO garante a comida barata na nossa mesa diariamente</span></li>
+                        <li className="flex items-start gap-2">🌳 <span><strong>Sustentabilidade:</strong> NÃO protege a biodiversidade (avança sobre o Cerrado e Amazónia)</span></li>
+                        <li className="flex items-start gap-2">👨‍🌾 <span><strong>Pequenos produtores:</strong> NÃO é formado maioritariamente por camponeses ou cooperativas pequenas</span></li>
+                        <li className="flex items-start gap-2">💼 <span><strong>Empregos:</strong> NÃO absorve a mão de obra desempregada das cidades</span></li>
+                        <li className="flex items-start gap-2">⚖️ <span><strong>Desigualdade:</strong> NÃO resolveu o problema da distribuição de terras no Brasil</span></li>
+                      </ul>
+                    </div>
+                  </>
+                )}
 
                 <div className="bg-blue-950/30 p-4 rounded-xl border border-blue-500/30 text-center">
                   <p className="text-sm text-blue-300">
-                    💡 <strong>Dica:</strong> Lembre-se: A agricultura familiar alimenta o Brasil, gera empregos e preserva a cultura local. 
-                    Já o agronegócio foca na exportação de commodities (soja, milho, carne) em larga escala.
+                    💡 <strong>Dica:</strong> Lembre-se: A fase atual testa exatamente estes conhecimentos. Arraste as verdades para a imagem e jogue os mitos fora!
                   </p>
                 </div>
 
@@ -580,39 +712,46 @@ export default function EscudoDaVerdadeGame({
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-8 text-center shadow-2xl">
             <ShieldCheck className="w-20 h-20 text-emerald-400 mx-auto mb-6" />
             <h1 className="text-3xl font-black mb-4">Escudo da Verdade</h1>
-            <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">Agricultura Familiar</h2>
+            <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">Agricultura Familiar & Agronegócio</h2>
             
             <div className="text-left bg-slate-950 p-5 md:p-6 rounded-2xl border border-slate-800 space-y-4 mb-8 text-sm text-slate-300">
-              <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito!</p>
+              <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito ao longo de {PHASES.length} fases!</p>
               <div className="bg-emerald-950/50 p-3 rounded-xl border border-emerald-500/30">
                 <p className="flex items-center gap-2 text-emerald-300">
-                  <ShieldCheck className="w-5 h-5" />
+                  <ShieldCheck className="w-5 h-5 flex-shrink-0" />
                   <span><strong>Verdades:</strong> Arraste para perto do ESCUDO no centro da tela. (Vale 50 pts)</span>
                 </p>
               </div>
               <div className="bg-red-950/50 p-3 rounded-xl border border-red-500/30">
                 <p className="flex items-center gap-2 text-red-300">
-                  <MoveRight className="w-5 h-5" />
+                  <MoveRight className="w-5 h-5 flex-shrink-0" />
                   <span><strong>Mitos:</strong> Faça um SWIPE rápido para o lado (esquerda/direita). (Vale 25 pts)</span>
                 </p>
                 <p className="text-xs text-red-400 mt-1 ml-7">⚠️ IMPORTANTE: O swipe deve ser feito FORA da área do escudo!</p>
               </div>
               <div className="bg-amber-950/50 p-3 rounded-xl border border-amber-500/30">
                 <p className="flex items-center gap-2 text-amber-300">
-                  <BookOpen className="w-5 h-5" />
+                  <BookOpen className="w-5 h-5 flex-shrink-0" />
                   <span><strong>Dica ENEM:</strong> Clique no botão <strong>"O que cai no ENEM?"</strong> no canto superior direito para saber os tópicos cobrados na prova!</span>
                 </p>
               </div>
               <div className="bg-blue-950/50 p-3 rounded-xl border border-blue-500/30">
                 <p className="flex items-center gap-2 text-blue-300">
-                  <Info className="w-5 h-5" />
-                  <span><strong>Dica:</strong> Clique no botão <strong>"!"</strong> para consultar informações detalhadas sobre Agricultura Familiar!</span>
+                  <Info className="w-5 h-5 flex-shrink-0" />
+                  <span><strong>Dica:</strong> Clique no botão <strong>"!"</strong> para consultar informações detalhadas sobre a fase atual!</span>
                 </p>
               </div>
               <p className="text-yellow-500 text-xs text-center mt-2">⚠️ Se errar, a carta volta e você perde 10 pontos!</p>
             </div>
 
-            <Button onClick={() => setStatus("playing")} className="w-full bg-emerald-600 hover:bg-emerald-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105">
+            <Button 
+              onClick={() => {
+                // Injetamos as cartas da primeira fase logo ao clicar em iniciar
+                setAvailableCards([...PHASES[0].cards].sort(() => Math.random() - 0.5));
+                setStatus("playing");
+              }} 
+              className="w-full bg-emerald-600 hover:bg-emerald-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105"
+            >
               Iniciar Missão
             </Button>
           </motion.div>
@@ -622,14 +761,21 @@ export default function EscudoDaVerdadeGame({
       {/* JOGO PRINCIPAL */}
       {status === "playing" && (
         <div ref={containerRef} className="flex-1 flex flex-col items-center w-full max-w-5xl mx-auto relative pt-4 pb-2">
-          {/* TÍTULO */}
+          {/* TÍTULO DINÂMICO */}
           <div className="text-center mb-6 flex-shrink-0 px-4">
             <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
-              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Tema: Agricultura Familiar</h2>
+              <motion.h2 
+                key={currentPhase.id} 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-2xl md:text-3xl font-black text-white tracking-tight"
+              >
+                Tema: {currentPhase.title}
+              </motion.h2>
               <button
                 onClick={() => setShowInfoModal(true)}
                 className="bg-amber-500/20 hover:bg-amber-500/30 p-2 rounded-full transition-all duration-200 group border border-amber-500/30"
-                title="Informações sobre Agricultura Familiar"
+                title="Informações sobre o Tema"
               >
                 <Info className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
               </button>
@@ -637,44 +783,40 @@ export default function EscudoDaVerdadeGame({
             <p className="text-slate-400 text-sm md:text-base font-medium mt-1">🛡️ Arraste as afirmações de VERDADES para perto da imagem | 👉 SWIPE nas afirmações de MITOS para descartar (FORA do escudo)</p>
           </div>
 
-          {/* ZONA CENTRAL: ESCUDO */}
+          {/* ZONA CENTRAL: ESCUDO (A imagem muda com a fase) */}
           <div className="relative w-full flex justify-center items-center py-2 md:py-8 flex-shrink-0 px-4">
             <div className="flex flex-col items-center">
-            
-              {/* Área de detecção visualmente indicada por um anel ao redor */}
-             {/* Área de detecção visualmente indicada */}
              <div className="relative">
-  <div className="absolute inset-0 -m-8 rounded-full border-2 border-emerald-500/30 border-dashed animate-pulse pointer-events-none"></div>
-  <div
-    ref={dropzoneRef}
-    className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] rounded-full border-4 border-dashed border-emerald-700/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
-    onClick={() => setZoomedImage("/images/geografia/agricultura-familiar.png")}
-  >
-    {/* IMAGEM COM AS CORES NORMAIS (removido o mix-blend-luminosity e a opacidade) */}
-    <img 
-      src="/images/geografia/agricultura-familiar.png" 
-      alt="Agricultura Familiar"
-      className="w-full h-full object-cover rounded-full"
-      onError={(e) => { e.currentTarget.style.display = "none"; }}
-    />
-    
-    <div className="absolute bg-black/60 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
-      <ZoomIn className="w-6 h-6 md:w-8 md:h-8 text-white" />
-    </div>
-    
-    {/* O ícone do Trator foi totalmente removido daqui */}
-    
-    {shieldedCards.length > 0 && (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 rounded-full shadow-[0_0_50px_rgba(16,185,129,0.6)] border-4 border-emerald-500 pointer-events-none" />
-    )}
-  </div>
-</div>
+                <div className="absolute inset-0 -m-8 rounded-full border-2 border-emerald-500/30 border-dashed animate-pulse pointer-events-none"></div>
+                <div
+                  ref={dropzoneRef}
+                  className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] rounded-full border-4 border-dashed border-emerald-700/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
+                  onClick={() => setZoomedImage(currentPhase.imageSrc)}
+                >
+                  <motion.img 
+                    key={currentPhase.imageSrc}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    src={currentPhase.imageSrc} 
+                    alt={currentPhase.title}
+                    className="w-full h-full object-cover rounded-full"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                  
+                  <div className="absolute bg-black/60 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <ZoomIn className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                  </div>
+                  
+                  {shieldedCards.length > 0 && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 rounded-full shadow-[0_0_50px_rgba(16,185,129,0.6)] border-4 border-emerald-500 pointer-events-none" />
+                  )}
+                </div>
+              </div>
               <p className="text-emerald-400/70 text-[10px] mt-2 text-center">✨ Área de proteção - Solte a VERDADE aqui ✨</p>
               <p className="text-red-400/70 text-[10px] mt-1 text-center">⚠️ MITOS não podem ser soltos nesta área!</p>
             </div>
           </div>
 
-          {/* DICA DE SWIPE */}
           <div className="text-center mb-3">
             <div className="inline-flex items-center gap-2 bg-red-500/10 px-4 py-1.5 rounded-full border border-red-500/30">
               <MoveRight className="w-4 h-4 text-red-400" />
@@ -682,8 +824,8 @@ export default function EscudoDaVerdadeGame({
             </div>
           </div>
 
-          {/* REGISTO DE VERDADES */}
-          <div className="flex flex-col gap-1.5 md:gap-2 w-full px-4 items-center pointer-events-none mt-2 flex-shrink-0">
+          {/* REGISTO DE VERDADES DA FASE */}
+          <div className="flex flex-col gap-1.5 md:gap-2 w-full px-4 items-center pointer-events-none mt-2 flex-shrink-0 min-h-[80px]">
             <AnimatePresence>
               {shieldedCards.slice(-2).map((card) => (
                 <motion.div key={`log-${card.id}`} initial={{ opacity: 0, y: -10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="bg-emerald-950/95 backdrop-blur-sm border border-emerald-600/80 text-emerald-100 p-2 md:p-3 rounded-xl text-center text-[11px] md:text-sm font-bold shadow-lg w-full max-w-lg truncate">
@@ -694,16 +836,13 @@ export default function EscudoDaVerdadeGame({
             </AnimatePresence>
             {shieldedCards.length > 0 && (
               <div className="text-emerald-500 text-[10px] md:text-xs font-bold bg-slate-900/90 px-4 py-1.5 rounded-full border border-emerald-500/30 mt-1">
-                Total: {shieldedCards.length} respostas corretas
+                Total: {shieldedCards.length} respostas corretas na Fase {currentPhaseIndex + 1}
               </div>
             )}
           </div>
 
-        {/* --- ÁREA INFERIOR: CARTAS DE JOGAR --- */}
-          {/* Adicionámos -translate-y-[10px] no final desta div para a mover 10 pixels para cima */}
+          {/* --- ÁREA INFERIOR: CARTAS DE JOGAR --- */}
           <div className="flex-1 w-full relative flex items-center justify-center pb-[5%] md:pb-12 mt-4 md:mt-8 z-50 px-2 md:px-4 min-h-[160px] md:min-h-[220px] -translate-y-[30px]">
-            
-            {/* O container interno agora usa Flexbox Wrappable no mobile para não sobrepor */}
             <div className="w-full max-w-2xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-center gap-2 sm:gap-4 md:gap-5">
               <AnimatePresence mode="popLayout">
                 {availableCards.slice(0, 3).map((card, index) => (
@@ -727,8 +866,9 @@ export default function EscudoDaVerdadeGame({
                       const dropX = info.point.x;
                       const dropY = info.point.y;
                       const offsetX = info.offset.x;
+                      const velocityX = info.velocity.x;
                       
-                      const wasConsumed = processDrop(card, dropX, dropY, offsetX);
+                      const wasConsumed = processDrop(card, dropX, dropY, offsetX, velocityX);
                       
                       if (!wasConsumed) {
                         setDragErrorCardId(card.id);
@@ -749,16 +889,13 @@ export default function EscudoDaVerdadeGame({
                       damping: 30,
                       x: { duration: 0.15 }
                     }}
-                    // CLASSES RESPONSIVAS:
-                    // No telemóvel, as cartas ficam ligeiramente mais estreitas e baixas, ocupando um pouco menos de um terço do espaço.
-                    // Em ecrãs médios (md:), expandem para o tamanho original.
-                    className="bg-[#0A1024] hover:bg-[#121b36] border-2 border-[#1e2a4a] p-2 md:p-5 rounded-xl md:rounded-2xl flex-shrink-0 w-[30%] sm:w-[31%] max-w-[200px] h-[110px] sm:h-[130px] md:h-[170px] shadow-2xl cursor-grab active:cursor-grabbing flex items-center justify-center text-center relative touch-none transition-colors duration-200"
+                    className="bg-[#0A1024] hover:bg-[#121b36] border-2 border-[#1e2a4a] p-2 md:p-5 rounded-xl md:rounded-2xl flex-shrink-0 w-[30%] sm:w-[31%] max-w-[200px] h-[110px] sm:h-[130px] md:h-[170px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing flex items-center justify-center text-center relative touch-none transition-colors duration-200"
                     style={{ touchAction: "none" }}
                   >
                     {availableCards.length > 3 && (
                       <>
-                        <div className="absolute inset-0 bg-[#070b1a] border-2 border-[#1e2a4a] rounded-xl md:rounded-2xl -z-10 translate-y-1 translate-x-1 md:translate-y-1.5 md:translate-x-1.5 opacity-60 pointer-events-none"></div>
-                        <div className="absolute inset-0 bg-[#04060f] border-2 border-[#1e2a4a] rounded-xl md:rounded-2xl -z-20 translate-y-2 translate-x-2 md:translate-y-3 md:translate-x-3 opacity-30 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[#070b1a] border-2 border-[#1e2a4a] rounded-xl md:rounded-2xl -z-10 translate-y-1.5 translate-x-1.5 md:translate-y-2 md:translate-x-2 opacity-70 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[#04060f] border-2 border-[#1e2a4a] rounded-xl md:rounded-2xl -z-20 translate-y-3 translate-x-3 md:translate-y-4 md:translate-x-4 opacity-40 pointer-events-none"></div>
                       </>
                     )}
 
@@ -772,14 +909,42 @@ export default function EscudoDaVerdadeGame({
 
             {availableCards.length > 0 && (
               <div className="absolute bottom-0 md:bottom-2 text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest animate-pulse pointer-events-none w-full text-center">
-                RESTAM {availableCards.length} CARTAS
+                RESTAM {availableCards.length} CARTAS NA FASE {currentPhaseIndex + 1}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* MODAIS */}
+      {/* --- MODAL TRANSIÇÃO DE FASE --- */}
+      <AnimatePresence>
+        {status === "phase_transition" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
+            <motion.div initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(16,185,129,0.2)]">
+              <CheckCircle2 className="w-24 h-24 text-emerald-400 mx-auto mb-6" />
+              <h2 className="text-3xl font-black text-white mb-2">Fase {currentPhaseIndex + 1} Concluída!</h2>
+              <p className="text-slate-400 mb-6">Classificaste com sucesso as características da {currentPhase.title}.</p>
+              
+              <Button 
+                onClick={() => {
+                  const nextIndex = currentPhaseIndex + 1;
+                  const nextPhase = PHASES[nextIndex];
+                  
+                  setAvailableCards([...nextPhase.cards].sort(() => Math.random() - 0.5));
+                  setShieldedCards([]);
+                  setCurrentPhaseIndex(nextIndex);
+                  setStatus("playing");
+                }} 
+                className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105"
+              >
+                Avançar para a Fase {currentPhaseIndex + 2}
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAIS GERAIS (Erros, Zoom e Vitória) */}
       <AnimatePresence>
         {zoomedImage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[250] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4" onClick={() => setZoomedImage(null)}>
@@ -809,13 +974,12 @@ export default function EscudoDaVerdadeGame({
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
             <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(16,185,129,0.2)]">
               <CheckCircle2 className="w-24 h-24 text-emerald-400 mx-auto mb-6" />
-              <h2 className="text-3xl font-black text-white mb-2">Fase Concluída!</h2>
-              <p className="text-slate-400 mb-6">Você formou o Escudo da Verdade e protegeu a Agricultura Familiar de todas as falsas informações.</p>
+              <h2 className="text-3xl font-black text-white mb-2">Missão Concluída!</h2>
+              <p className="text-slate-400 mb-6">Dominaste a diferença entre Agricultura Familiar e Agronegócio e protegeste o conhecimento de todas as falsas informações.</p>
               <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 mb-8 shadow-inner">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Pontuação Adquirida</p>
+                <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Pontuação Total Adquirida</p>
                 <p className="text-6xl font-black text-emerald-400 drop-shadow-md">{score}</p>
               </div>
-              
               <Button onClick={() => onSaveScore && onSaveScore(score)} className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105">
                 Salvar e Avançar (+{score})
               </Button>

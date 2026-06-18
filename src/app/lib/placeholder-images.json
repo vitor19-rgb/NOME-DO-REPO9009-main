@@ -108,6 +108,12 @@
       "description": "Imagem placeholder para notícias da seção geopolítica.",
       "imageUrl": "/images/geografia/agricultura-familiar.png",
       "imageHint": "geopolitics breaking news placeholder"
+    },
+    {
+      "id": "news-placeholder7",
+      "description": "Imagem placeholder para notícias da seção geopolítica.",
+      "imageUrl": "/images/geografia/agronegocio.png",
+      "imageHint": "geopolitics breaking news placeholder"
     }
       
   ]

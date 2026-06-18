@@ -182,7 +182,7 @@ export default function App() {
                 setAccumulatedScore(score); 
                 
                 // São 5 cartas a 50 pontos cada, somando o máximo de 250 pontos na Fase 1
-                setMaxTrackScore(600); 
+                setMaxTrackScore(1200); 
                 setFinalTrackName('Trilha Geografia Agrária'); 
                 
                 setCurrentScreen('resultado_final'); 
