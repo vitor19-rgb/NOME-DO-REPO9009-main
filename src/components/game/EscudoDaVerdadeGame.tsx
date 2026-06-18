@@ -326,7 +326,6 @@ const ESTRUTURA_FUNDIARIA_CARDS: CardItem[] = [
 
 // --- DADOS DA FASE 4 (15 Cartas: O Avanço do MATOPIBA) ---
 const MATOPIBA_CARDS: CardItem[] = [
-  // --- 9 VERDADES (Conectar ao Centro) ---
   {
     id: "f4-v1",
     text: "A sigla MATOPIBA refere-se a áreas dos estados do Maranhão, Tocantins, Piauí e Bahia.",
@@ -381,8 +380,6 @@ const MATOPIBA_CARDS: CardItem[] = [
     type: "truth",
     explanation: "Correto! A rápida valorização da terra atrai grileiros que roubam terras públicas e expulsam pequenos camponeses."
   },
-
-  // --- 6 MITOS (Rejeitar / Jogar fora) ---
   {
     id: "f4-m1",
     text: "Essa expansão agrícola ocorre de forma pacífica e resolve os problemas sociais da região.",
@@ -421,6 +418,103 @@ const MATOPIBA_CARDS: CardItem[] = [
   }
 ];
 
+// --- DADOS DA FASE 5 (15 Cartas: Reforma Agrária / Função Social da Terra) ---
+const REFORMA_AGRARIA_CARDS: CardItem[] = [
+  // --- 9 VERDADES (Conectar ao Centro) ---
+  {
+    id: "f5-v1",
+    text: "A Constituição determina que toda a propriedade rural deve cumprir a sua Função Social.",
+    type: "truth",
+    explanation: "Correto! A lei exige que a terra seja produtiva, respeite o meio ambiente e as leis trabalhistas."
+  },
+  {
+    id: "f5-v2",
+    text: "Grandes latifúndios improdutivos podem ser desapropriados pelo Estado para Reforma Agrária.",
+    type: "truth",
+    explanation: "Correto! Se a terra estiver abandonada ou servir apenas para especulação, o governo pode intervir."
+  },
+  {
+    id: "f5-v3",
+    text: "Propriedades altamente produtivas não podem ser desapropriadas para fins de Reforma Agrária.",
+    type: "truth",
+    explanation: "Correto! A Constituição protege a propriedade privada que está a gerar riqueza e a cumprir a sua função social."
+  },
+  {
+    id: "f5-v4",
+    text: "A desapropriação de terras improdutivas garante uma indemnização ao proprietário original.",
+    type: "truth",
+    explanation: "Correto! O Estado não 'rouba' a terra; o dono é indemnizado através de Títulos da Dívida Agrária."
+  },
+  {
+    id: "f5-v5",
+    text: "A Reforma Agrária visa diminuir a extrema concentração de terras e a pobreza no campo.",
+    type: "truth",
+    explanation: "Correto! O objetivo principal é democratizar o acesso à terra para quem nela quer trabalhar."
+  },
+  {
+    id: "f5-v6",
+    text: "Os assentamentos rurais são focados, na sua maioria, na agricultura familiar e na policultura.",
+    type: "truth",
+    explanation: "Correto! As famílias assentadas produzem grande parte dos alimentos que abastecem os mercados locais."
+  },
+  {
+    id: "f5-v7",
+    text: "Terras com trabalho escravo ou cultivo de drogas ilegais são confiscadas sem indemnização.",
+    type: "truth",
+    explanation: "Correto! Nesses casos de crimes graves, a terra é expropriada (confiscada) e o dono perde o direito ao dinheiro."
+  },
+  {
+    id: "f5-v8",
+    text: "Movimentos sociais (como o MST) pressionam o Estado para que a lei da Função Social seja cumprida.",
+    type: "truth",
+    explanation: "Correto! As ocupações de terras ociosas são uma forma de pressão política para forçar o governo a realizar os assentamentos."
+  },
+  {
+    id: "f5-v9",
+    text: "Uma verdadeira Reforma Agrária exige também acesso a crédito, tecnologia e infraestrutura.",
+    type: "truth",
+    explanation: "Correto! Não basta apenas entregar o lote de terra; o agricultor precisa de estradas e financiamento para conseguir produzir."
+  },
+
+  // --- 6 MITOS (Rejeitar / Jogar fora) ---
+  {
+    id: "f5-m1",
+    text: "Qualquer terra privada no Brasil, mesmo as que produzem muito, pode ser tomada pelo governo.",
+    type: "myth",
+    explanation: "Mito! Terras produtivas que cumprem a lei são protegidas pela Constituição e não podem ser desapropriadas para Reforma Agrária."
+  },
+  {
+    id: "f5-m2",
+    text: "A Função Social da terra é cumprida apenas com o pagamento dos impostos rurais (ITR) em dia.",
+    type: "myth",
+    explanation: "Erro! Pagar impostos não chega. A terra tem de ser economicamente útil, proteger a natureza e respeitar os trabalhadores."
+  },
+  {
+    id: "f5-m3",
+    text: "A Reforma Agrária tem como objetivo acabar com o agronegócio e as exportações do Brasil.",
+    type: "myth",
+    explanation: "Incorreto! O alvo não é a terra produtiva do agronegócio, mas sim o latifúndio improdutivo mantido apenas para especulação imobiliária."
+  },
+  {
+    id: "f5-m4",
+    text: "O proprietário de um latifúndio desapropriado perde a terra sem receber qualquer valor financeiro.",
+    type: "myth",
+    explanation: "Mito! A lei garante a indemnização do valor da terra (em títulos públicos) e das benfeitorias úteis (em dinheiro)."
+  },
+  {
+    id: "f5-m5",
+    text: "Manter terras ociosas e vazias à espera de valorização imobiliária é uma atividade produtiva para a lei.",
+    type: "myth",
+    explanation: "Erro grave! A especulação imobiliária com terras rurais é exatamente o que viola a Função Social da propriedade."
+  },
+  {
+    id: "f5-m6",
+    text: "As famílias que recebem terras da Reforma Agrária podem vendê-las no dia seguinte a grandes empresas.",
+    type: "myth",
+    explanation: "Mito! Os beneficiários não recebem a escritura definitiva imediatamente. Não podem vender ou arrendar o lote durante anos."
+  }
+];
+
 // --- ESTRUTURA DE FASES (Array que contém todas as fases) ---
 const PHASES: PhaseType[] = [
   {
@@ -438,14 +532,20 @@ const PHASES: PhaseType[] = [
   {
     id: 3,
     title: "A Herança Desigual (Estrutura Fundiária)",
-    imageSrc: "/images/geografia/estrutura-fundiaria.png", // Certifique-se de adicionar esta imagem
+    imageSrc: "/images/geografia/estrutura-fundiaria.png",
     cards: ESTRUTURA_FUNDIARIA_CARDS
   },
   {
     id: 4,
     title: "O Avanço do MATOPIBA",
-    imageSrc: "/images/geografia/matopiba.png", // Certifique-se de adicionar esta imagem
+    imageSrc: "/images/geografia/matopiba.png",
     cards: MATOPIBA_CARDS
+  },
+  {
+    id: 5,
+    title: "O Alvo da Lei (Função Social e Reforma Agrária)",
+    imageSrc: "/images/geografia/reforma-agraria.png", // Imagem para a fase 5
+    cards: REFORMA_AGRARIA_CARDS
   }
 ];
 
@@ -497,19 +597,16 @@ export default function EscudoDaVerdadeGame({
 
   // 2. Deteta Condição de Vitória (Fim do Baralho da fase atual)
   useEffect(() => {
-    // Só prossegue para validação se o jogo estiver a correr E as cartas tiverem acabado
     if (status === "playing" && availableCards.length === 0) {
       if (currentPhaseIndex < PHASES.length - 1) {
-        // Se existir uma próxima fase, vai para a transição
         setTimeout(() => setStatus("phase_transition"), 800);
       } else {
-        // Se for a última fase, vai para a vitória final
         setTimeout(() => setStatus("victory"), 800);
       }
     }
   }, [availableCards.length, status, currentPhaseIndex]);
 
-  // --- SISTEMAS DE EFEITOS VISUAIS E AVISOS ---
+  // 3. Sistema de Punição Educativa
   const triggerError = (title: string, desc: string, cardId: string) => {
     setFlashRed(true);
     setTimeout(() => setFlashRed(false), 300);
@@ -520,6 +617,7 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setDragErrorCardId(null), 400);
   };
 
+  // 4. Sistema de Feedback Visual para acertos
   const triggerSuccess = (points: number, clientX: number, clientY: number) => {
     setFlashGreen(true);
     setTimeout(() => setFlashGreen(false), 300);
@@ -528,6 +626,7 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setFloatingPoints(null), 800);
   };
 
+  // 5. Mostrar erro de área inválida
   const showAreaError = (x: number, y: number) => {
     setAreaError({ show: true, x, y });
     setTimeout(() => setAreaError({ show: false, x: 0, y: 0 }), 800);
@@ -922,7 +1021,7 @@ export default function EscudoDaVerdadeGame({
                       </ul>
                     </div>
                   </>
-                ) : (
+                ) : currentPhase.id === 4 ? (
                   // CONTEÚDO DA FASE 4 (MATOPIBA)
                   <>
                     <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
@@ -953,6 +1052,39 @@ export default function EscudoDaVerdadeGame({
                         <li className="flex items-start gap-2">👨‍🌾 <span><strong>Empregos:</strong> NÃO gera milhões de empregos rurais (é altamente mecanizado).</span></li>
                         <li className="flex items-start gap-2">🗺️ <span><strong>Região Sul:</strong> NÃO fica no Sul do Brasil.</span></li>
                         <li className="flex items-start gap-2">🥗 <span><strong>Comida:</strong> NÃO é focado em alimentos orgânicos para o mercado interno.</span></li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  // CONTEÚDO DA FASE 5 (Reforma Agrária)
+                  <>
+                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5" />
+                        A Função Social e a Reforma Agrária
+                      </h3>
+                      <p className="leading-relaxed">
+                        Segundo a Constituição, não basta ser dono da terra; ela tem de ser produtiva, respeitar as leis trabalhistas e preservar o meio ambiente. Se um grande latifúndio for improdutivo e servir apenas para especulação, pode ser desapropriado pelo Estado para a Reforma Agrária.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">⚖️ <span><strong>A Lei:</strong> Terras improdutivas podem ser desapropriadas com indemnização.</span></li>
+                        <li className="flex items-start gap-2">🛡️ <span><strong>Proteção:</strong> Propriedades altamente produtivas NÃO podem ser tomadas.</span></li>
+                        <li className="flex items-start gap-2">🚫 <span><strong>Confisco:</strong> Terras com trabalho escravo são confiscadas SEM indemnização.</span></li>
+                        <li className="flex items-start gap-2">🚜 <span><strong>Apoio:</strong> A Reforma Agrária exige também estradas e crédito, não apenas a terra.</span></li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
+                      <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS:</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🏢 <span><strong>Agronegócio:</strong> O objetivo NÃO é acabar com o agronegócio produtivo.</span></li>
+                        <li className="flex items-start gap-2">💸 <span><strong>Impostos:</strong> Pagar impostos (ITR) em dia NÃO garante o cumprimento da função social.</span></li>
+                        <li className="flex items-start gap-2">💰 <span><strong>Roubo:</strong> O Estado NÃO toma a terra sem pagar (há indemnização, exceto em crimes).</span></li>
+                        <li className="flex items-start gap-2">📈 <span><strong>Especulação:</strong> Manter terra parada para valorizar NÃO é atividade produtiva.</span></li>
                       </ul>
                     </div>
                   </>
