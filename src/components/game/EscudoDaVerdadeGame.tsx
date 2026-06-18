@@ -44,7 +44,6 @@ type PhaseType = {
 
 // --- DADOS DA FASE 1 (15 Cartas: Agricultura Familiar) ---
 const INITIAL_CARDS: CardItem[] = [
-  // --- 9 VERDADES ---
   {
     id: "c1",
     text: "Produz cerca de 70% da comida que chega à nossa mesa.",
@@ -99,8 +98,6 @@ const INITIAL_CARDS: CardItem[] = [
     type: "truth",
     explanation: "Perfeito! Sem a agricultura familiar, o Brasil enfrentaria escassez de alimentos básicos.",
   },
-
-  // --- 6 MITOS ---
   {
     id: "c10",
     text: "Recebe a maior fatia dos financiamentos do governo.",
@@ -141,7 +138,6 @@ const INITIAL_CARDS: CardItem[] = [
 
 // --- DADOS DA FASE 2 (15 Cartas: Agronegócio) ---
 const AGRONEGOCIO_CARDS: CardItem[] = [
-  // --- 9 VERDADES (Conectar ao Centro) ---
   {
     id: "f2-v1",
     text: "Baseia-se na monocultura de 'commodities' como soja e milho.",
@@ -196,8 +192,6 @@ const AGRONEGOCIO_CARDS: CardItem[] = [
     type: "truth",
     explanation: "Correto! O setor possui forte representação no Congresso Nacional para aprovar leis que favoreçam a expansão agrícola."
   },
-
-  // --- 6 MITOS (Rejeitar / Jogar fora) ---
   {
     id: "f2-m1",
     text: "É o setor responsável por garantir a comida barata na mesa dos brasileiros.",
@@ -238,7 +232,6 @@ const AGRONEGOCIO_CARDS: CardItem[] = [
 
 // --- DADOS DA FASE 3 (15 Cartas: Estrutura Fundiária) ---
 const ESTRUTURA_FUNDIARIA_CARDS: CardItem[] = [
-  // --- 9 VERDADES (Conectar ao Centro) ---
   {
     id: "f3-v1",
     text: "A Lei de Terras (1850) determinou a compra como única forma de acesso à terra pública.",
@@ -293,8 +286,6 @@ const ESTRUTURA_FUNDIARIA_CARDS: CardItem[] = [
     type: "truth",
     explanation: "Correto! A lei prevê que a terra tem de ser produtiva e respeitar o meio ambiente para não ser alvo de Reforma Agrária."
   },
-
-  // --- 6 MITOS (Rejeitar / Jogar fora) ---
   {
     id: "f3-m1",
     text: "A abolição da escravatura (1888) incluiu a doação de terras para a integração dos ex-escravos.",
@@ -333,6 +324,103 @@ const ESTRUTURA_FUNDIARIA_CARDS: CardItem[] = [
   }
 ];
 
+// --- DADOS DA FASE 4 (15 Cartas: O Avanço do MATOPIBA) ---
+const MATOPIBA_CARDS: CardItem[] = [
+  // --- 9 VERDADES (Conectar ao Centro) ---
+  {
+    id: "f4-v1",
+    text: "A sigla MATOPIBA refere-se a áreas dos estados do Maranhão, Tocantins, Piauí e Bahia.",
+    type: "truth",
+    explanation: "Correto! É a principal e mais recente fronteira de expansão agrícola do Brasil, localizada no encontro do Nordeste com o Norte."
+  },
+  {
+    id: "f4-v2",
+    text: "A expansão ocorre predominantemente sobre a vegetação nativa do bioma Cerrado.",
+    type: "truth",
+    explanation: "Correto! O Cerrado é o bioma mais atingido e desmatado pelo avanço recente das plantações de soja nesta região."
+  },
+  {
+    id: "f4-v3",
+    text: "Gera graves conflitos por terra com comunidades tradicionais, como indígenas e quilombolas.",
+    type: "truth",
+    explanation: "Correto! A expansão dos latifúndios e a grilagem frequentemente invadem e desapropriam territórios historicamente ocupados."
+  },
+  {
+    id: "f4-v4",
+    text: "É impulsionada pelo cultivo altamente mecanizado da soja para exportação.",
+    type: "truth",
+    explanation: "Correto! O motor desta fronteira agrícola é o agronegócio de exportação, usando alta tecnologia e genética avançada."
+  },
+  {
+    id: "f4-v5",
+    text: "Causa profundas alterações no ciclo das águas e esgotamento de recursos hídricos locais.",
+    type: "truth",
+    explanation: "Correto! O desmatamento das raízes profundas do Cerrado e a irrigação intensiva afetam rios, aquíferos e as chuvas."
+  },
+  {
+    id: "f4-v6",
+    text: "Promove uma intensa concentração de terras nas mãos de grandes empresas.",
+    type: "truth",
+    explanation: "Correto! O modelo do MATOPIBA não é feito por pequenos agricultores, mas por empresas capitalizadas que compram vastas áreas."
+  },
+  {
+    id: "f4-v7",
+    text: "Aumenta o PIB da região, mas a riqueza gerada é altamente concentrada e excludente.",
+    type: "truth",
+    explanation: "Correto! Os números económicos globais crescem, mas isso não se traduz em desenvolvimento social ou diminuição da pobreza local."
+  },
+  {
+    id: "f4-v8",
+    text: "Exige pesados investimentos em infraestrutura logística (ferrovias e portos) para escoamento.",
+    type: "truth",
+    explanation: "Correto! Obras como a Ferrovia Norte-Sul e o Porto do Itaqui (MA) são fundamentais para levar as commodities para o exterior."
+  },
+  {
+    id: "f4-v9",
+    text: "A grilagem de terras (falsificação de documentos de posse) é um crime frequente nesta nova fronteira.",
+    type: "truth",
+    explanation: "Correto! A rápida valorização da terra atrai grileiros que roubam terras públicas e expulsam pequenos camponeses."
+  },
+
+  // --- 6 MITOS (Rejeitar / Jogar fora) ---
+  {
+    id: "f4-m1",
+    text: "Essa expansão agrícola ocorre de forma pacífica e resolve os problemas sociais da região.",
+    type: "myth",
+    explanation: "Mito! O MATOPIBA é hoje uma das áreas com maior índice de violência, mortes e conflitos agrários do Brasil."
+  },
+  {
+    id: "f4-m2",
+    text: "O avanço no MATOPIBA é focado na produção orgânica de alimentos para o mercado interno.",
+    type: "myth",
+    explanation: "Incorreto! O foco absoluto é a monocultura de commodities (principalmente soja, milho e algodão) voltada para o mercado internacional."
+  },
+  {
+    id: "f4-m3",
+    text: "É um processo que distribui terras de forma igualitária para camponeses sem-terra.",
+    type: "myth",
+    explanation: "Erro grave! Ocorre exatamente o oposto: o aumento do preço da terra expulsa os pequenos produtores e concentra ainda mais as propriedades."
+  },
+  {
+    id: "f4-m4",
+    text: "A expansão ocorre sem causar desmatamento, aproveitando apenas pastagens já degradadas.",
+    type: "myth",
+    explanation: "Cuidado! O MATOPIBA concentra as maiores taxas de desmatamento de vegetação nativa e intacta do Cerrado dos últimos anos."
+  },
+  {
+    id: "f4-m5",
+    text: "Gera milhões de empregos diretos para a população local, acabando com o desemprego rural.",
+    type: "myth",
+    explanation: "Mito! Por ser altamente mecanizada, a produção de soja exige pouquíssima mão de obra, gerando poucos empregos para os habitantes locais."
+  },
+  {
+    id: "f4-m6",
+    text: "O MATOPIBA localiza-se na região Sul do Brasil, onde o clima frio favorece o plantio da soja.",
+    type: "myth",
+    explanation: "Erro geográfico clássico do ENEM! O MATOPIBA localiza-se no encontro do Nordeste com o Norte (Maranhão, Tocantins, Piauí, Bahia)."
+  }
+];
+
 // --- ESTRUTURA DE FASES (Array que contém todas as fases) ---
 const PHASES: PhaseType[] = [
   {
@@ -352,6 +440,12 @@ const PHASES: PhaseType[] = [
     title: "A Herança Desigual (Estrutura Fundiária)",
     imageSrc: "/images/geografia/estrutura-fundiaria.png", // Certifique-se de adicionar esta imagem
     cards: ESTRUTURA_FUNDIARIA_CARDS
+  },
+  {
+    id: 4,
+    title: "O Avanço do MATOPIBA",
+    imageSrc: "/images/geografia/matopiba.png", // Certifique-se de adicionar esta imagem
+    cards: MATOPIBA_CARDS
   }
 ];
 
@@ -415,7 +509,7 @@ export default function EscudoDaVerdadeGame({
     }
   }, [availableCards.length, status, currentPhaseIndex]);
 
-  // 3. Sistema de Punição Educativa
+  // --- SISTEMAS DE EFEITOS VISUAIS E AVISOS ---
   const triggerError = (title: string, desc: string, cardId: string) => {
     setFlashRed(true);
     setTimeout(() => setFlashRed(false), 300);
@@ -426,7 +520,6 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setDragErrorCardId(null), 400);
   };
 
-  // 4. Sistema de Feedback Visual para acertos
   const triggerSuccess = (points: number, clientX: number, clientY: number) => {
     setFlashGreen(true);
     setTimeout(() => setFlashGreen(false), 300);
@@ -435,7 +528,6 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setFloatingPoints(null), 800);
   };
 
-  // 5. Mostrar erro de área inválida
   const showAreaError = (x: number, y: number) => {
     setAreaError({ show: true, x, y });
     setTimeout(() => setAreaError({ show: false, x: 0, y: 0 }), 800);
@@ -673,7 +765,7 @@ export default function EscudoDaVerdadeGame({
 
                 <div className="bg-emerald-950/30 p-4 rounded-xl border border-emerald-500/30 text-center">
                   <p className="text-sm text-emerald-300">
-                    💡 <strong>Dica de Mestre:</strong> Ao completar os relatórios deste jogo, você estará exercitando exatamente o raciocínio de 
+                    💡 <strong>Dica de Mestre:</strong> Ao jogar, você estará exercitando exatamente o raciocínio de 
                     <strong className="text-emerald-200"> "causa e consequência" </strong> 
                     que as questões do ENEM exigem!
                   </p>
@@ -710,7 +802,7 @@ export default function EscudoDaVerdadeGame({
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
-                  <Tractor className="w-8 h-8 text-emerald-400" />
+                  <ShieldCheck className="w-8 h-8 text-emerald-400" />
                   <h2 className="text-2xl md:text-3xl font-black text-white">{currentPhase.title}</h2>
                 </div>
                 <button
@@ -796,7 +888,7 @@ export default function EscudoDaVerdadeGame({
                       </ul>
                     </div>
                   </>
-                ) : (
+                ) : currentPhase.id === 3 ? (
                   // CONTEÚDO DA FASE 3 (Estrutura Fundiária)
                   <>
                     <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
@@ -830,6 +922,40 @@ export default function EscudoDaVerdadeGame({
                       </ul>
                     </div>
                   </>
+                ) : (
+                  // CONTEÚDO DA FASE 4 (MATOPIBA)
+                  <>
+                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                        <Leaf className="w-5 h-5" />
+                        O que é o MATOPIBA?
+                      </h3>
+                      <p className="leading-relaxed">
+                        O MATOPIBA é a mais recente e vigorosa fronteira agrícola do Brasil. A sigla é formada pelas iniciais dos estados do <strong>Ma</strong>ranhão, <strong>To</strong>cantins, <strong>Pi</strong>auí e <strong>Ba</strong>hia. A região tem sofrido rápida transformação com o avanço da monocultura de exportação, especialmente a soja.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">📍 <span><strong>Localização:</strong> Encontro das regiões Nordeste e Norte.</span></li>
+                        <li className="flex items-start gap-2">🌳 <span><strong>Desmatamento:</strong> Expansão fortíssima sobre o bioma Cerrado.</span></li>
+                        <li className="flex items-start gap-2">⚠️ <span><strong>Conflitos:</strong> Gera graves tensões com indígenas e quilombolas.</span></li>
+                        <li className="flex items-start gap-2">🚜 <span><strong>Mecanização:</strong> Agricultura moderna focada em commodities.</span></li>
+                        <li className="flex items-start gap-2">💧 <span><strong>Água:</strong> Causa impacto severo nos recursos hídricos locais.</span></li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
+                      <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS sobre o MATOPIBA:</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🕊️ <span><strong>Paz no campo:</strong> NÃO é uma expansão pacífica (há muita violência e grilagem).</span></li>
+                        <li className="flex items-start gap-2">👨‍🌾 <span><strong>Empregos:</strong> NÃO gera milhões de empregos rurais (é altamente mecanizado).</span></li>
+                        <li className="flex items-start gap-2">🗺️ <span><strong>Região Sul:</strong> NÃO fica no Sul do Brasil.</span></li>
+                        <li className="flex items-start gap-2">🥗 <span><strong>Comida:</strong> NÃO é focado em alimentos orgânicos para o mercado interno.</span></li>
+                      </ul>
+                    </div>
+                  </>
                 )}
 
                 <div className="bg-blue-950/30 p-4 rounded-xl border border-blue-500/30 text-center">
@@ -856,7 +982,7 @@ export default function EscudoDaVerdadeGame({
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-8 text-center shadow-2xl">
             <ShieldCheck className="w-20 h-20 text-emerald-400 mx-auto mb-6" />
             <h1 className="text-3xl font-black mb-4">Escudo da Verdade</h1>
-            <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">Agricultura Familiar & Agronegócio</h2>
+            <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">O Desafio Agrário</h2>
             
             <div className="text-left bg-slate-950 p-5 md:p-6 rounded-2xl border border-slate-800 space-y-4 mb-8 text-sm text-slate-300">
               <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito ao longo de {PHASES.length} fases!</p>
@@ -1117,7 +1243,7 @@ export default function EscudoDaVerdadeGame({
             <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(16,185,129,0.2)]">
               <CheckCircle2 className="w-24 h-24 text-emerald-400 mx-auto mb-6" />
               <h2 className="text-3xl font-black text-white mb-2">Missão Concluída!</h2>
-              <p className="text-slate-400 mb-6">Dominaste a diferença entre Agricultura Familiar e Agronegócio e protegeste o conhecimento de todas as falsas informações.</p>
+              <p className="text-slate-400 mb-6">Dominaste todas as fases sobre Geografia Agrária e protegeste o conhecimento de todas as falsas informações.</p>
               <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 mb-8 shadow-inner">
                 <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Pontuação Total Adquirida</p>
                 <p className="text-6xl font-black text-emerald-400 drop-shadow-md">{score}</p>
