@@ -236,6 +236,103 @@ const AGRONEGOCIO_CARDS: CardItem[] = [
   }
 ];
 
+// --- DADOS DA FASE 3 (15 Cartas: Estrutura Fundiária) ---
+const ESTRUTURA_FUNDIARIA_CARDS: CardItem[] = [
+  // --- 9 VERDADES (Conectar ao Centro) ---
+  {
+    id: "f3-v1",
+    text: "A Lei de Terras (1850) determinou a compra como única forma de acesso à terra pública.",
+    type: "truth",
+    explanation: "Correto! Isso impediu que pessoas pobres, indígenas e ex-escravos tivessem acesso legal à terra, consolidando o latifúndio."
+  },
+  {
+    id: "f3-v2",
+    text: "O Brasil possui um dos maiores Índices de Gini agrário do mundo.",
+    type: "truth",
+    explanation: "Correto! O Índice de Gini mede a desigualdade, e no campo brasileiro ele é altíssimo, com muita terra nas mãos de muito poucos."
+  },
+  {
+    id: "f3-v3",
+    text: "A raiz da concentração fundiária remonta ao sistema de Capitanias Hereditárias e Sesmarias.",
+    type: "truth",
+    explanation: "Correto! Desde o período colonial, a Coroa Portuguesa distribuía extensas faixas de terra apenas a uma pequena elite."
+  },
+  {
+    id: "f3-v4",
+    text: "A 'Revolução Verde' (modernização do campo) agravou a concentração de terras no Brasil.",
+    type: "truth",
+    explanation: "Correto! Apenas os grandes proprietários tinham capital para comprar os novos tratores e adubos, engolindo os pequenos."
+  },
+  {
+    id: "f3-v5",
+    text: "Os minifúndios são a grande maioria das propriedades, mas ocupam uma minoria da área total.",
+    type: "truth",
+    explanation: "Correto! Quase 90% das propriedades rurais são pequenas, mas juntas não somam nem 25% da área agrícola total do país."
+  },
+  {
+    id: "f3-v6",
+    text: "Latifúndios mantidos ociosos servem frequentemente para especulação imobiliária.",
+    type: "truth",
+    explanation: "Correto! Muitos grandes proprietários mantêm terras improdutivas apenas à espera que elas valorizem para as revenderem."
+  },
+  {
+    id: "f3-v7",
+    text: "A profunda desigualdade na distribuição de terras é a causa principal dos conflitos no campo.",
+    type: "truth",
+    explanation: "Correto! A luta por terras improdutivas que não cumprem a sua função social é a raiz dos movimentos agrários."
+  },
+  {
+    id: "f3-v8",
+    text: "A expansão incontrolada dos grandes latifúndios monocultores impulsionou o êxodo rural.",
+    type: "truth",
+    explanation: "Correto! Sem conseguir competir ou perdendo as suas terras, milhões de camponeses foram forçados a migrar para as cidades."
+  },
+  {
+    id: "f3-v9",
+    text: "A Constituição determina que propriedades que não cumprem a 'função social' podem ser desapropriadas.",
+    type: "truth",
+    explanation: "Correto! A lei prevê que a terra tem de ser produtiva e respeitar o meio ambiente para não ser alvo de Reforma Agrária."
+  },
+
+  // --- 6 MITOS (Rejeitar / Jogar fora) ---
+  {
+    id: "f3-m1",
+    text: "A abolição da escravatura (1888) incluiu a doação de terras para a integração dos ex-escravos.",
+    type: "myth",
+    explanation: "Mito absoluto! Os ex-escravos foram libertos sem qualquer indemnização, acesso à terra ou políticas de integração, sendo marginalizados."
+  },
+  {
+    id: "f3-m2",
+    text: "A Lei de Terras de 1850 foi o primeiro grande projeto de Reforma Agrária do Império.",
+    type: "myth",
+    explanation: "Erro! Foi exatamente o contrário. A lei dificultou o acesso à terra para proteger os interesses dos grandes barões do café."
+  },
+  {
+    id: "f3-m3",
+    text: "A estrutura fundiária brasileira atual é considerada equilibrada e igualitária pela ONU.",
+    type: "myth",
+    explanation: "Incorreto! A nossa estrutura fundiária é reconhecida internacionalmente como uma das mais desiguais e concentradas do planeta."
+  },
+  {
+    id: "f3-m4",
+    text: "Os pequenos produtores (minifúndios) ocupam a maior parte das terras agricultáveis do país.",
+    type: "myth",
+    explanation: "Erro clássico do ENEM! Eles são a maioria em *número de propriedades*, mas a terra que ocupam é minúscula em comparação com os latifúndios."
+  },
+  {
+    id: "f3-m5",
+    text: "A chegada da tecnologia ao campo barateou a terra e facilitou a compra pelos mais pobres.",
+    type: "myth",
+    explanation: "Mito! A mecanização encareceu a produção e o valor da terra, forçando os pequenos agricultores a venderem as suas propriedades aos maiores."
+  },
+  {
+    id: "f3-m6",
+    text: "A grilagem de terras (roubo de terras públicas com documentos falsos) é uma prática extinta no Brasil.",
+    type: "myth",
+    explanation: "Incorreto! A grilagem continua a ser uma prática criminosa muito comum, especialmente nas novas fronteiras agrícolas como o MATOPIBA e a Amazónia."
+  }
+];
+
 // --- ESTRUTURA DE FASES (Array que contém todas as fases) ---
 const PHASES: PhaseType[] = [
   {
@@ -249,6 +346,12 @@ const PHASES: PhaseType[] = [
     title: "A Máquina de Exportação (Agronegócio)",
     imageSrc: "/images/geografia/agronegocio.png",
     cards: AGRONEGOCIO_CARDS
+  },
+  {
+    id: 3,
+    title: "A Herança Desigual (Estrutura Fundiária)",
+    imageSrc: "/images/geografia/estrutura-fundiaria.png", // Certifique-se de adicionar esta imagem
+    cards: ESTRUTURA_FUNDIARIA_CARDS
   }
 ];
 
@@ -292,7 +395,13 @@ export default function EscudoDaVerdadeGame({
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // BUG CORRIGIDO AQUI: Apenas verifica a condição de vitória e transição
+  // 1. Inicializa o baralho baseando-se na FASE ATUAL
+  useEffect(() => {
+    setAvailableCards([...currentPhase.cards].sort(() => Math.random() - 0.5));
+    setShieldedCards([]); // Limpa a tela para a nova fase
+  }, [currentPhaseIndex, currentPhase.cards]);
+
+  // 2. Deteta Condição de Vitória (Fim do Baralho da fase atual)
   useEffect(() => {
     // Só prossegue para validação se o jogo estiver a correr E as cartas tiverem acabado
     if (status === "playing" && availableCards.length === 0) {
@@ -306,7 +415,7 @@ export default function EscudoDaVerdadeGame({
     }
   }, [availableCards.length, status, currentPhaseIndex]);
 
-  // --- SISTEMAS DE EFEITOS VISUAIS E AVISOS ---
+  // 3. Sistema de Punição Educativa
   const triggerError = (title: string, desc: string, cardId: string) => {
     setFlashRed(true);
     setTimeout(() => setFlashRed(false), 300);
@@ -317,6 +426,7 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setDragErrorCardId(null), 400);
   };
 
+  // 4. Sistema de Feedback Visual para acertos
   const triggerSuccess = (points: number, clientX: number, clientY: number) => {
     setFlashGreen(true);
     setTimeout(() => setFlashGreen(false), 300);
@@ -325,6 +435,7 @@ export default function EscudoDaVerdadeGame({
     setTimeout(() => setFloatingPoints(null), 800);
   };
 
+  // 5. Mostrar erro de área inválida
   const showAreaError = (x: number, y: number) => {
     setAreaError({ show: true, x, y });
     setTimeout(() => setAreaError({ show: false, x: 0, y: 0 }), 800);
@@ -610,7 +721,6 @@ export default function EscudoDaVerdadeGame({
                 </button>
               </div>
 
-              {/* RENDERIZAÇÃO DINÂMICA: FASE 1 ou FASE 2 */}
               <div className="space-y-6 text-slate-300">
                 {currentPhase.id === 1 ? (
                   // CONTEÚDO DA FASE 1 (Agricultura Familiar)
@@ -650,7 +760,7 @@ export default function EscudoDaVerdadeGame({
                       </ul>
                     </div>
                   </>
-                ) : (
+                ) : currentPhase.id === 2 ? (
                   // CONTEÚDO DA FASE 2 (Agronegócio)
                   <>
                     <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
@@ -683,6 +793,40 @@ export default function EscudoDaVerdadeGame({
                         <li className="flex items-start gap-2">👨‍🌾 <span><strong>Pequenos produtores:</strong> NÃO é formado maioritariamente por camponeses ou cooperativas pequenas</span></li>
                         <li className="flex items-start gap-2">💼 <span><strong>Empregos:</strong> NÃO absorve a mão de obra desempregada das cidades</span></li>
                         <li className="flex items-start gap-2">⚖️ <span><strong>Desigualdade:</strong> NÃO resolveu o problema da distribuição de terras no Brasil</span></li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  // CONTEÚDO DA FASE 3 (Estrutura Fundiária)
+                  <>
+                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5" />
+                        O que é a Estrutura Fundiária?
+                      </h3>
+                      <p className="leading-relaxed">
+                        Refere-se à forma como as terras estão distribuídas e organizadas num país. No Brasil, ela é marcada por uma profunda desigualdade histórica: muita terra na mão de muito poucos (latifúndios) e pouca terra dividida por muitos (minifúndios).
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">📜 <span><strong>Herança Histórica:</strong> Tem origem no sistema colonial de Sesmarias e Capitanias Hereditárias.</span></li>
+                        <li className="flex items-start gap-2">⚖️ <span><strong>Lei de Terras (1850):</strong> Instituiu a terra apenas por compra, marginalizando os mais pobres, ex-escravos e indígenas.</span></li>
+                        <li className="flex items-start gap-2">📊 <span><strong>Concentração extrema:</strong> O Brasil possui um dos maiores e piores Índices de Gini agrário do mundo.</span></li>
+                        <li className="flex items-start gap-2">🚜 <span><strong>Revolução Verde:</strong> A modernização tecnológica e mecanização encareceu a terra e engoliu os pequenos produtores.</span></li>
+                        <li className="flex items-start gap-2">⚠️ <span><strong>Conflitos rurais:</strong> A posse de terras ociosas mantidas apenas para especulação imobiliária é o grande motor da violência no campo.</span></li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-red-950/30 p-5 rounded-2xl border border-red-500/30">
+                      <h3 className="text-red-400 font-bold text-lg mb-3">❌ Principais MITOS sobre Estrutura Fundiária:</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">🤝 <span><strong>Abolição (1888):</strong> NÃO houve distribuição de terras ou qualquer integração social aos ex-escravos.</span></li>
+                        <li className="flex items-start gap-2">🌍 <span><strong>Igualdade:</strong> A estrutura fundiária NÃO é considerada igualitária ou equilibrada pela ONU.</span></li>
+                        <li className="flex items-start gap-2">📏 <span><strong>Pequenos produtores:</strong> Eles NÃO ocupam a maior parte das terras (ocupam a menor parte, apesar de serem maioria em número de fazendas).</span></li>
+                        <li className="flex items-start gap-2">🕵️ <span><strong>Grilagem:</strong> NÃO é uma prática extinta (falsificação de documentos e roubo de terras públicas ainda é muito forte, especialmente na Amazónia).</span></li>
                       </ul>
                     </div>
                   </>
@@ -746,7 +890,6 @@ export default function EscudoDaVerdadeGame({
 
             <Button 
               onClick={() => {
-                // Injetamos as cartas da primeira fase logo ao clicar em iniciar
                 setAvailableCards([...PHASES[0].cards].sort(() => Math.random() - 0.5));
                 setStatus("playing");
               }} 
@@ -929,7 +1072,6 @@ export default function EscudoDaVerdadeGame({
                 onClick={() => {
                   const nextIndex = currentPhaseIndex + 1;
                   const nextPhase = PHASES[nextIndex];
-                  
                   setAvailableCards([...nextPhase.cards].sort(() => Math.random() - 0.5));
                   setShieldedCards([]);
                   setCurrentPhaseIndex(nextIndex);
