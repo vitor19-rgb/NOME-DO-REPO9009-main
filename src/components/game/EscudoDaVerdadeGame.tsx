@@ -420,7 +420,6 @@ const MATOPIBA_CARDS: CardItem[] = [
 
 // --- DADOS DA FASE 5 (15 Cartas: Reforma Agrária / Função Social da Terra) ---
 const REFORMA_AGRARIA_CARDS: CardItem[] = [
-  // --- 9 VERDADES (Conectar ao Centro) ---
   {
     id: "f5-v1",
     text: "A Constituição determina que toda a propriedade rural deve cumprir a sua Função Social.",
@@ -475,8 +474,6 @@ const REFORMA_AGRARIA_CARDS: CardItem[] = [
     type: "truth",
     explanation: "Correto! Não basta apenas entregar o lote de terra; o agricultor precisa de estradas e financiamento para conseguir produzir."
   },
-
-  // --- 6 MITOS (Rejeitar / Jogar fora) ---
   {
     id: "f5-m1",
     text: "Qualquer terra privada no Brasil, mesmo as que produzem muito, pode ser tomada pelo governo.",
@@ -544,7 +541,7 @@ const PHASES: PhaseType[] = [
   {
     id: 5,
     title: "O Alvo da Lei (Função Social e Reforma Agrária)",
-    imageSrc: "/images/geografia/reforma-agraria.png", // Imagem para a fase 5
+    imageSrc: "/images/geografia/reforma-agraria.png",
     cards: REFORMA_AGRARIA_CARDS
   }
 ];
@@ -554,12 +551,16 @@ export default function EscudoDaVerdadeGame({
   onComplete,
   onSaveScore,
 }: EscudoDaVerdadeProps) {
+  
+  // Embaralhar as fases ao iniciar o jogo para que apareçam de forma aleatória a cada nova jogada
+  const [gamePhases] = useState<PhaseType[]>(() => [...PHASES].sort(() => Math.random() - 0.5));
+
   // --- ESTADOS DO JOGO ---
   const [status, setStatus] = useState<"intro" | "playing" | "phase_transition" | "victory">("intro");
   
-  // ESTADO DA FASE
+  // ESTADO DA FASE (Lê a partir das fases aleatórias)
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
-  const currentPhase = PHASES[currentPhaseIndex];
+  const currentPhase = gamePhases[currentPhaseIndex];
 
   const [score, setScore] = useState(0);
   const [availableCards, setAvailableCards] = useState<CardItem[]>([]);
@@ -591,20 +592,22 @@ export default function EscudoDaVerdadeGame({
 
   // 1. Inicializa o baralho baseando-se na FASE ATUAL
   useEffect(() => {
+    // Se o jogo já acabou, não faz nada para evitar erros de renderização
+    if (!currentPhase) return;
     setAvailableCards([...currentPhase.cards].sort(() => Math.random() - 0.5));
     setShieldedCards([]); // Limpa a tela para a nova fase
-  }, [currentPhaseIndex, currentPhase.cards]);
+  }, [currentPhaseIndex, currentPhase]);
 
   // 2. Deteta Condição de Vitória (Fim do Baralho da fase atual)
   useEffect(() => {
     if (status === "playing" && availableCards.length === 0) {
-      if (currentPhaseIndex < PHASES.length - 1) {
+      if (currentPhaseIndex < gamePhases.length - 1) {
         setTimeout(() => setStatus("phase_transition"), 800);
       } else {
         setTimeout(() => setStatus("victory"), 800);
       }
     }
-  }, [availableCards.length, status, currentPhaseIndex]);
+  }, [availableCards.length, status, currentPhaseIndex, gamePhases.length]);
 
   // 3. Sistema de Punição Educativa
   const triggerError = (title: string, desc: string, cardId: string) => {
@@ -678,6 +681,8 @@ export default function EscudoDaVerdadeGame({
     }
   };
 
+  if (!currentPhase) return null; // Prevenção extra enquanto carrega as fases
+
   return (
     <main className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
       {/* Efeitos visuais */}
@@ -749,7 +754,7 @@ export default function EscudoDaVerdadeGame({
         
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex text-slate-400 font-bold text-xs uppercase tracking-widest bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
-            Fase {currentPhaseIndex + 1}/{PHASES.length}
+            Fase {currentPhaseIndex + 1}/{gamePhases.length}
           </div>
           
           <button
@@ -1117,7 +1122,7 @@ export default function EscudoDaVerdadeGame({
             <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">O Desafio Agrário</h2>
             
             <div className="text-left bg-slate-950 p-5 md:p-6 rounded-2xl border border-slate-800 space-y-4 mb-8 text-sm text-slate-300">
-              <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito ao longo de {PHASES.length} fases!</p>
+              <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito ao longo de {gamePhases.length} fases surpresa!</p>
               <div className="bg-emerald-950/50 p-3 rounded-xl border border-emerald-500/30">
                 <p className="flex items-center gap-2 text-emerald-300">
                   <ShieldCheck className="w-5 h-5 flex-shrink-0" />
@@ -1148,7 +1153,7 @@ export default function EscudoDaVerdadeGame({
 
             <Button 
               onClick={() => {
-                setAvailableCards([...PHASES[0].cards].sort(() => Math.random() - 0.5));
+                setAvailableCards([...gamePhases[0].cards].sort(() => Math.random() - 0.5));
                 setStatus("playing");
               }} 
               className="w-full bg-emerald-600 hover:bg-emerald-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105"
@@ -1329,7 +1334,7 @@ export default function EscudoDaVerdadeGame({
               <Button 
                 onClick={() => {
                   const nextIndex = currentPhaseIndex + 1;
-                  const nextPhase = PHASES[nextIndex];
+                  const nextPhase = gamePhases[nextIndex];
                   setAvailableCards([...nextPhase.cards].sort(() => Math.random() - 0.5));
                   setShieldedCards([]);
                   setCurrentPhaseIndex(nextIndex);
