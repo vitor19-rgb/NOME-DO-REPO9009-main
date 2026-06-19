@@ -8,7 +8,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'GeoAnalyst Demo - Fase 1',
   description: 'Sistema de Análise de Biomas Brasileiros',
-  manifest: '/manifest.json', // É isto que diz ao navegador que existe um PWA
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
