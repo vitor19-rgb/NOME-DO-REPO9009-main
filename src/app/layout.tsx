@@ -1,11 +1,14 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
-// Configuração de metadados atualizada com o suporte ao PWA
+export const viewport: Viewport = {
+  themeColor: "#020617",
+};
+
 export const metadata: Metadata = {
   title: 'GeoAnalyst Demo - Fase 1',
   description: 'Sistema de Análise de Biomas Brasileiros',
-  manifest: '/manifest.json', // <-- Esta linha liga o PWA ao seu projeto!
+  manifest: '/manifest.json', // É isto que diz ao navegador que existe um PWA
 };
 
 export default function RootLayout({
