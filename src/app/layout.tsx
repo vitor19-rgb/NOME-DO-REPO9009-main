@@ -1,9 +1,11 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 
+// Configuração de metadados atualizada com o suporte ao PWA
 export const metadata: Metadata = {
   title: 'GeoAnalyst Demo - Fase 1',
   description: 'Sistema de Análise de Biomas Brasileiros',
+  manifest: '/manifest.json', // <-- Esta linha liga o PWA ao seu projeto!
 };
 
 export default function RootLayout({

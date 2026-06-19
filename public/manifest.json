@@ -1,0 +1,18 @@
+{
+  "name": "BioGuesser",
+  "short_name": "BioGuesser",
+  "description": "Jogos educativos de Geografia e Biologia para o ENEM",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
