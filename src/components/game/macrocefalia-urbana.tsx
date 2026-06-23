@@ -43,8 +43,8 @@ interface GameState {
     skipsLeft: number;
 }
 
-// NOVO: Definimos o limite do Game Over como constante para ser fácil de alterar no futuro
-const MAX_DIFFERENCE_GAMEOVER = 20;
+// NOVO: Limite do Game Over ajustado para 30 conforme o seu pedido
+const MAX_DIFFERENCE_GAMEOVER = 30;
 
 // --- BASE DE DADOS DE CARTAS --- //
 const ACTION_CARDS: ActionCard[] = [
@@ -184,7 +184,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                 }
             }
 
-            // NOVO: LÓGICA DE ESCALONAMENTO DE DIFICULDADE (Game Design)
+            // LÓGICA DE ESCALONAMENTO DE DIFICULDADE (Game Design)
             const isHardMode = tempState.month >= 7; // A partir do 7º mês o jogo fica muito difícil
             
             // Crescimento populacional: Mais agressivo na segunda metade do ano
@@ -226,7 +226,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     };
 
     const nextMonth = () => {
-        // NOVO: Verifica Game Over com base na nova variável MAX_DIFFERENCE_GAMEOVER (20 em vez de 30)
+        // Verifica Game Over com base na constante (agora 30)
         if (difference >= MAX_DIFFERENCE_GAMEOVER) {
             setStatus('gameover');
             return;
