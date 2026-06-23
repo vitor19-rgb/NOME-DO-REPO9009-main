@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-// --- TIPAGENS (DOCUMENTAÇÃO DAS ESTRUTURAS) --- //
-// Estas interfaces definem a estrutura de dados para o Typescript
+// --- TIPAGENS --- //
 interface MacrocefaliaUrbanaGameProps {
     playerName: string;
     onReturnHome: () => void;
@@ -44,8 +43,8 @@ interface GameState {
     skipsLeft: number;
 }
 
-// Limite do Game Over (O colapso acontece se bater neste valor ou passar dele)
-const MAX_DIFFERENCE_GAMEOVER = 30;
+// Limite do Game Over
+const MAX_DIFFERENCE_GAMEOVER = 20;
 
 // --- BASE DE DADOS DE CARTAS NORMAIS --- //
 const ACTION_CARDS: ActionCard[] = [
@@ -56,71 +55,70 @@ const ACTION_CARDS: ActionCard[] = [
     },
     {
         id: 'c2', title: 'Mutirão Comunitário', effectText: '+1 Infraestrutura', 
-        explanation: 'Moradores unem-se para pequenas melhorias locais. É barato, mas o impacto estrutural geral é limitado.',
+        explanation: 'Moradores unem-se para pequenas melhorias locais, como limpeza de valas e pavimentação. É barato, mas o impacto estrutural geral é limitado.',
         cost: 5, type: 'build', effect: (s) => ({ infrastructure: s.infrastructure + 1 })
     },
     {
         id: 'c3', title: 'Fixação no Campo', effectText: 'Reduz o Êxodo (-2 População)', 
-        explanation: 'Políticas de subsídio e crédito para a agricultura familiar reduzem o êxodo rural.',
+        explanation: 'Políticas de subsídio e crédito para a agricultura familiar reduzem o êxodo rural, diminuindo a chegada de novas pessoas à cidade.',
         cost: 12, type: 'policy', effect: (s) => ({ population: Math.max(0, s.population - 2) })
     },
     {
         id: 'c4', title: 'Taxa Urbana Extra', effectText: '+12 Orçamento, mas +1 Pop.', 
-        explanation: 'Aumentar impostos atrai grandes investidores para o centro, mas gera uma injeção rápida de dinheiro público.',
+        explanation: 'Aumentar impostos atrai grandes investidores para o centro (trazendo mais pessoas a reboque), mas gera uma injeção rápida de dinheiro público.',
         cost: 0, type: 'economy', effect: (s) => ({ budget: s.budget + 12, population: s.population + 1 })
     },
     {
         id: 'c5', title: 'Hospital Central', effectText: '+4 Infraestrutura', 
-        explanation: 'Construir um grande complexo de saúde centralizado melhora drasticamente o atendimento.',
+        explanation: 'Construir um grande complexo de saúde centralizado melhora drasticamente o atendimento à população doente, exigindo um alto investimento.',
         cost: 20, type: 'build', effect: (s) => ({ infrastructure: s.infrastructure + 4 })
     },
     {
         id: 'c6', title: 'Plano Diretor', effectText: '+2 Infraestrutura, -1 Pop.', 
-        explanation: 'Regras rígidas de zoneamento organizam o crescimento e evitam a ocupação de encostas (Previne Danos de Chuva).',
+        explanation: 'Regras rígidas de zoneamento organizam o crescimento urbano, evitam a ocupação de encostas e freiam a especulação imobiliária caótica.',
         cost: 18, type: 'policy', effect: (s) => ({ infrastructure: s.infrastructure + 2, population: Math.max(0, s.population - 1) }) 
     },
     {
         id: 'c7', title: 'Parceria Privada', effectText: '+1 Infraestrutura, +8 Orçamento', 
-        explanation: 'Concessão de serviços públicos para empresas privadas. Gera caixa rápido.',
+        explanation: 'Concessão de serviços públicos para empresas privadas. Gera caixa rápido para a prefeitura, mas o controle estrutural direto é menor.',
         cost: 5, type: 'economy', effect: (s) => ({ infrastructure: s.infrastructure + 1, budget: s.budget + 8 })
     },
     {
         id: 'c8', title: 'Saneamento Básico', effectText: '+2 Infraestrutura', 
-        explanation: 'Obras de esgoto previnem a proliferação de doenças e evitam tragédias em enchentes.',
+        explanation: 'Obras de esgoto e água encanada nas periferias previnem a proliferação de doenças (como dengue) e melhoram as condições de moradia.',
         cost: 10, type: 'build', effect: (s) => ({ infrastructure: s.infrastructure + 2 })
     },
     {
         id: 'c9', title: 'Festival da Cidade', effectText: '+15 Pontos de Gestão', 
-        explanation: 'Eventos culturais trazem alegria, mas não resolvem o problema do inchaço urbano.',
+        explanation: 'Eventos culturais trazem alegria e aumentam a sua popularidade como gestor, mas não resolvem o problema do inchaço urbano.',
         cost: 5, type: 'policy', effect: (s) => ({ score: s.score + 15 })
     }
 ];
 
-// --- CARTAS ESPECIAIS DA RETA FINAL --- //
+// --- 4 CARTAS DE SALVAÇÃO (Apenas na Fase Difícil) --- //
 const SUPER_CARDS: ActionCard[] = [
     {
         id: 'sc1', title: 'Verba Federal de Crise', effectText: '+4 Infra, -2 População', 
-        explanation: 'O Governo Federal envia ajuda para conter a crise. Uma obra gigante de habitação é feita a custo quase zero.',
+        explanation: 'O Governo Federal envia ajuda para conter a crise urbana. Uma obra gigante de habitação é feita a custo quase zero para o município.',
         cost: 2, type: 'policy', effect: (s) => ({ infrastructure: s.infrastructure + 4, population: Math.max(0, s.population - 2) })
     },
     {
         id: 'sc2', title: 'Mutirão Nacional', effectText: '+5 Infraestrutura', 
-        explanation: 'O exército e a sociedade civil unem-se para construir hospitais e escolas em tempo recorde nas periferias.',
+        explanation: 'O exército e a sociedade civil unem-se para construir hospitais e escolas de emergência em tempo recorde nas periferias.',
         cost: 1, type: 'build', effect: (s) => ({ infrastructure: s.infrastructure + 5 })
     },
     {
         id: 'sc3', title: 'Pacto de Descentralização', effectText: '+3 Infra, -3 População', 
-        explanation: 'Indústrias são transferidas para o interior através de isenções, levando milhares de trabalhadores de volta às suas origens.',
+        explanation: 'Indústrias são transferidas para o interior através de isenções fiscais pesadas, levando milhares de trabalhadores de volta às suas origens.',
         cost: 3, type: 'economy', effect: (s) => ({ infrastructure: s.infrastructure + 3, population: Math.max(0, s.population - 3) })
     },
     {
         id: 'sc4', title: 'Apoio de ONGs', effectText: '+3 Infra, -1 População', 
-        explanation: 'Organizações internacionais financiam saneamento e programas habitacionais gratuitamente para a sua cidade.',
+        explanation: 'Organizações internacionais chegam à cidade e financiam saneamento e programas habitacionais gratuitamente.',
         cost: 0, type: 'economy', effect: (s) => ({ infrastructure: s.infrastructure + 3, population: Math.max(0, s.population - 1) })
     }
 ];
 
-// --- SISTEMA DE EVENTOS DINÂMICOS --- //
 const getDynamicEvents = (state: GameState): EventCard[] => [
     {
         title: 'Seca no Sertão!', 
@@ -133,7 +131,7 @@ const getDynamicEvents = (state: GameState): EventCard[] => [
     {
         title: 'Chuvas Torrenciais!', 
         description: (state.activeProjects.includes('c8') || state.activeProjects.includes('c6'))
-            ? 'Choveu muito, mas o Saneamento/Plano Diretor que você aprovou aguentou a água. Nenhuma enchente! (+10 Pontos)'
+            ? 'Choveu muito, mas o Saneamento/Plano Diretor que aprovou aguentou a água. Nenhuma enchente! (+10 Pontos)'
             : 'Enchente Severa! Áreas sem planeamento colapsaram sob as chuvas fortes (-2 Infraestrutura).', 
         type: (state.activeProjects.includes('c8') || state.activeProjects.includes('c6')) ? 'positive' : 'negative',
         effect: (s) => (state.activeProjects.includes('c8') || state.activeProjects.includes('c6')) 
@@ -178,23 +176,28 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         }
     }, []);
 
-    // Cálculo da diferença de colapso
     const difference = gameState.population - gameState.infrastructure;
     const maxMonths = 12;
+
+    // Função para verificar Game Over após cada turno
+    const checkGameOver = useCallback((state: GameState): boolean => {
+        const currentDiff = state.population - state.infrastructure;
+        return currentDiff > MAX_DIFFERENCE_GAMEOVER;
+    }, []);
 
     const drawHand = useCallback((currentMonth: number) => {
         let drawnCards: ActionCard[] = [];
         
         if (currentMonth >= 7) {
-            // Escolhe aleatoriamente 1 das 4 cartas de salvação
+            // Fase Difícil: Sorteia aleatoriamente 1 das 4 Cartas de Salvação
             const randomSuper = SUPER_CARDS[Math.floor(Math.random() * SUPER_CARDS.length)];
             drawnCards.push({ ...randomSuper, id: `${randomSuper.id}-${Date.now()}` });
             
-            // Escolhe aleatoriamente 2 cartas normais
+            // Puxa as outras 2 cartas normais
             const shuffled = [...ACTION_CARDS].sort(() => 0.5 - Math.random()).slice(0, 2);
             drawnCards = [...drawnCards, ...shuffled.map(c => ({...c, id: `${c.id}-${Date.now()}`}))];
         } else {
-            // Modo Normal: Escolhe aleatoriamente 3 cartas normais
+            // Fase Normal: 3 cartas normais
             const shuffled = [...ACTION_CARDS].sort(() => 0.5 - Math.random()).slice(0, 3);
             drawnCards = shuffled.map(c => ({...c, id: `${c.id}-${Date.now()}`}));
         }
@@ -256,6 +259,12 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
 
             tempState.month += 1;
             setTurnLogs(newLogs);
+            
+            // VERIFICA GAME OVER IMEDIATAMENTE APÓS O TURNO
+            if (checkGameOver(tempState)) {
+                setStatus('gameover');
+            }
+            
             return tempState;
         });
 
@@ -263,13 +272,20 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     };
 
     const nextMonth = () => {
-        // CORREÇÃO: Usamos o sinal >= para garantir que tocar no limite já é Game Over
-        if (difference >= MAX_DIFFERENCE_GAMEOVER) {
+        // Verifica se já é Game Over antes de avançar
+        if (checkGameOver(gameState)) {
             setStatus('gameover');
             return;
         }
+
+        // AVALIAÇÃO APENAS NO FINAL DOS 12 MESES
         if (gameState.month > maxMonths) {
-            setStatus('victory');
+            // Se no final do mandato os erros forem maiores que 30, é Game Over
+            if (difference > MAX_DIFFERENCE_GAMEOVER) {
+                setStatus('gameover');
+            } else {
+                setStatus('victory');
+            }
             return;
         }
 
@@ -321,7 +337,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                 <AlertTriangle className="w-5 h-5 text-yellow-500" /> Dica do Jogo
                             </h3>
                             <p className="text-sm text-slate-300">
-                                Na segunda metade do mandato, a situação piora muito. Mas como gestor, irá receber ofertas incríveis de parceiros e ONGs. Use-as estrategicamente para salvar a cidade!
+                                Mesmo que a sua cidade entre em colapso (erros &gt; {MAX_DIFFERENCE_GAMEOVER}), não desista! Use as cartas de salvação da segunda metade do mandato para reduzir os danos antes do 12º mês.
                             </p>
                         </div>
                     </div>
@@ -341,25 +357,25 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-center mb-6">Macrocefalia Urbana</h1>
                     <p className="text-slate-300 text-lg text-center mb-10">
-                        O seu objetivo, <strong>Prefeito {playerName}</strong>, é gerir a cidade por <strong>12 meses</strong> sem deixá-la entrar em colapso. <br/><br/>
-                        <span className="text-red-400 font-bold">CUIDADO: A partir do 7º mês, a crise urbana irá agravar-se drasticamente com a explosão demográfica! Poupe dinheiro enquanto pode.</span>
+                        O seu objetivo, <strong>Prefeito {playerName}</strong>, é gerir a cidade por <strong>12 meses</strong> sem deixá-la terminar em colapso. <br/><br/>
+                        <span className="text-red-400 font-bold">CUIDADO: A partir do 7º mês, a crise urbana irá agravar-se drasticamente com a explosão demográfica!</span>
                     </p>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-10">
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
                             <Users className="w-10 h-10 text-red-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">O Colapso</h3>
-                            <p className="text-sm text-slate-400">Se o descompasso (Erros) atingir <strong>{MAX_DIFFERENCE_GAMEOVER}</strong> pontos, é Game Over imediato!</p>
+                            <p className="text-sm text-slate-400">Se <strong>no final do 12º mês</strong> os Erros ultrapassarem <strong>{MAX_DIFFERENCE_GAMEOVER}</strong> pontos, é Game Over!</p>
                         </div>
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
                             <BookOpen className="w-10 h-10 text-blue-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">Suas Decisões</h3>
-                            <p className="text-sm text-slate-400">Escolha projetos inteligentemente. Obras previnem os desastres naturais que ocorrem no jogo.</p>
+                            <p className="text-sm text-slate-400">Escolha projetos inteligentemente. Obras previnem desastres naturais que ocorrem aleatoriamente.</p>
                         </div>
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
                             <FastForward className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
                             <h3 className="font-bold text-lg mb-2">Pular Mês</h3>
-                            <p className="text-sm text-slate-400">Você tem <strong>3 pulos</strong> voluntários. Se faltar dinheiro para jogar, pular é obrigatório e grátis.</p>
+                            <p className="text-sm text-slate-400">Você tem <strong>3 pulos</strong> voluntários. Se faltar dinheiro para jogar, pular é grátis.</p>
                         </div>
                     </div>
 
@@ -374,11 +390,11 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     if (status === 'gameover') {
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white absolute inset-0 z-50 p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-xl max-w-2xl relative">
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative">
                     <AlertTriangle className="w-24 h-24 text-red-500 mx-auto mb-6 animate-bounce" />
                     <h1 className="text-5xl md:text-6xl font-black text-red-500 mb-4 tracking-tighter">Colapso Urbano!</h1>
                     <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-                        A Macrocefalia Urbana tomou conta da cidade. A diferença entre População e Infraestrutura atingiu o limite crítico de {MAX_DIFFERENCE_GAMEOVER} pontos.
+                        Infelizmente o seu mandato terminou de forma desastrosa. A diferença entre População e Infraestrutura ultrapassou o limite crítico de {MAX_DIFFERENCE_GAMEOVER} pontos.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button onClick={onReturnHome} variant="ghost" className="text-slate-400 hover:text-white py-6 text-lg">Voltar ao Menu</Button>
@@ -393,11 +409,11 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         const finalScore = gameState.score + (gameState.infrastructure * 5) + gameState.budget;
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white absolute inset-0 z-50 p-4">
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-xl max-w-2xl relative">
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
                     <ShieldCheck className="w-24 h-24 text-green-400 mx-auto mb-6" />
                     <h1 className="text-5xl md:text-6xl font-black text-green-400 mb-4 tracking-tighter">Mandato de Sucesso!</h1>
                     <p className="text-xl text-slate-300 mb-8">
-                        PARABÉNS, {playerName}! Você governou com sabedoria através da grande crise urbana.
+                        PARABÉNS, {playerName}! Você governou com sabedoria através da grande crise urbana e impediu o colapso da metrópole.
                     </p>
                     <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl mb-8 shadow-inner">
                         <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">Pontuação Final</p>
@@ -430,7 +446,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                             <h2 className="text-2xl font-black mb-4 text-white uppercase tracking-tight">O que é o Risco de Colapso?</h2>
                             <p className="text-lg text-slate-300 mb-8 font-medium leading-relaxed">
                                 Ele representa a <strong>diferença (Erros de Gestão)</strong> entre o número de habitantes e a infraestrutura disponível. <br/><br/>
-                                Se atingir <strong>{MAX_DIFFERENCE_GAMEOVER} pontos</strong> de diferença, a cidade sofre um colapso total e é <strong>Game Over</strong>!
+                                Se ao chegar ao final do 12º mês a diferença for superior a <strong>{MAX_DIFFERENCE_GAMEOVER} pontos</strong>, a cidade sofre um colapso total e é <strong>Game Over</strong>!
                             </p>
                             <Button onClick={() => setShowCollapseInfo(false)} className="w-full font-black py-7 text-lg bg-blue-600 text-white hover:bg-blue-500 shadow-md">
                                 Entendi
@@ -501,7 +517,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                     <BookOpen className="text-blue-400 w-8 h-8" /> Projetos do Mandato
                                 </h2>
                                 <p className="text-slate-400 mt-2 text-lg">
-                                    {isHardMode ? <span className="text-red-400 font-bold">A crise apertou! Cuidado com a explosão demográfica.</span> : 'Analise as opções e aprove 1 projeto para este mês.'}
+                                    {isHardMode ? <span className="text-red-400 font-bold">A crise apertou! Aproveite as parcerias para se salvar.</span> : 'Analise as opções e aprove 1 projeto para este mês.'}
                                 </p>
                             </div>
                             
@@ -530,6 +546,8 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                             <AnimatePresence mode="popLayout">
                                 {hand.map((card, idx) => {
                                     const canAfford = gameState.budget >= card.cost;
+                                    const isSuperCard = card.id.startsWith('sc');
+                                    
                                     return (
                                         <motion.div
                                             key={card.id}
@@ -540,19 +558,25 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                             whileHover={canAfford && !isMobile ? { y: -20, scale: 1.03 } : {}}
                                             className={`flex flex-col rounded-[2.5rem] p-8 border-4 transition-colors shadow-lg md:shadow-2xl bg-slate-900 min-h-[400px] ${
                                                 canAfford 
-                                                ? card.type === 'build' ? 'border-blue-500 hover:border-blue-400'
-                                                : card.type === 'policy' ? 'border-purple-500 hover:border-purple-400'
-                                                : 'border-green-500 hover:border-green-400'
+                                                ? card.type === 'build' 
+                                                    ? 'border-blue-500 hover:border-blue-400' 
+                                                    : card.type === 'policy' 
+                                                        ? 'border-purple-500 hover:border-purple-400' 
+                                                        : 'border-green-500 hover:border-green-400'
                                                 : 'border-slate-800 opacity-60 grayscale'
                                             }`}
                                         >
                                             <div className="flex justify-between items-center mb-6">
                                                 <span className={`text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-inner ${
-                                                    card.type === 'build' ? 'bg-blue-950 text-blue-400'
-                                                    : card.type === 'policy' ? 'bg-purple-950 text-purple-400'
-                                                    : 'bg-green-950 text-green-400'
+                                                    isSuperCard 
+                                                        ? 'bg-slate-800 text-slate-400 border border-slate-700'
+                                                        : card.type === 'build' 
+                                                            ? 'bg-blue-950 text-blue-400' 
+                                                            : card.type === 'policy' 
+                                                                ? 'bg-purple-950 text-purple-400' 
+                                                                : 'bg-green-950 text-green-400'
                                                 }`}>
-                                                    {card.type === 'build' ? 'Construção' : card.type === 'policy' ? 'Política' : 'Economia'}
+                                                    {isSuperCard ? 'economia' : card.type === 'build' ? 'Construção' : card.type === 'policy' ? 'Política' : 'Economia'}
                                                 </span>
                                                 
                                                 <div className={`flex items-center gap-2 font-black text-3xl bg-slate-950 px-4 py-2 rounded-2xl border-2 border-slate-800 ${canAfford ? 'text-yellow-400' : 'text-red-500'}`}>
@@ -563,7 +587,11 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                             <h3 className="text-3xl font-black text-white mb-2 leading-tight">{card.title}</h3>
                                             
                                             <div className="mb-4 inline-block">
-                                                <span className="text-blue-300 font-bold text-sm bg-blue-950/50 px-3 py-1 rounded-lg border border-blue-900/50">
+                                                <span className={`font-bold text-sm px-3 py-1 rounded-lg border ${
+                                                    isSuperCard 
+                                                        ? 'bg-slate-800/50 border-slate-700/50 text-slate-300' 
+                                                        : 'bg-blue-950/50 border-blue-900/50 text-blue-300'
+                                                }`}>
                                                     {card.effectText}
                                                 </span>
                                             </div>
@@ -604,11 +632,11 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                         </div>
 
                         <div className="p-8 space-y-8">
-                            <div className={`p-6 rounded-2xl border-2 flex items-center justify-between ${difference >= MAX_DIFFERENCE_GAMEOVER ? 'bg-red-950/50 border-red-500' : difference >= (MAX_DIFFERENCE_GAMEOVER - 5) ? 'bg-orange-950/30 border-orange-500/50' : 'bg-slate-800/50 border-slate-700'}`}>
+                            <div className={`p-6 rounded-2xl border-2 flex items-center justify-between ${difference > MAX_DIFFERENCE_GAMEOVER ? 'bg-red-950/50 border-red-500' : difference >= (MAX_DIFFERENCE_GAMEOVER - 5) ? 'bg-orange-950/30 border-orange-500/50' : 'bg-slate-800/50 border-slate-700'}`}>
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <h3 className="text-slate-400 uppercase tracking-widest text-sm font-bold flex items-center gap-2">
-                                            <AlertTriangle size={16}/> Risco de Colapso
+                                            <AlertTriangle size={16}/> Nível de Erros
                                         </h3>
                                         <button 
                                             onClick={() => setShowCollapseInfo(true)} 
@@ -617,12 +645,12 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                             ?
                                         </button>
                                     </div>
-                                    <p className={`text-3xl font-black ${difference >= MAX_DIFFERENCE_GAMEOVER ? 'text-red-500' : difference >= (MAX_DIFFERENCE_GAMEOVER - 5) ? 'text-orange-500' : 'text-white'}`}>
-                                        Erros: {Math.max(0, difference)} / {MAX_DIFFERENCE_GAMEOVER}
+                                    <p className={`text-3xl font-black ${difference > MAX_DIFFERENCE_GAMEOVER ? 'text-red-500' : difference >= (MAX_DIFFERENCE_GAMEOVER - 5) ? 'text-orange-500' : 'text-white'}`}>
+                                        {Math.max(0, difference)} / {MAX_DIFFERENCE_GAMEOVER}
                                     </p>
                                 </div>
-                                {difference >= MAX_DIFFERENCE_GAMEOVER ? (
-                                    <span className="bg-red-600 text-white font-black px-4 py-2 rounded-xl animate-bounce">COLAPSO!</span>
+                                {difference > MAX_DIFFERENCE_GAMEOVER ? (
+                                    <span className="bg-red-600 text-white font-black px-4 py-2 rounded-xl animate-bounce text-xs md:text-sm text-center">COLAPSO!<br/>Recupere antes do fim!</span>
                                 ) : difference >= (MAX_DIFFERENCE_GAMEOVER - 5) && (
                                     <span className="bg-orange-500 text-white font-black px-4 py-2 rounded-xl animate-pulse">CRÍTICO</span>
                                 )}
@@ -671,20 +699,13 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                 ))}
                             </div>
                             
-                            {/* CORREÇÃO: O Botão de Game Over aparece aqui e bloqueia o avanço imediato se a diferença for >= 30 */}
-                            {difference >= MAX_DIFFERENCE_GAMEOVER ? (
-                                <Button onClick={() => setStatus('gameover')} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 animate-pulse">
-                                    <AlertTriangle className="mr-2 w-6 h-6" /> Ocorreu um Colapso Irreversível!
-                                </Button>
-                            ) : (
-                                <Button onClick={nextMonth} className="w-full bg-green-600 hover:bg-green-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95">
-                                    {gameState.month >= maxMonths ? (
-                                        <>Terminar o Mandato </>
-                                    ) : (
-                                        <>Avançar para o Mês {gameState.month + 1} <ArrowRight className="ml-2 w-6 h-6" /></>
-                                    )}
-                                </Button>
-                            )}
+                            <Button onClick={nextMonth} className="w-full bg-green-600 hover:bg-green-500 text-white font-black py-8 text-xl rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95">
+                                {gameState.month > maxMonths ? (
+                                    <>Terminar o Mandato <ShieldCheck className="ml-2 w-6 h-6" /></>
+                                ) : (
+                                    <>Avançar para o Mês {gameState.month} <ArrowRight className="ml-2 w-6 h-6" /></>
+                                )}
+                            </Button>
                         </div>
                     </motion.div>
                 </main>
