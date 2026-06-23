@@ -74,7 +74,7 @@ export function ResultsPanel({ score, biomeName, onNext }: ResultsPanelProps) {
           {loading ? (
             <div className="w-full flex flex-col items-center gap-2">
               <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-              <p className="text-[9px] md:text-xs text-muted-foreground animate-pulse">Sincronizando com GeoAnalyst AI...</p>
+              <p className="text-[9px] md:text-xs text-muted-foreground animate-pulse">Sincronizando </p>
             </div>
           ) : (
             <motion.div 

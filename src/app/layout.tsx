@@ -6,7 +6,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'GeoAnalyst Demo - Fase 1',
+  title: 'BioGuesser - central de jogos',
   description: 'Sistema de Análise de Biomas Brasileiros',
   manifest: '/manifest.json',
 };
