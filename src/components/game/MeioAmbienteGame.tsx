@@ -302,7 +302,7 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
             <div className="bg-green-500 p-2 rounded-full shadow-lg shadow-green-900/20 group-hover:rotate-12 transition-transform">
               <Globe className="text-white w-5 h-5" />
             </div>
-            <span className="text-white font-black text-xl md:text-2xl tracking-tighter">BioGuesser</span>
+            <span className="text-white font-black text-xl md:text-2xl tracking-tighter">Meio Ambiente e clima</span>
           </button>
         </div>
         

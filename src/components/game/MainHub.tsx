@@ -342,28 +342,35 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             </div>
 
             {/* HEADER */}
-            <header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-                     <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded-xl shadow-lg shadow-blue-900/50 border border-blue-400/30">
-                         <Globe className="text-white w-6 h-6" />
-                     </div>
-                    <span className="text-white font-black text-2xl tracking-tighter drop-shadow-sm">BioGuesser</span>
-                </motion.div>
-                
-                <AnimatePresence>
-                    {initialPlayerName && (
-                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
-                            <span className="text-slate-400 text-sm hidden sm:inline bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50">
-                                Estudante: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
-                            </span>
-                            <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-xs md:text-sm transition-colors">
-                                Sair do Perfil
-                            </Button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </header>
-
+    <header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
+    {/* PARTE ESQUERDA: Logotipo Livre, Maior e Sem Bordas */}
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
+        <img 
+            src="/icon.png" 
+            alt="Logotipo BioGuesser" 
+            /* 
+               h-12 e md:h-16 definem uma altura grande.
+               w-auto faz a largura esticar naturalmente.
+               Sem rounded, sem border, sem bg! 
+            */
+            className="h-12 md:h-16 w-auto object-contain drop-shadow-md" 
+        />
+    </motion.div>
+    
+    {/* PARTE DIREITA: Nome do Jogador e Botão Sair (Mantido igual) */}
+    <AnimatePresence>
+        {initialPlayerName && (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
+                <span className="text-slate-400 text-sm hidden sm:inline bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50">
+                    Estudante: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
+                </span>
+                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-xs md:text-sm transition-colors">
+                    Sair do Perfil
+                </Button>
+            </motion.div>
+        )}
+    </AnimatePresence>
+</header>
             {/* HERO SECTION */}
             <section className="text-center py-20 md:py-32 px-4 relative flex-shrink-0 z-10">
                 <div className="relative max-w-5xl mx-auto">
