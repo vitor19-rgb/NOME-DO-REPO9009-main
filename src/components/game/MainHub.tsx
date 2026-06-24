@@ -124,22 +124,30 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
 
-    useEffect(() => {
+   useEffect(() => {
         if (typeof window !== 'undefined') {
+            // O navegador verifica se a pessoa já tem um "carimbo" de visita
             const hasLoadedBefore = sessionStorage.getItem('bioguesser_has_loaded');
             
             if (hasLoadedBefore) {
-                setIsLoading(false);
-            } else {
+                // CENÁRIO 1: Utilizador já visitou antes (fez um Refresh/F5)
+                // Demora apenas 3 segundos (3000ms)
                 const timer = setTimeout(() => {
                     setIsLoading(false);
+                }, 2000); 
+                return () => clearTimeout(timer);
+            } else {
+                // CENÁRIO 2: NOVO UTILIZADOR (Entrou pela primeira vez)
+                // Demora 5 segundos (5000ms) para mostrar bem a animação
+                const timer = setTimeout(() => {
+                    setIsLoading(false);
+                    // Deixa o "carimbo" para que na próxima vez ele seja mais rápido
                     sessionStorage.setItem('bioguesser_has_loaded', 'true');
                 }, 5000); 
                 return () => clearTimeout(timer);
             }
         }
     }, []);
-
     useEffect(() => {
         if (view === 'ranking') setLeaderboard(getLeaderboard());
     }, [view, getLeaderboard]);
