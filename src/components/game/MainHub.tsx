@@ -131,7 +131,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             
             if (hasLoadedBefore) {
                 // CENÁRIO 1: Utilizador já visitou antes (fez um Refresh/F5)
-                // Demora apenas 3 segundos (3000ms)
+                // Demora apenas 2 segundos (2000ms)
                 const timer = setTimeout(() => {
                     setIsLoading(false);
                 }, 2000); 
