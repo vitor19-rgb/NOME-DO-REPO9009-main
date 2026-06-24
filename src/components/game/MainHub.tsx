@@ -23,6 +23,7 @@ const fadeUpItem = {
 };
 
 // --- TELA DE CARREGAMENTO GLOBAL --- //
+// --- TELA DE CARREGAMENTO GLOBAL --- //
 const LoadingScreen = () => (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white relative overflow-hidden">
         <motion.div 
@@ -35,18 +36,40 @@ const LoadingScreen = () => (
             <motion.div 
                 animate={{ rotate: 360 }} 
                 transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                className="mb-8 p-4 rounded-full border-2 border-dashed border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+                className="mb-8 p-4 rounded-full border-2 border-dashed border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)] flex items-center justify-center"
             >
-                <Compass className="w-20 h-20 text-blue-400" />
+                {/* --- AQUI ESTÁ O SEU FAVICON A GIRAR! --- */}
+                <img 
+    src="/favicon2.ico" 
+    alt="A carregar..." 
+    className="w-20 h-20 aspect-square shrink-0 object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+/>
             </motion.div>
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-5xl md:text-6xl font-black tracking-tighter text-white mb-3 drop-shadow-lg">
-                BioGuesser
-            </motion.h1>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
-                <p className="text-blue-400/80 tracking-widest uppercase font-bold text-sm">A carregar módulos...</p>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
+            
+            {/* LOGÓTIPO PRINCIPAL (Adicionado aqui no carregamento) */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="flex items-center mb-6"
+            >
+                <img 
+                    src="/icon.png" 
+                    alt="Logotipo BioGuesser" 
+                    className="h-16 md:h-20 w-auto object-contain drop-shadow-lg" 
+                />
             </motion.div>
+
+            {/* TEXTOS DE CARREGAMENTO */}
+            <motion.h2 
+                animate={{ opacity: [0.5, 1, 0.5] }} 
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="text-xl md:text-2xl font-black tracking-widest uppercase mb-4 text-blue-400"
+            >
+                A Iniciar Sistema...
+            </motion.h2>
+            <p className="text-slate-400 font-medium text-sm md:text-base animate-pulse">
+                Preparando os seus desafios
+            </p>
         </div>
     </div>
 );
