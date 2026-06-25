@@ -40,7 +40,7 @@ const LoadingScreen = () => (
             >
                 {/* --- AQUI ESTÁ O SEU FAVICON A GIRAR! --- */}
                 <img 
-    src="/icon2.png" 
+    src="/favicon.ico" 
     alt="A carregar..." 
     className="w-20 h-20 aspect-square shrink-0 object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
 />
