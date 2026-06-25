@@ -1,21 +1,28 @@
-{
-  "name": "BioGuesser",
-  "short_name": "BioGuesser",
-  "description": "A sua plataforma de estudos gamificada",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
-  "icons": [
-    {
-      "src": "/icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#020617",
+};
+
+export const metadata: Metadata = {
+  title: "BioGuesser",
+  description: "A sua plataforma de estudos gamificada",
+  manifest: "/manifest.json",
+  // O Chrome dá prioridade absoluta a estas tags abaixo!
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: ['/icon.png'],
+    apple: [
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  // Assegura que o nome da aplicação aparece certo
+  applicationName: "BioGuesser",
+  appleWebApp: {
+    title: "BioGuesser",
+    statusBarStyle: "black-translucent",
+  }
+};
