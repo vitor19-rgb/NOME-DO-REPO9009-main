@@ -1,7 +1,7 @@
 {
   "name": "BioGuesser",
   "short_name": "BioGuesser",
-  "description": "TCC Gamificado para o ENEM (Geografia)",
+  "description": "A sua plataforma de estudos gamificada",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
@@ -10,20 +10,12 @@
     {
       "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }
