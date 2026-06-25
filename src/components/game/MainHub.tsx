@@ -372,93 +372,94 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                 />
             </div>
 
-            {/* HEADER */}
-<header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-3 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
-    {/* PARTE ESQUERDA: Logotipo Livre, Maior e Sem Bordas */}
+           {/* HEADER - Já está bom, só vou ajustar o padding no mobile */}
+<header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-2 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
         <img 
             src="/icon.png" 
             alt="Logotipo BioGuesser" 
-            className="h-6 md:h-16 w-auto object-contain drop-shadow-md" 
+            className="h-5 md:h-16 w-auto object-contain drop-shadow-md" 
         />
     </motion.div>
     
-    {/* PARTE DIREITA: Nome do Jogador e Botão Sair (Mantido igual) */}
     <AnimatePresence>
         {initialPlayerName && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-1 md:gap-4">
-                <span className="text-slate-400 text-[10px] md:text-sm hidden sm:inline bg-slate-800/50 px-2 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
-                    <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
+                <span className="text-slate-400 text-[8px] md:text-sm hidden sm:inline bg-slate-800/50 px-1.5 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
+                    <strong className="text-white font-black ml-0.5 md:ml-1">{initialPlayerName}</strong>
                 </span>
-                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[9px] md:text-sm transition-colors px-1.5 md:px-4 py-0.5 md:py-2 h-auto">
+                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
                     Sair
                 </Button>
             </motion.div>
         )}
     </AnimatePresence>
 </header>
-            {/* HERO SECTION */}
-          <section className="relative w-full text-center py-20 md:py-32 px-4 flex-shrink-0 min-h-[90vh] flex flex-col items-center justify-center">
-    
-    {/* FUNDO COM IMAGEM DA CAATINGA */}
-  <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
-    <img 
-        src="/fundo.png" 
-        alt="Bioma Caatinga - Exclusivo do Brasil" 
-        className="w-[95%] h-full object-cover"
-    />
-    {/* Sem overlay - imagem com 100% de opacidade */}
-</div>
+
+{/* HERO SECTION - VERSÃO COMPLETAMENTE ARRUMADA */}
+<section className="relative w-full text-center py-8 md:py-32 px-3 md:px-4 flex-shrink-0 min-h-[40vh] md:min-h-[90vh] flex flex-col items-center justify-center">
+  
+    {/* FUNDO COM IMAGEM DA CAATINGA - Ajustado para não atrapalhar */}
+    <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+        <img 
+            src="/fundo.png" 
+            alt="Bioma Caatinga - Exclusivo do Brasil" 
+            className="w-full md:w-[95%] h-full object-cover object-top"
+        />
+        {/* OVERLAY SUAVE PARA MELHOR LEGIBILIDADE NO MOBILE */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A1024]/40 via-transparent to-[#0A1024]/60"></div>
+    </div>
     
     <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
         
-        {/* LOGOTIPO "BIOGUESSER" COMO IMAGEM (escrito.png) */}
+        {/* LOGOTIPO "BIOGUESSER" - Tamanho ajustado para mobile */}
         <motion.div 
             initial={{ opacity: 0, y: -20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.6, type: "spring" }}
-            className="mb-6 w-full max-w-4xl px-4 flex justify-center"
+            className="mb-4 md:mb-6 w-full max-w-4xl px-2 md:px-4 flex justify-center"
         >
             <img 
                 src="/escrito.png" 
                 alt="BioGuesser Logo" 
-                className="w-full h-auto max-w-[600px] object-contain drop-shadow-[0_0_60px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-transform duration-700"
+                className="w-[85%] md:w-full max-w-[300px] md:max-w-[600px] object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.3)] md:drop-shadow-[0_0_60px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-transform duration-700"
             />
         </motion.div>
         
-        {/* BOTÕES */}
+        {/* BOTÕES - TOTALMENTE RESPONSIVOS E VISÍVEIS */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row justify-center gap-5 w-full sm:w-auto mb-8"
+            className="flex flex-col sm:flex-row justify-center items-center gap-3 md:gap-5 w-full sm:w-auto mb-6 md:mb-8 px-2"
         >
-            {/* BOTÃO JOGAR AGORA - Principal */}
+            {/* BOTÃO JOGAR AGORA - Ajustado para mobile */}
             <Button 
                 onClick={() => document.getElementById('modos')?.scrollIntoView({ behavior: 'smooth' })} 
-                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-2xl px-12 py-7 text-xl shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all duration-300 border border-emerald-400/30"
+                className="w-[95%] sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-xl md:rounded-2xl px-6 md:px-12 py-4 md:py-7 text-sm md:text-xl shadow-[0_0_30px_rgba(16,185,129,0.3)] md:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all duration-300 border border-emerald-400/30"
             >
                 Jogar Agora
             </Button>
             
-            {/* BOTÃO RANKING - Secundário */}
+            {/* BOTÃO RANKING - Ajustado para mobile */}
             <Button 
                 onClick={() => setView('ranking')} 
-                className="w-full sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-2xl px-10 py-7 text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
+                className="w-[95%] sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-xl md:rounded-2xl px-6 md:px-10 py-4 md:py-7 text-sm md:text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
             >
-                <Trophy className="mr-3 text-yellow-400 group-hover:scale-110 transition-transform" /> Ranking
+                <Trophy className="mr-2 md:mr-3 text-yellow-400 group-hover:scale-110 transition-transform w-4 h-4 md:w-5 md:h-5" /> 
+                Ranking
             </Button>
         </motion.div>
         
-        {/* LEGENDA DA IMAGEM - NO FINAL */}
-<motion.p 
-    initial={{ opacity: 0 }} 
-    animate={{ opacity: 1 }} 
-    transition={{ duration: 0.8, delay: 0.5 }}
-    className="text-xs md:text-sm text-white/60 max-w-2xl mx-auto font-light tracking-wider mt-16"
->
-    Imagem da Caatinga, o único bioma exclusivo do Brasil
-</motion.p>
+        {/* LEGENDA DA IMAGEM - Ajustada */}
+        <motion.p 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-[8px] md:text-sm text-white/40 md:text-white/60 max-w-2xl mx-auto font-light tracking-wider mt-8 md:mt-16 px-2"
+        >
+            Imagem da Caatinga, o único bioma exclusivo do Brasil
+        </motion.p>
     </div>
 </section>
             {/* SECÇÃO COMO FUNCIONA */}
