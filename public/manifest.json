@@ -1,7 +1,7 @@
 {
   "name": "BioGuesser",
   "short_name": "BioGuesser",
-  "description": "A sua plataforma de estudos gamificada",
+  "description": "Domine a Geografia para o ENEM de forma gamificada!",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
@@ -10,12 +10,22 @@
     {
       "src": "/IconePlaneta2.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/IconePlaneta2.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/fundo.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
