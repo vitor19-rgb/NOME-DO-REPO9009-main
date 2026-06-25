@@ -5,7 +5,7 @@ export const viewport: Viewport = {
   themeColor: "#020617",
 };
 
-// Forçamos o icon.png que é um formato válido para PWA
+// 1. ADICIONADA A FORÇAGEM DOS ÍCONES PARA O NAVEGADOR RECONHECER O PWA
 export const metadata: Metadata = {
   title: 'BioGuesser - central de jogos',
   description: 'Sistema de Análise de Biomas Brasileiros',
@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   applicationName: "BioGuesser",
   icons: {
     icon: [
-      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon2.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon2.png', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: ['/icon.png'],
+    shortcut: ['/favicon2.png'],
     apple: [
-      { url: '/icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/favicon2.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   appleWebApp: {
@@ -42,14 +42,16 @@ export default function RootLayout({
       <body className="font-body antialiased selection:bg-accent selection:text-accent-foreground">
         {children}
         
-        {/* SCRIPT DE INSTALAÇÃO DO SERVICE WORKER (OBRIGATÓRIO) */}
+        {/* 2. SCRIPT DE INSTALAÇÃO DO SERVICE WORKER (OBRIGATÓRIO PARA DESKTOP) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('SW registrado com sucesso');
+                    console.log('ServiceWorker registrado com sucesso com o scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker falhou: ', err);
                   });
                 });
               }
