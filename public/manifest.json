@@ -8,13 +8,13 @@
   "theme_color": "#020617",
   "icons": [
     {
-      "src": "/IconePlaneta2.png",
+      "src": "/Icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Icon.png",
+      "src": "/IconePlaneta2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
