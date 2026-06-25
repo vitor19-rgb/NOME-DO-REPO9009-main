@@ -373,67 +373,94 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             </div>
 
             {/* HEADER */}
-    <header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
+<header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-3 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
     {/* PARTE ESQUERDA: Logotipo Livre, Maior e Sem Bordas */}
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
         <img 
             src="/icon.png" 
             alt="Logotipo BioGuesser" 
-            /* 
-               h-12 e md:h-16 definem uma altura grande.
-               w-auto faz a largura esticar naturalmente.
-               Sem rounded, sem border, sem bg! 
-            */
-            className="h-12 md:h-16 w-auto object-contain drop-shadow-md" 
+            className="h-6 md:h-16 w-auto object-contain drop-shadow-md" 
         />
     </motion.div>
     
     {/* PARTE DIREITA: Nome do Jogador e Botão Sair (Mantido igual) */}
     <AnimatePresence>
         {initialPlayerName && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
-                <span className="text-slate-400 text-sm hidden sm:inline bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50">
-                    Estudante: <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-1 md:gap-4">
+                <span className="text-slate-400 text-[10px] md:text-sm hidden sm:inline bg-slate-800/50 px-2 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
+                    <strong className="text-white font-black ml-1">{initialPlayerName}</strong>
                 </span>
-                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-xs md:text-sm transition-colors">
-                    Sair do Perfil
+                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[9px] md:text-sm transition-colors px-1.5 md:px-4 py-0.5 md:py-2 h-auto">
+                    Sair
                 </Button>
             </motion.div>
         )}
     </AnimatePresence>
 </header>
             {/* HERO SECTION */}
-            <section className="text-center py-20 md:py-32 px-4 relative flex-shrink-0 z-10">
-                <div className="relative max-w-5xl mx-auto">
-                    <motion.div initial={{ opacity: 0, scale: 0.8, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.5, type: "spring" }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-sm md:text-base mb-8 shadow-[0_0_20px_rgba(37,99,235,0.15)] backdrop-blur-sm">
-                        <Sparkles size={18} className="animate-pulse" /> A sua plataforma de estudos gamificada
-                    </motion.div>
-                    
-                    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white mb-6 leading-tight drop-shadow-2xl">
-                        Domine a <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400">Geografia</span> para o ENEM
-                    </motion.h1>
-                    
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3}} className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
-                        Escolha um módulo, complete missões interativas, tome decisões estratégicas e prove os seus conhecimentos enquanto sobe no ranking da turma.
-                    </motion.p>
-                    
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4}} className="flex flex-col sm:flex-row justify-center gap-5">
-                        <Button 
-                            onClick={() => document.getElementById('modos')?.scrollIntoView({ behavior: 'smooth' })} 
-                            className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-black rounded-2xl px-10 py-8 text-lg shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:scale-105 hover:shadow-[0_0_60px_rgba(37,99,235,0.6)] transition-all duration-300 border border-blue-400/20"
-                        >
-                            Ver Módulos de Estudo <ArrowRight className="ml-2 w-5 h-5" />
-                        </Button>
-                        <Button 
-                            onClick={() => setView('ranking')} 
-                            className="bg-slate-900/80 backdrop-blur-md hover:bg-slate-800 text-white border-2 border-slate-700 font-black rounded-2xl px-10 py-8 text-lg hover:scale-105 transition-all duration-300 group"
-                        >
-                            <Trophy className="mr-3 text-yellow-400 group-hover:scale-110 transition-transform" /> Ranking Nacional
-                        </Button>
-                    </motion.div>
-                </div>
-            </section>
-
+          <section className="relative w-full text-center py-20 md:py-32 px-4 flex-shrink-0 min-h-[90vh] flex flex-col items-center justify-center">
+    
+    {/* FUNDO COM IMAGEM DA CAATINGA */}
+  <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+    <img 
+        src="/fundo.png" 
+        alt="Bioma Caatinga - Exclusivo do Brasil" 
+        className="w-[95%] h-full object-cover"
+    />
+    {/* Sem overlay - imagem com 100% de opacidade */}
+</div>
+    
+    <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
+        
+        {/* LOGOTIPO "BIOGUESSER" COMO IMAGEM (escrito.png) */}
+        <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, type: "spring" }}
+            className="mb-6 w-full max-w-4xl px-4 flex justify-center"
+        >
+            <img 
+                src="/escrito.png" 
+                alt="BioGuesser Logo" 
+                className="w-full h-auto max-w-[600px] object-contain drop-shadow-[0_0_60px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-transform duration-700"
+            />
+        </motion.div>
+        
+        {/* BOTÕES */}
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col sm:flex-row justify-center gap-5 w-full sm:w-auto mb-8"
+        >
+            {/* BOTÃO JOGAR AGORA - Principal */}
+            <Button 
+                onClick={() => document.getElementById('modos')?.scrollIntoView({ behavior: 'smooth' })} 
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-2xl px-12 py-7 text-xl shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all duration-300 border border-emerald-400/30"
+            >
+                Jogar Agora
+            </Button>
+            
+            {/* BOTÃO RANKING - Secundário */}
+            <Button 
+                onClick={() => setView('ranking')} 
+                className="w-full sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-2xl px-10 py-7 text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
+            >
+                <Trophy className="mr-3 text-yellow-400 group-hover:scale-110 transition-transform" /> Ranking
+            </Button>
+        </motion.div>
+        
+        {/* LEGENDA DA IMAGEM - NO FINAL */}
+<motion.p 
+    initial={{ opacity: 0 }} 
+    animate={{ opacity: 1 }} 
+    transition={{ duration: 0.8, delay: 0.5 }}
+    className="text-xs md:text-sm text-white/60 max-w-2xl mx-auto font-light tracking-wider mt-16"
+>
+    Imagem da Caatinga, o único bioma exclusivo do Brasil
+</motion.p>
+    </div>
+</section>
             {/* SECÇÃO COMO FUNCIONA */}
             <section className="py-24 relative z-10">
                 <div className="absolute inset-0 bg-slate-900/40 border-y border-slate-800/50" />
