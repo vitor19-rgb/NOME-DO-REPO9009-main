@@ -14,7 +14,7 @@
       "purpose": "any"
     },
     {
-      "src": "/IconePlaneta2.png",
+      "src": "/icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
