@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   applicationName: "BioGuesser",
   icons: {
     icon: [
-      { url: '/Icon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/iconePlaneta2.png', sizes: '192x192', type: 'image/png' },
       { url: '/IconePlaneta2.png', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: ['/Icon.png'],
+    shortcut: ['/IconePlaneta2.png'],
     apple: [
-      { url: '/Icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/IconePlaneta2.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   appleWebApp: {
