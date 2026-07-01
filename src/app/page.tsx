@@ -97,8 +97,9 @@ export default function App() {
       );
   }
 
-  // ========================================================= //
-  // TRILHA 2: URBANIZAÇÃO (Macrocefalia -> Detetive IBGE -> Corrida Pendular)
+// ========================================================= //
+  // TRILHA 2: URBANIZAÇÃO (Macrocefalia Urbana -> Fim da Trilha)
+  // ALTERAÇÃO: A trilha agora acaba aqui. O jogador vai direto para o resultado final.
   // ========================================================= //
   if (currentScreen === 'urbanizacao') {
       return (
@@ -108,45 +109,20 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true; 
                 setAccumulatedScore(score); 
-                setCurrentScreen('detetive_ibge'); 
+                // ALTERAÇÃO: Define a pontuação máxima da trilha (ajuste este valor se necessário)
+                // Usando um valor fictício de 300, como exemplo. Substitua pela pontuação máxima real.
+                setMaxTrackScore(550); 
+                setFinalTrackName('Trilha Urbanização');
+                // ALTERAÇÃO: Redireciona direto para a tela de resultado final
+                setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500); 
             }} 
           />
       );
   }
 
-  if (currentScreen === 'detetive_ibge') {
-      return (
-          <DetetiveIbgeGame 
-            playerName={playerName} 
-            onReturnHome={handleBackToHub} 
-            onSaveScore={(score) => {
-                isAdvancingRef.current = true;
-                setAccumulatedScore(prev => prev + score); 
-                setCurrentScreen('corrida_pendular'); 
-                setTimeout(() => isAdvancingRef.current = false, 500);
-            }} 
-          />
-      );
-  }
-
-  if (currentScreen === 'corrida_pendular') {
-      return (
-          <CorridaPendularGame 
-            playerName={playerName} 
-            onComplete={handleBackToHub} 
-            onSaveScore={(score) => {
-                isAdvancingRef.current = true;
-                setAccumulatedScore(prev => prev + score); 
-                setMaxTrackScore(1850); 
-                setFinalTrackName('Trilha Urbanização');
-                setCurrentScreen('resultado_final'); 
-                setTimeout(() => isAdvancingRef.current = false, 500);
-            }} 
-          />
-      );
-  }
-
+  // ALTERAÇÃO: Os blocos 'detetive_ibge' e 'corrida_pendular' foram removidos 
+  // do encadeamento da Trilha 2, pois ela agora termina na Macrocefalia.
   // ========================================================= //
   // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
   // ========================================================= //
