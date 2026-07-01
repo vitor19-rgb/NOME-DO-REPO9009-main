@@ -403,7 +403,7 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                         <div className="bg-red-600 p-2 rounded-full shadow-lg shadow-red-900/20 group-hover:-translate-x-1 transition-transform">
                             <ArrowLeft className="text-white w-5 h-5" />
                         </div>
-                        <span className="text-white font-black text-xl md:text-2xl tracking-tighter">BioGuesser</span>
+                        <span className="text-white font-black text-xl md:text-2xl tracking-tighter">Efeito Global</span>
                     </button>
                 </div>
                 
