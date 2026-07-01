@@ -477,11 +477,22 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                 )}
             </AnimatePresence>
 
+            {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
             <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
-                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start">
-                    <Button variant="ghost" size="icon" onClick={handleExit} className="text-slate-400 hover:text-white bg-white/5 rounded-full absolute left-0 md:static md:mr-4"><ArrowLeft /></Button>
+                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
+                    
+                    {/* Botão de voltar padronizado com fundo azul */}
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={handleExit} 
+                        className="bg-blue-600 hover:bg-blue-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md"
+                    >
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                    </Button>
+                    
+                    {/* Título sem o ícone do prédio */}
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className="bg-blue-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg md:shadow-blue-900/20"><Building className="text-white w-4 h-4 md:w-5 md:h-5" /></div>
                         <div className="flex flex-col">
                             <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Gestão Urbana</span>
                         </div>
@@ -507,6 +518,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                     </div>
                 </div>
             </header>
+            {/* FIM DO CABEÇALHO PADRONIZADO */}
 
             {phase === 'selection' && (
                 <main className="flex-grow flex flex-col items-center justify-center p-4 relative z-10">
