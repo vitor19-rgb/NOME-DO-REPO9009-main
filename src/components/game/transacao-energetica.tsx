@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, Zap, Wind, Droplet, Leaf, ArrowLeft, ShieldCheck, Map as MapIcon, CheckCircle2, Lock, HelpCircle, BookOpen, ZoomIn, X, BatteryCharging, AlertCircle, Info, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 // --- TIPAGENS --- //
 interface TransacaoEnergeticaGameProps {
@@ -91,17 +91,22 @@ const ERROR_MESSAGES: Record<BiomeId, Partial<Record<PlantType, string>>> = {
 const GameHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="ghost" className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-full w-9 h-9 md:w-10 md:h-10 p-0 flex items-center justify-center shadow-md transition-colors">
-                <HelpCircle className="w-5 h-5" />
+            {/* ALTERAÇÃO AQUI: Botão com texto e borda verde padronizada */}
+            <Button variant="outline" className="bg-emerald-900/40 border-emerald-500/50 text-emerald-200 hover:bg-emerald-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
+                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
             </Button>
         </SheetTrigger>
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
+             
+             {/* ALTERAÇÃO AQUI: Título invisível para evitar o erro do Leitor de Tela (Screen Reader) */}
+             <SheetTitle className="sr-only">Painel de Ajuda e Revisão ENEM</SheetTitle>
+             
              <div className="p-8">
                 <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
                     <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
                         <Info className="text-blue-400 w-8 h-8"/>
                     </div>
-                    <h2 className="text-3xl font-black text-white">Guia da Missão</h2>
+                    <h2 className="text-3xl font-black text-white">O que cai no ENEM?</h2>
                 </div>
                 
                 <div className="space-y-8 text-left">
@@ -348,34 +353,41 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 )}
             </AnimatePresence>
 
-            {/* CABEÇALHO GLOBAL RESPONSIVO */}
-            <header className="w-full p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/95 backdrop-blur-md relative z-20 flex flex-col md:flex-row justify-between items-center shadow-xl md:shadow-2xl gap-3 md:gap-4 sticky top-0">
-                {/* Esquerda: Voltar + Título */}
-                <div className="flex items-center justify-between md:justify-start w-full md:w-auto relative">
-                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full absolute left-0 md:static md:mr-4 shrink-0">
+          {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
+            <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
+                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
+                    
+                    {/* ALTERAÇÃO AQUI: Botão de voltar padronizado com fundo verde esmeralda */}
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={onReturnHome} 
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md shrink-0"
+                    >
                         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
-                    <div className="flex items-center gap-2 md:gap-3 mx-auto md:mx-0">
-                        <div className="bg-emerald-600 p-1.5 md:p-2 rounded-xl shadow-md md:shadow-lg shadow-emerald-900/20">
-                            <Zap className="text-white w-4 h-4 md:w-5 md:h-5" />
-                        </div>
-                        <div className="flex flex-col text-left">
+                    
+                    {/* ALTERAÇÃO AQUI: Título limpo, sem o ícone do raio */}
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="flex flex-col">
                             <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Matriz Energética</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Direita: Erros + Meta + Score + Botão de Ajuda */}
-                <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2 md:gap-4">
+                {/* Status da Direita (Ajuda, Erros, Meta e Score) */}
+                <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
                     
                     <GameHelpPanel />
+                    
+                    <div className="w-px h-6 bg-white/10 hidden md:block" />
 
                     <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border transition-colors ${errorCount > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-white/5 border-white/10'}`}>
                         <AlertTriangle className={`w-4 h-4 ${errorCount > 0 ? 'text-red-400' : 'text-slate-400'}`} />
                         <span className={`font-bold text-[10px] md:text-sm ${errorCount > 0 ? 'text-red-400' : 'text-slate-300'}`}>Erros: {errorCount}/{maxErrors}</span>
                     </div>
 
-                    <div className="hidden md:flex flex-col w-32 md:w-40 space-y-1 ml-2">
+                    <div className="hidden md:flex flex-col w-32 md:w-40 space-y-1 ml-1">
                         <div className="flex justify-between text-[10px] md:text-xs font-bold text-emerald-400 uppercase tracking-wider">
                             <span>Meta Limpa</span>
                             <span>{Math.round(progressPercent)}%</span>
@@ -389,7 +401,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         </div>
                     </div>
 
-                    <div className="w-px h-6 bg-white/10 hidden md:block mx-2" />
+                    <div className="w-px h-6 bg-white/10 hidden md:block mx-1" />
                     
                     <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20 whitespace-nowrap">
                         <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Score:</span>
@@ -397,7 +409,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                     </div>
                 </div>
             </header>
-
+            {/* FIM DO CABEÇALHO PADRONIZADO */}
             <main className="flex-grow flex flex-col max-w-6xl mx-auto w-full p-4 md:p-8 gap-6 md:gap-8 relative z-10">
                 
                 {/* PERGUNTA MAIS LÓGICA E EXPLÍCITA AQUI */}

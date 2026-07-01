@@ -126,23 +126,23 @@ const PHASES: PhaseData[] = [
 const GameHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="ghost" className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-full w-9 h-9 md:w-10 md:h-10 p-0 flex items-center justify-center shadow-md transition-colors shrink-0">
-                <HelpCircle className="w-5 h-5" />
+            <Button variant="outline" className="bg-red-900/40 border-red-500/50 text-red-200 hover:bg-red-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
+                <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
             </Button>
         </SheetTrigger>
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
              <div className="p-8 h-full overflow-y-auto">
                 <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
-                    <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
-                        <Info className="text-blue-400 w-8 h-8"/>
+                    <div className="bg-red-500/20 p-3 rounded-xl border border-red-500/30">
+                        <Info className="text-red-400 w-8 h-8"/>
                     </div>
-                    <h2 className="text-3xl font-black text-white">Guia da Missão</h2>
+                    <h2 className="text-3xl font-black text-white">O que cai no ENEM?</h2>
                 </div>
                 
                 <div className="space-y-8 text-left pb-8">
                     {/* COMO JOGAR */}
                     <div>
-                        <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
+                        <h3 className="font-black text-xl text-red-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
                         <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
                             <li><strong>Leia a Pergunta:</strong> Identifique o processo de degradação ambiental exigido.</li>
                             <li><strong>Analise o Sistema:</strong> O ecossistema é conectado. Qual evento causa o próximo?</li>
@@ -155,7 +155,7 @@ const GameHelpPanel = () => (
 
                     {/* REVISÃO ENEM */}
                     <div>
-                        <h3 className="font-black text-xl text-orange-400 mb-3 tracking-tight flex items-center gap-2">
+                        <h3 className="font-black text-xl text-red-400 mb-3 tracking-tight flex items-center gap-2">
                             <BookOpen className="w-5 h-5" /> Para que serve no ENEM?
                         </h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
@@ -180,7 +180,7 @@ const GameHelpPanel = () => (
 
 interface ReacaoEmCadeiaGameProps {
     onFinishGame: (bonusScore: number) => void;
-    onReturnHome: () => void; // <--- NOVA PROPRIEDADE ADICIONADA AQUI
+    onReturnHome: () => void; 
 }
 
 export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: ReacaoEmCadeiaGameProps) {
@@ -245,7 +245,7 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
                 
                 {/* BOTÃO DE VOLTAR NO CANTO SUPERIOR ESQUERDO NA INTRO */}
                 <div className="absolute top-6 left-6">
-                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full shrink-0">
+                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="bg-red-600 hover:bg-red-500 text-white rounded-full shrink-0 shadow-md">
                         <ArrowLeft className="w-5 h-5" />
                     </Button>
                 </div>
@@ -255,14 +255,14 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
                     <GameHelpPanel />
                 </div>
 
-                <ShieldBan className="w-20 h-20 text-orange-500 mb-6 mt-4" />
+                <ShieldBan className="w-20 h-20 text-red-500 mb-6 mt-4" />
                 <h2 className="text-4xl font-black text-white mb-2">Desafio Final: Efeito Dominó</h2>
-                <h3 className="text-2xl text-orange-400 mb-6">{currentPhase.name} - {currentPhase.theme}</h3>
+                <h3 className="text-2xl text-red-400 mb-6">{currentPhase.name} - {currentPhase.theme}</h3>
                 <p className="text-slate-300 text-lg max-w-2xl mb-10 leading-relaxed">
                     A natureza é um sistema conectado. Uma ação destrutiva desencadeia a próxima. 
                     Sua missão é colocar os eventos de degradação na <strong>ordem cronológica exata</strong>. 
                 </p>
-                <Button onClick={handleStart} className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all active:scale-95 shadow-[0_0_30px_rgba(234,88,12,0.3)]">
+                <Button onClick={handleStart} className="bg-red-600 hover:bg-red-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.3)]">
                     Iniciar Simulação
                 </Button>
             </div>
@@ -300,107 +300,121 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
     );
 
     return (
-        <div className="w-full max-w-5xl mx-auto mt-6 px-4 flex flex-col gap-6 relative pb-10">
+        <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
             
-            {/* CABEÇALHO DO JOGO (AGORA COM BOTÃO DE VOLTAR) */}
-            <div className="flex justify-between items-center bg-slate-900/60 border border-white/10 p-4 rounded-2xl backdrop-blur-md shadow-md">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full shrink-0">
+            {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
+            <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
+                <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
+                    
+                    {/* Botão de voltar padronizado com fundo vermelho */}
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={onReturnHome} 
+                        className="bg-red-600 hover:bg-red-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md shrink-0"
+                    >
                         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
-                    <div className="flex flex-col">
-                        <h3 className="text-[10px] md:text-sm text-slate-400 uppercase tracking-widest font-bold">Bioma: {currentPhase.name}</h3>
-                        <h2 className="text-lg md:text-xl font-black text-orange-400">{currentPhase.theme}</h2>
+                    
+                    {/* Títulos alinhados e centralizados no mobile */}
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="flex flex-col text-center md:text-left">
+                            <span className="text-[10px] md:text-xs text-slate-400 uppercase tracking-widest font-bold">Bioma: {currentPhase.name}</span>
+                            <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">{currentPhase.theme}</span>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+
+                <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
                      <GameHelpPanel /> 
                 </div>
-            </div>
+            </header>
+            {/* FIM DO CABEÇALHO PADRONIZADO */}
 
-            {/* PAINEL DE PERGUNTA */}
-            <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                <AlertCircle className="text-blue-400 shrink-0 w-6 h-6 md:w-8 md:h-8" />
-                <p className="text-blue-100 font-medium text-sm md:text-lg leading-snug">{currentPhase.question}</p>
-            </div>
-
-            {/* SIMULADOR VISUAL */}
-            <div 
-                onClick={() => setIsImageExpanded(true)}
-                className="relative w-full h-[35vh] md:h-[45vh] rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl bg-black cursor-pointer group"
-            >
-                {renderSimulationLayers()}
-
-                <div className="absolute inset-0 z-40 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
-                    <ZoomIn className="text-white opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all" size={32} />
+            <main className="w-full max-w-5xl mx-auto mt-6 px-4 flex flex-col gap-6 relative pb-10 flex-grow">
+                {/* PAINEL DE PERGUNTA */}
+                <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-xl flex items-center gap-3 shadow-sm">
+                    <AlertCircle className="text-red-400 shrink-0 w-6 h-6 md:w-8 md:h-8" />
+                    <p className="text-red-100 font-medium text-sm md:text-lg leading-snug">{currentPhase.question}</p>
                 </div>
 
+                {/* SIMULADOR VISUAL */}
+                <div 
+                    onClick={() => setIsImageExpanded(true)}
+                    className="relative w-full h-[35vh] md:h-[45vh] rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl bg-black cursor-pointer group"
+                >
+                    {renderSimulationLayers()}
+
+                    <div className="absolute inset-0 z-40 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
+                        <ZoomIn className="text-white opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all" size={32} />
+                    </div>
+
+                    <AnimatePresence>
+                        {gameState === 'game_over' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-red-950/90 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
+                                <ShieldBan className="text-red-500 w-16 h-16 mb-4" />
+                                <h2 className="text-3xl font-bold text-white mb-2">Ordem Incorreta!</h2>
+                                <p className="text-red-200 mb-6">A degradação não segue esse caminho lógico. Tente novamente.</p>
+                                <Button onClick={handleRetryPhase} className="bg-red-600 hover:bg-red-500">Tentar Novamente</Button>
+                            </motion.div>
+                        )}
+                        {gameState === 'phase_complete' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-green-950/80 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
+                                <CheckCircle2 className="text-green-400 w-16 h-16 mb-4" />
+                                <h2 className="text-3xl font-bold text-white mb-4">Processo Identificado!</h2>
+                                <Button onClick={handleNextPhase} className="bg-green-600 hover:bg-green-500">Próxima Análise</Button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* ÁREA DE JOGO */}
+                <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5">
+                    <div className="grid grid-cols-4 gap-3 mb-8">
+                        {[0, 1, 2, 3].map((i) => (
+                            <div key={i} className="h-24 md:h-32 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/50 flex flex-col items-center justify-center p-2 text-center">
+                                {placedCards[i] ? (
+                                    <>
+                                        <div className="text-red-400 mb-1">{placedCards[i].icon}</div>
+                                        <span className="text-[10px] md:text-xs font-bold text-white uppercase">{placedCards[i].text}</span>
+                                    </>
+                                ) : (
+                                    <span className="text-slate-600 font-black text-xl">{i + 1}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {availableCards.map((card) => (
+                            <motion.button
+                                key={card.id}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleCardClick(card)}
+                                className="bg-slate-800 border border-slate-600 p-4 rounded-xl flex flex-col items-center gap-2 w-32 md:w-40 hover:border-red-400 transition-colors"
+                            >
+                                <div className="text-red-400">{card.icon}</div>
+                                <span className="text-xs md:text-sm font-bold text-white">{card.text}</span>
+                            </motion.button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* MODAL ZOOM */}
                 <AnimatePresence>
-                    {gameState === 'game_over' && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-red-950/90 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
-                            <ShieldBan className="text-red-500 w-16 h-16 mb-4" />
-                            <h2 className="text-3xl font-bold text-white mb-2">Ordem Incorreta!</h2>
-                            <p className="text-red-200 mb-6">A degradação não segue esse caminho lógico. Tente novamente.</p>
-                            <Button onClick={handleRetryPhase} className="bg-red-600 hover:bg-red-500">Tentar Novamente</Button>
-                        </motion.div>
-                    )}
-                    {gameState === 'phase_complete' && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-green-950/80 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
-                            <CheckCircle2 className="text-green-400 w-16 h-16 mb-4" />
-                            <h2 className="text-3xl font-bold text-white mb-4">Processo Identificado!</h2>
-                            <Button onClick={handleNextPhase} className="bg-green-600 hover:bg-green-500">Próxima Análise</Button>
+                    {isImageExpanded && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 p-4 flex flex-col items-center justify-center">
+                            <Button variant="ghost" onClick={() => setIsImageExpanded(false)} className="absolute top-4 right-4 text-white">
+                                <X size={32} />
+                            </Button>
+                            <div className="w-full max-w-5xl aspect-video relative rounded-2xl overflow-hidden">
+                                {renderSimulationLayers()}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
-
-            {/* ÁREA DE JOGO */}
-            <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/5">
-                <div className="grid grid-cols-4 gap-3 mb-8">
-                    {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className="h-24 md:h-32 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/50 flex flex-col items-center justify-center p-2 text-center">
-                            {placedCards[i] ? (
-                                <>
-                                    <div className="text-orange-400 mb-1">{placedCards[i].icon}</div>
-                                    <span className="text-[10px] md:text-xs font-bold text-white uppercase">{placedCards[i].text}</span>
-                                </>
-                            ) : (
-                                <span className="text-slate-600 font-black text-xl">{i + 1}</span>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="flex flex-wrap justify-center gap-4">
-                    {availableCards.map((card) => (
-                        <motion.button
-                            key={card.id}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleCardClick(card)}
-                            className="bg-slate-800 border border-slate-600 p-4 rounded-xl flex flex-col items-center gap-2 w-32 md:w-40 hover:border-blue-400 transition-colors"
-                        >
-                            <div className="text-blue-400">{card.icon}</div>
-                            <span className="text-xs md:text-sm font-bold text-white">{card.text}</span>
-                        </motion.button>
-                    ))}
-                </div>
-            </div>
-
-            {/* MODAL ZOOM */}
-            <AnimatePresence>
-                {isImageExpanded && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 p-4 flex flex-col items-center justify-center">
-                        <Button variant="ghost" onClick={() => setIsImageExpanded(false)} className="absolute top-4 right-4 text-white">
-                            <X size={32} />
-                        </Button>
-                        <div className="w-full max-w-5xl aspect-video relative rounded-2xl overflow-hidden">
-                            {renderSimulationLayers()}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
+            </main>
         </div>
     );
 }
