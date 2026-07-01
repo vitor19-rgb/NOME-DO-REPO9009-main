@@ -16,6 +16,7 @@ import {
   Info,
   BookOpen,
 } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // --- TIPAGENS DA APLICAÇÃO ---
@@ -758,13 +759,15 @@ export default function EscudoDaVerdadeGame({
           </div>
           
           <button
-            onClick={() => setShowEnemModal(true)}
-            className="hidden md:flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 px-3 py-2 rounded-xl transition-all duration-200 group border border-amber-500/30"
-            title="O que cai no ENEM sobre Geografia Agrária?"
-          >
-            <BookOpen className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-            <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">O que cai no ENEM?</span>
-          </button>
+  onClick={() => setShowEnemModal(true)}
+  className="hidden md:flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:text-amber-200 rounded-full px-4 py-2 transition-all duration-200 shadow-md"
+  title="O que cai no ENEM sobre Geografia Agrária?"
+>
+  <HelpCircle className="w-4 h-4" />
+  <span className="text-sm font-semibold">
+    O que cai no ENEM?
+  </span>
+</button>
           
           <button
             onClick={() => setShowEnemModal(true)}
