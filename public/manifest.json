@@ -8,21 +8,21 @@
   "theme_color": "#020617",
   "icons": [
     {
-      "src": "/IconePlaneta2p.jpeg",
+      "src": "/IconePlaneta2p.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/IconePlaneta2g.jpeg",
+      "src": "/IconePlaneta2g.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/IconePlaneta2g.jpeg",
+      "src": "/IconePlaneta2g.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]
