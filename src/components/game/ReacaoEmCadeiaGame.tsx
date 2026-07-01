@@ -243,17 +243,7 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
         return (
             <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-4xl mx-auto mt-10 relative">
                 
-                {/* BOTÃO DE VOLTAR NO CANTO SUPERIOR ESQUERDO NA INTRO */}
-                <div className="absolute top-6 left-6">
-                    <Button variant="ghost" size="icon" onClick={onReturnHome} className="bg-red-600 hover:bg-red-500 text-white rounded-full shrink-0 shadow-md">
-                        <ArrowLeft className="w-5 h-5" />
-                    </Button>
-                </div>
-
-                {/* BOTÃO DE AJUDA NO CANTO SUPERIOR DIREITO NA INTRO */}
-                <div className="absolute top-6 right-6">
-                    <GameHelpPanel />
-                </div>
+                {/* Os botões de voltar e ajuda foram removidos desta tela conforme solicitado */}
 
                 <ShieldBan className="w-20 h-20 text-red-500 mb-6 mt-4" />
                 <h2 className="text-4xl font-black text-white mb-2">Desafio Final: Efeito Dominó</h2>
