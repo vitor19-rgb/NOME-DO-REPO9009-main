@@ -103,8 +103,8 @@ const GameHelpPanel = () => (
              
              <div className="p-8">
                 <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
-                    <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
-                        <Info className="text-blue-400 w-8 h-8"/>
+                    <div className="bg-emerald-500/20 p-3 rounded-xl border border-emerald-500/30">
+                        <Info className="text-emerald-400 w-8 h-8"/>
                     </div>
                     <h2 className="text-3xl font-black text-white">O que cai no ENEM?</h2>
                 </div>
@@ -112,7 +112,7 @@ const GameHelpPanel = () => (
                 <div className="space-y-8 text-left">
                     {/* COMO JOGAR */}
                     <div>
-                        <h3 className="font-black text-xl text-blue-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
+                        <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
                         <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
                             <li><strong>Escolha a Fonte:</strong> Selecione uma Matriz Energética no rodapé inferior.</li>
                             <li><strong>Analise o Bioma:</strong> Clique na região que possui as melhores características geográficas (clima e relevo) para essa usina funcionar sem grandes danos.</li>
@@ -227,9 +227,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-emerald-600/10 blur-[120px] rounded-full pointer-events-none" />
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
                     
-                    <div className="absolute top-6 right-6">
-                        <GameHelpPanel />
-                    </div>
+                   
 
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-emerald-600/20 p-5 rounded-3xl border border-emerald-500/30">
