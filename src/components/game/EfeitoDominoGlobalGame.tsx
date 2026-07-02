@@ -819,19 +819,13 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                                 <span className="text-5xl font-black text-yellow-400 drop-shadow-md">{score} PTS</span>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                            {/* ALTERAÇÃO: Removido o botão de voltar ao início e deixado apenas o de Salvar ocupando a largura total */}
+                            <div className="flex flex-col gap-4 mt-8">
                                 <Button 
                                     onClick={() => onSaveScore && onSaveScore(score)} 
-                                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-lg rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-transform hover:scale-105"
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-lg rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-transform hover:scale-105"
                                 >
-                                    Guardar Pontuação (+{score})
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => onComplete && onComplete()} 
-                                    className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white py-7 text-lg rounded-xl font-bold flex items-center justify-center gap-2"
-                                >
-                                    Sair da Missão <LogOut size={18}/>
+                                    Salvar a Pontuação (+{score})
                                 </Button>
                             </div>
                         </motion.div>
