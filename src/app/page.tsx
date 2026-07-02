@@ -235,35 +235,40 @@ export default function App() {
                       <p className="text-right text-slate-400 text-sm mt-3 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
                   </div>
 
-                  <div className="flex flex-col gap-4">
-                      {/* LÓGICA DE BOTÃO DINÂMICO: Se existir uma próxima trilha, mostra o botão para ela */}
-                      {nextTrackId ? (
-                          <Button 
-                            onClick={() => {
-                                saveScore(playerName, accumulatedScore, finalTrackName); // Guarda os pontos do módulo atual
-                                setAccumulatedScore(0); // Limpa os pontos para o próximo
-                                setCurrentScreen(nextTrackId as any); // Leva o utilizador para o módulo que falta
-                            }}
-                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all hover:scale-105 active:scale-95"
-                          >
-                              Continuar para: {TRACK_NAMES[nextTrackId]} <Play className="ml-3" />
-                          </Button>
-                      ) : (
-                          <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center">
-                              🎉 Impressionante! Você completou todos os módulos disponíveis!
-                          </div>
-                      )}
+             <div className="flex flex-col gap-4">
+    {/* LÓGICA DE BOTÃO DINÂMICO */}
+    {nextTrackId ? (
+        <Button 
+        onClick={() => {
+            saveScore(playerName, accumulatedScore, finalTrackName);
+            setAccumulatedScore(0);
+            setCurrentScreen(nextTrackId as any);
+        }}
+        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 md:py-8 text-base md:text-xl rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
+        >
+            <span>Continuar para: {TRACK_NAMES[nextTrackId]}</span> 
+            {/* Oculto por padrão (mobile), visível a partir de ecrãs médios (md) */}
+            <Play className="hidden md:block w-5 h-5 shrink-0" />
+        </Button>
+    ) : (
+        <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center text-sm md:text-base">
+            🎉 Impressionante! Você completou todos os módulos disponíveis!
+        </div>
+    )}
 
-                      <Button 
-                        onClick={() => {
-                            saveScore(playerName, accumulatedScore, finalTrackName);
-                            setCurrentScreen('hub');
-                        }}
-                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-6 text-lg rounded-2xl transition-all hover:scale-105 active:scale-95"
-                      >
-                          Salvar no Ranking e Voltar ao Início <Home className="ml-3 w-5 h-5" />
-                      </Button>
-                  </div>
+    {/* BOTÃO VOLTAR AO INÍCIO */}
+    <Button 
+    onClick={() => {
+        saveScore(playerName, accumulatedScore, finalTrackName);
+        setCurrentScreen('hub');
+    }}
+    className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 md:py-6 text-sm md:text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
+    >
+        <span>Salvar no Ranking e Voltar ao Início</span> 
+        {/* Oculto por padrão (mobile), visível a partir de ecrãs médios (md) */}
+        <Home className="hidden md:block w-5 h-5 shrink-0" />
+    </Button>
+</div>
               </motion.div>
           </div>
       );
