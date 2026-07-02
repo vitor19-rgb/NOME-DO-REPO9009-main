@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
-import { Globe, BrainCircuit, ArrowRight, BookOpen, Building, ShieldCheck, Cloud, Trophy, User, X, Map, Gamepad2, Compass, GraduationCap, Sparkles, Loader2 } from 'lucide-react';
+import { Globe, BrainCircuit, ArrowRight, BookOpen, Building, ShieldCheck, Cloud, Trophy, User, X, Map, Gamepad2, Compass, GraduationCap, Sparkles, Loader2, Medal, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { ScoreEntry } from '@/app/page';
@@ -20,6 +20,29 @@ const staggerContainer = {
 const fadeUpItem = {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
+
+// --- FUNÇÕES AUXILIARES PARA CORES DINÂMICAS --- //
+
+// 1. Cor do texto da Tag no Ranking
+const getBadgeColor = (mode?: string) => {
+    if (!mode) return "text-slate-400";
+    if (mode.includes("Meio Ambiente")) return "text-green-400";
+    if (mode.includes("Urbanização")) return "text-blue-400";
+    if (mode.includes("Agrária")) return "text-orange-400"; // Laranja/Amarelo
+    if (mode.includes("Geopolítica")) return "text-red-400";
+    if (mode.includes("Simulado")) return "text-purple-400";
+    if (mode === "Mestre da Geografia") return "text-yellow-400";
+    return "text-blue-400"; // Padrão
+};
+
+// 2. Cor de fundo do Botão (Sub-aba) quando selecionado
+const getTabActiveColor = (track: string) => {
+    if (track.includes("Meio Ambiente")) return "bg-green-600 text-white border-green-500";
+    if (track.includes("Urbanização")) return "bg-blue-600 text-white border-blue-500";
+    if (track.includes("Agrária")) return "bg-orange-600 text-white border-orange-500";
+    if (track.includes("Geopolítica")) return "bg-red-600 text-white border-red-500";
+    return "bg-slate-700 text-white border-slate-600";
 };
 
 // --- TELA DE CARREGAMENTO GLOBAL --- //
@@ -44,7 +67,6 @@ const LoadingScreen = () => (
                 />
             </motion.div>
             
-            {/* LOGÓTIPO PRINCIPAL */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }} 
                 animate={{ opacity: 1, y: 0 }} 
@@ -57,7 +79,6 @@ const LoadingScreen = () => (
                 />
             </motion.div>
 
-            {/* TEXTOS DE CARREGAMENTO */}
             <motion.h2 
                 animate={{ opacity: [0.5, 1, 0.5] }} 
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -72,7 +93,6 @@ const LoadingScreen = () => (
     </div>
 );
 
-// --- COMPONENTE DE INSTRUÇÕES --- //
 const HowToStep = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
     <motion.div variants={fadeUpItem} className="text-center bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 hover:bg-slate-800/60 transition-colors shadow-lg hover:shadow-blue-900/20 group relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -86,7 +106,6 @@ const HowToStep = ({ icon, title, description }: { icon: React.ReactNode, title:
     </motion.div>
 );
 
-// --- CARTÃO DOS MÓDULOS DE JOGO --- //
 const GameModeCard = ({ icon, title, description, onClick, enabled = true }: { icon: React.ReactNode, title: string, description: string, onClick: () => void, enabled?: boolean }) => (
     <motion.div
         variants={fadeUpItem}
@@ -109,7 +128,6 @@ const GameModeCard = ({ icon, title, description, onClick, enabled = true }: { i
     </motion.div>
 );
 
-// --- INTERFACES --- //
 interface MainHubProps {
     onSelectTheme: (themeId: string, playerName: string) => void;
     initialPlayerName: string;
@@ -125,14 +143,14 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
 
+    const [rankingTab, setRankingTab] = useState<'total' | 'modulos' | 'simulados'>('total');
+    const [moduleTab, setModuleTab] = useState<string>('Trilha Meio Ambiente');
+
    useEffect(() => {
         if (typeof window !== 'undefined') {
             const hasLoadedBefore = sessionStorage.getItem('bioguesser_has_loaded');
-            
             if (hasLoadedBefore) {
-                const timer = setTimeout(() => {
-                    setIsLoading(false);
-                }, 2000); 
+                const timer = setTimeout(() => setIsLoading(false), 2000); 
                 return () => clearTimeout(timer);
             } else {
                 const timer = setTimeout(() => {
@@ -179,6 +197,71 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             onSelectTheme(selectedTheme, playerName.trim());
         }
     };
+
+    // ========================================================= //
+    // LÓGICA DE PROCESSAMENTO DO RANKING
+    // ========================================================= //
+    
+    const getBestScoresPerPlayer = () => {
+        const bestScores: Record<string, Record<string, ScoreEntry>> = {};
+        
+        leaderboard.forEach(entry => {
+            if (!entry.mode) return;
+            if (!bestScores[entry.name]) bestScores[entry.name] = {};
+            
+            const currentBest = bestScores[entry.name][entry.mode];
+            if (!currentBest || entry.score > currentBest.score) {
+                bestScores[entry.name][entry.mode] = entry;
+            }
+        });
+        return bestScores;
+    };
+
+    const getTrilhaTotalRanking = () => {
+        const bestScores = getBestScoresPerPlayer();
+        const mainTracks = ['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'];
+        const totals: ScoreEntry[] = [];
+
+        Object.entries(bestScores).forEach(([name, modes]) => {
+            let totalScore = 0;
+            let hasAll = true;
+            let latestDate = "";
+
+            mainTracks.forEach(track => {
+                if (modes[track]) {
+                    totalScore += modes[track].score;
+                    if (modes[track].date > latestDate) latestDate = modes[track].date;
+                } else {
+                    hasAll = false; 
+                }
+            });
+
+            if (hasAll) {
+                totals.push({ name, score: totalScore, date: latestDate, mode: 'Mestre da Geografia' });
+            }
+        });
+
+        return totals.sort((a, b) => b.score - a.score).slice(0, 10);
+    };
+
+    let displayLeaderboard: ScoreEntry[] = [];
+    const bestScores = getBestScoresPerPlayer();
+
+    if (rankingTab === 'total') {
+        displayLeaderboard = getTrilhaTotalRanking();
+    } else if (rankingTab === 'simulados') {
+        displayLeaderboard = Object.values(bestScores)
+            .map(player => player['Trilha do Simulado Enem'])
+            .filter(Boolean)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 10);
+    } else if (rankingTab === 'modulos') {
+        displayLeaderboard = Object.values(bestScores)
+            .map(player => player[moduleTab])
+            .filter(Boolean)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 10);
+    }
 
     if (isLoading) return <LoadingScreen />;
 
@@ -301,13 +384,15 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
         )
     }
 
-    // --- TELA DE RANKING --- //
+    // --- TELA DE RANKING DIVIDIDA EM 3 SECÇÕES --- //
     if (view === 'ranking') {
         return (
             <div className="min-h-screen bg-[#020617] p-4 md:p-10 flex flex-col items-center relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-yellow-500/5 blur-[150px] rounded-full pointer-events-none" />
                 
-                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", damping: 25 }} className="w-full max-w-3xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10">
+                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", damping: 25 }} className="w-full max-w-4xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10 flex flex-col">
+                    
+                    {/* CABEÇALHO DO RANKING */}
                     <div className="bg-slate-950/80 p-6 md:p-8 border-b border-slate-800 flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-yellow-500/20 p-3 rounded-2xl border border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
@@ -317,16 +402,77 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                         </div>
                         <Button onClick={() => setView('home')} variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors"><X size={28} /></Button>
                     </div>
+
+                    {/* ABAS DE NAVEGAÇÃO PRINCIPAL */}
+                    <div className="p-4 md:p-6 bg-slate-900 border-b border-slate-800 flex flex-col sm:flex-row gap-2 justify-center">
+                        <Button 
+                            variant={rankingTab === 'total' ? 'default' : 'outline'} 
+                            onClick={() => setRankingTab('total')}
+                            className={`rounded-xl flex-1 py-6 font-bold text-sm md:text-base ${rankingTab === 'total' ? 'bg-yellow-500 hover:bg-yellow-600 text-yellow-950' : 'border-slate-700 text-slate-400 hover:text-white'}`}
+                        >
+                            <Medal className="w-5 h-5 mr-2" /> Trilha Total
+                        </Button>
+                        <Button 
+                            variant={rankingTab === 'modulos' ? 'default' : 'outline'} 
+                            onClick={() => setRankingTab('modulos')}
+                            className={`rounded-xl flex-1 py-6 font-bold text-sm md:text-base ${rankingTab === 'modulos' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'border-slate-700 text-slate-400 hover:text-white'}`}
+                        >
+                            <Layers className="w-5 h-5 mr-2" /> Indepedentes
+                        </Button>
+                        <Button 
+                            variant={rankingTab === 'simulados' ? 'default' : 'outline'} 
+                            onClick={() => setRankingTab('simulados')}
+                            className={`rounded-xl flex-1 py-6 font-bold text-sm md:text-base ${rankingTab === 'simulados' ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'border-slate-700 text-slate-400 hover:text-white'}`}
+                        >
+                            <BrainCircuit className="w-5 h-5 mr-2" /> Simulados
+                        </Button>
+                    </div>
+
+                    {/* SUB-ABAS (SÓ APARECEM SE 'MODULOS' ESTIVER SELECIONADO) */}
+                    <AnimatePresence>
+                        {rankingTab === 'modulos' && (
+                            <motion.div 
+                                initial={{ height: 0, opacity: 0 }} 
+                                animate={{ height: 'auto', opacity: 1 }} 
+                                exit={{ height: 0, opacity: 0 }}
+                                className="bg-slate-950/50 p-4 border-b border-slate-800"
+                            >
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'].map(track => {
+                                        // Usa o helper para definir a cor ativa
+                                        const isActive = moduleTab === track;
+                                        const activeClass = isActive ? getTabActiveColor(track) : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent';
+                                        
+                                        return (
+                                            <Button 
+                                                key={track} 
+                                                variant="ghost" 
+                                                onClick={() => setModuleTab(track)}
+                                                className={`rounded-full text-xs md:text-sm font-bold px-4 py-2 transition-all ${activeClass}`}
+                                            >
+                                                {track.replace('Trilha ', '')}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     
-                    <div className="p-4 md:p-8">
-                        {leaderboard.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+                    {/* LISTA DE PONTUAÇÕES */}
+                    <div className="p-4 md:p-8 overflow-y-auto flex-1 max-h-[50vh]">
+                        {displayLeaderboard.length === 0 ? (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
                                 <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                                <p className="text-slate-400 font-medium text-lg">Nenhum registo encontrado. O pódio está à sua espera!</p>
+                                <p className="text-slate-400 font-medium text-lg">
+                                    {rankingTab === 'total' 
+                                        ? "Nenhum jogador completou todas as 4 trilhas base ainda. Seja o primeiro!" 
+                                        : "Nenhum registo encontrado para esta categoria. O pódio está à sua espera!"}
+                                </p>
                             </motion.div>
                         ) : (
                             <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4">
-                                {leaderboard.map((entry, index) => (
+                                {displayLeaderboard.map((entry, index) => (
                                     <motion.div variants={fadeUpItem} key={index} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
                                         <div className="flex items-center gap-4 md:gap-6">
                                             <span className={`text-2xl md:text-3xl font-black w-10 text-center transition-transform group-hover:scale-110 ${index === 0 ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]' : index === 1 ? 'text-slate-300 drop-shadow-[0_0_10px_rgba(203,213,225,0.4)]' : index === 2 ? 'text-amber-600 drop-shadow-[0_0_10px_rgba(217,119,6,0.4)]' : 'text-slate-600'}`}>
@@ -334,7 +480,10 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                                             </span>
                                             <div className="flex flex-col">
                                                 <span className="text-white font-black text-lg md:text-xl">{entry.name}</span>
-                                                <span className="text-blue-400 font-bold text-xs uppercase tracking-widest">{entry.mode || 'Missão Concluída'}</span>
+                                                {/* Aplicamos aqui a função getBadgeColor para pintar o nome da trilha dinamicamente */}
+                                                <span className={`${getBadgeColor(entry.mode)} font-bold text-xs uppercase tracking-widest`}>
+                                                    {entry.mode || 'Missão Concluída'}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end">
@@ -479,7 +628,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                 </div>
             </section>
 
-            {/* SECÇÃO MÓDULOS (JOGOS) - Ajuste de padding aqui */}
+            {/* SECÇÃO MÓDULOS (JOGOS) */}
             <section id="modos" className="pt-32 pb-8 px-4 relative flex-grow z-10">
                  <div className="max-w-7xl mx-auto">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
@@ -503,23 +652,23 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             enabled={true} 
                         />
                        <GameModeCard 
-                            icon={<BookOpen size={56} className="drop-shadow-md"/>} 
-                            title="Geografia Agrária" 
-                            description="Entenda a Estrutura Fundiária, a revolução verde e o balanço entre o Agronegócio e a Agricultura Familiar." 
-                            onClick={() => handleModeSelection('agraria', true)} 
-                            enabled={true} 
-                        />
-                        
-                        <GameModeCard 
                             icon={<Cloud size={56} className="drop-shadow-md"/>} 
                             title="Geopolítica Global" 
                             description="Descubra as reações em cadeia ligando os maiores conflitos mundiais com a economia diária do Brasil." 
                             onClick={() => handleModeSelection('geopolitica', true)} 
                             enabled={true} 
                         />
+                        
+                        <GameModeCard 
+                            icon={<BookOpen size={56} className="drop-shadow-md"/>} 
+                            title="Geografia Agrária" 
+                            description="Entenda a Estrutura Fundiária, a revolução verde e o balanço entre o Agronegócio e a Agricultura Familiar." 
+                            onClick={() => handleModeSelection('agraria', true)} 
+                            enabled={true} 
+                        />
                     </motion.div>
 
-                    {/* --- NOVO MÓDULO: SIMULADOS - Ajuste de margem aqui --- */}
+                    {/* --- NOVO MÓDULO: SIMULADOS --- */}
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-6 flex justify-center">
                         <div className="w-full max-w-3xl">
                             <GameModeCard 
@@ -535,18 +684,18 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             </section>
 
             {/* --- RODAPÉ PROFISSIONAL DO TCC --- */}
-            <footer className="w-full bg-[#050A15] border-t border-slate-800/60 py-12 relative z-20 flex-shrink-0 mt-auto">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6">
+            <footer className="w-full bg-[#050A15] border-t border-slate-800/60 py-6 relative z-20 flex-shrink-0 mt-auto">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-4">
                     <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex flex-col md:flex-row items-center gap-4 text-slate-300">
-                        <div className="bg-blue-900/30 p-3 rounded-full border border-blue-500/20">
-                            <GraduationCap className="text-blue-400 w-8 h-8" />
+                        <div className="bg-blue-900/30 p-2 rounded-full border border-blue-500/20">
+                            <GraduationCap className="text-blue-400 w-6 h-6" />
                         </div>
-                        <span className="font-black text-lg md:text-xl tracking-widest uppercase text-center bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400">
+                        <span className="font-black text-base md:text-lg tracking-widest uppercase text-center bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400">
                             TCC Gamificado para o ENEM (Geografia)
                         </span>
                     </motion.div>
                     
-                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-3 px-6 rounded-full border border-slate-800">
+                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-xs md:text-sm text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-2 px-6 rounded-full border border-slate-800">
                         Desenvolvido por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
                     </motion.div>
                 </div>

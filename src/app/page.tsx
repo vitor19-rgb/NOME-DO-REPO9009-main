@@ -27,30 +27,50 @@ export const getLeaderboard = (): ScoreEntry[] => {
     return data ? JSON.parse(data) : [];
 };
 
+// ATUALIZAÇÃO: Lógica para manter a maior pontuação e guardar todo o histórico
 export const saveScore = (name: string, score: number, mode: string) => {
     if (typeof window === 'undefined') return;
     const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, date: new Date().toISOString(), mode });
+
+    // Procura se este jogador já jogou este modo de jogo antes
+    const existingEntryIndex = leaderboard.findIndex(
+        (entry) => entry.name === name && entry.mode === mode
+    );
+
+    if (existingEntryIndex !== -1) {
+        // Se já jogou, verifica se a nova pontuação é MAIOR do que a antiga
+        if (score > leaderboard[existingEntryIndex].score) {
+            leaderboard[existingEntryIndex].score = score;
+            leaderboard[existingEntryIndex].date = new Date().toISOString();
+        }
+        // Se não for maior, não faz nada (mantém a pontuação alta antiga)
+    } else {
+        // Se nunca jogou, adiciona um novo registo
+        leaderboard.push({ name, score, date: new Date().toISOString(), mode });
+    }
+
+    // Ordena do maior para o menor
     leaderboard.sort((a, b) => b.score - a.score);
-    localStorage.setItem('bioguesser_leaderboard', JSON.stringify(leaderboard.slice(0, 10)));
+    
+    // ATUALIZAÇÃO: Retiramos o .slice(0, 10) para não apagar o progresso dos jogadores,
+    // garantindo que o MainHub consegue calcular a "Trilha Total".
+    localStorage.setItem('bioguesser_leaderboard', JSON.stringify(leaderboard));
 };
 
 // --- DEFINIÇÃO DAS TRILHAS DISPONÍVEIS --- //
-// Adicionamos 'simulados' no final da lista
-const ALL_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria', 'simulados'];
+// ATUALIZAÇÃO: Separamos as 4 trilhas principais. O Simulado fica independente.
+const MAIN_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria'];
 
-// Adicionamos o nome bonito para os Simulados
+// Dicionário para traduzir o ID no nome do botão
 const TRACK_NAMES: Record<string, string> = {
     'meio_ambiente': 'Meio Ambiente',
     'urbanizacao': 'Urbanização',
     'geopolitica': 'Geopolítica',
-    'agraria': 'Geografia Agrária',
-    'simulados': 'Simulados ENEM'
+    'agraria': 'Geografia Agrária'
 };
 
 // --- COMPONENTE ROOT / CONTAINER --- //
 export default function App() {
-  // Adicionamos 'simulados' aos tipos permitidos do currentScreen
   const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'simulados' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
@@ -59,7 +79,7 @@ export default function App() {
   const [maxTrackScore, setMaxTrackScore] = useState(0); 
   const [finalTrackName, setFinalTrackName] = useState("");
   
-  // ESTADO: Guarda as trilhas que o jogador já completou
+  // ESTADO: Guarda as trilhas principais que o jogador já completou
   const [completedTracks, setCompletedTracks] = useState<string[]>([]);
   
   const isAdvancingRef = useRef(false);
@@ -78,7 +98,7 @@ export default function App() {
   };
 
   // ========================================================= //
-  // TRILHA 1: MEIO AMBIENTE (Biomas + Cadeia -> Energia)
+  // TRILHA 1: MEIO AMBIENTE
   // ========================================================= //
   if (currentScreen === 'meio_ambiente') {
       return (
@@ -106,7 +126,6 @@ export default function App() {
                 setMaxTrackScore(1575); 
                 setFinalTrackName('Trilha Meio Ambiente');
                 
-                // Marca a trilha como completa
                 setCompletedTracks(prev => Array.from(new Set([...prev, 'meio_ambiente'])));
 
                 setCurrentScreen('resultado_final'); 
@@ -117,7 +136,7 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TRILHA 2: URBANIZAÇÃO (Macrocefalia Urbana)
+  // TRILHA 2: URBANIZAÇÃO 
   // ========================================================= //
   if (currentScreen === 'urbanizacao') {
       return (
@@ -130,7 +149,6 @@ export default function App() {
                 setMaxTrackScore(550); 
                 setFinalTrackName('Trilha Urbanização');
 
-                // Marca a trilha como completa
                 setCompletedTracks(prev => Array.from(new Set([...prev, 'urbanizacao'])));
 
                 setCurrentScreen('resultado_final'); 
@@ -141,7 +159,7 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
+  // TRILHA 3: GEOPOLÍTICA
   // ========================================================= //
   if (currentScreen === 'geopolitica') {
       return (
@@ -154,7 +172,6 @@ export default function App() {
                 setMaxTrackScore(500); 
                 setFinalTrackName('Trilha Geopolítica'); 
                 
-                // Marca a trilha como completa
                 setCompletedTracks(prev => Array.from(new Set([...prev, 'geopolitica'])));
 
                 setCurrentScreen('resultado_final'); 
@@ -165,7 +182,7 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TRILHA 4: GEOGRAFIA AGRÁRIA (Escudo da Verdade)
+  // TRILHA 4: GEOGRAFIA AGRÁRIA 
   // ========================================================= //
   if (currentScreen === 'agraria') {
       return (
@@ -178,7 +195,6 @@ export default function App() {
                 setMaxTrackScore(3000); 
                 setFinalTrackName('Trilha Geografia Agrária'); 
                 
-                // Marca a trilha como completa
                 setCompletedTracks(prev => Array.from(new Set([...prev, 'agraria'])));
 
                 setCurrentScreen('resultado_final'); 
@@ -189,7 +205,7 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TRILHA 5: SIMULADOS ENEM (Corrida Pendular)
+  // MÓDULO 5 (INDEPENDENTE): SIMULADOS ENEM
   // ========================================================= //
   if (currentScreen === 'simulados') {
       return (
@@ -200,13 +216,10 @@ export default function App() {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(score); 
                 
-                // A corrida pendular tem 5 questões de 25 pontos cada, logo máximo é 125
+                // Pontuação máxima da Corrida Pendular
                 setMaxTrackScore(125); 
                 setFinalTrackName('Trilha do Simulado Enem'); 
                 
-                // Marca a trilha de simulados como completa
-                setCompletedTracks(prev => Array.from(new Set([...prev, 'simulados'])));
-
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -215,7 +228,7 @@ export default function App() {
   }
 
   // ========================================================= //
-  // TELA GLOBAL: RESULTADO FINAL DA TRILHA
+  // TELA GLOBAL: RESULTADO FINAL
   // ========================================================= //
   if (currentScreen === 'resultado_final') {
       const percentage = Math.min((accumulatedScore / maxTrackScore) * 100, 100);
@@ -227,9 +240,11 @@ export default function App() {
       else if (percentage >= 50) { feedbackMessage = "Bom, mas pode melhorar!"; feedbackColor = "text-yellow-400"; }
       else { feedbackMessage = "Continue Estudando!"; feedbackColor = "text-red-400"; }
 
-      // ENCONTRA O PRÓXIMO MÓDULO DISPONÍVEL
-      // O método .find() procura na lista ALL_TRACKS o primeiro item que ainda NÃO está na lista completedTracks
-      const nextTrackId = ALL_TRACKS.find(track => !completedTracks.includes(track));
+      // ATUALIZAÇÃO: Só sugere continuar se o jogador estiver a fazer uma das 4 trilhas principais.
+      // O Simulado é independente e não entra neste ciclo.
+      const nextTrackId = finalTrackName !== 'Trilha do Simulado Enem' 
+          ? MAIN_TRACKS.find(track => !completedTracks.includes(track)) 
+          : null;
 
       return (
           <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -251,7 +266,6 @@ export default function App() {
                           <p className="text-2xl md:text-3xl font-bold text-slate-500">/ {maxTrackScore} pts</p>
                       </div>
 
-                      {/* BARRA DE PROGRESSO VISUAL */}
                       <div className="w-full bg-slate-800 rounded-full h-4 md:h-5 overflow-hidden border border-slate-700 relative">
                           <motion.div 
                               initial={{ width: 0 }} 
@@ -264,7 +278,7 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col gap-4">
-                      {/* LÓGICA DE BOTÃO DINÂMICO */}
+                      {/* BOTÃO DINÂMICO PARA AS 4 TRILHAS BASE */}
                       {nextTrackId ? (
                           <Button 
                             onClick={() => {
@@ -278,8 +292,11 @@ export default function App() {
                               <Play className="hidden md:block w-5 h-5 shrink-0" />
                           </Button>
                       ) : (
+                          // Se for o Simulado ou já tiver completado as 4 trilhas, mostra a mensagem de sucesso
                           <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center text-sm md:text-base">
-                              🎉 Impressionante! Você completou todos os módulos disponíveis!
+                              {finalTrackName === 'Trilha do Simulado Enem' 
+                                ? "🎉 Simulado Concluído com Sucesso!" 
+                                : "🎉 Impressionante! Você completou todas as 4 Trilhas!"}
                           </div>
                       )}
 
