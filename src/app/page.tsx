@@ -8,10 +8,9 @@ import TransacaoEnergeticaGame from '@/components/game/transacao-energetica';
 import DetetiveIbgeGame from '@/components/game/DetetiveIbgeGame';
 import CorridaPendularGame from '@/components/game/CorridaPendularGame'; 
 import EfeitoDominoGlobalGame from '@/components/game/EfeitoDominoGlobalGame';
-// --- IMPORTAÇÃO DO NOVO JOGO DE GEOGRAFIA AGRÁRIA --- //
 import EscudoDaVerdadeGame from '@/components/game/EscudoDaVerdadeGame'; 
 import { Button } from '@/components/ui/button';
-import { Trophy, Home, Target } from 'lucide-react';
+import { Trophy, Home, Target, Play } from 'lucide-react'; // Importamos o ícone Play para o novo botão
 import { motion } from 'framer-motion';
 
 // --- LÓGICA GLOBAL DE RANKING --- //
@@ -36,9 +35,20 @@ export const saveScore = (name: string, score: number, mode: string) => {
     localStorage.setItem('bioguesser_leaderboard', JSON.stringify(leaderboard.slice(0, 10)));
 };
 
+// --- DEFINIÇÃO DAS TRILHAS DISPONÍVEIS --- //
+// Uma lista com o ID de todas as trilhas do teu jogo na ordem desejada
+const ALL_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria'];
+
+// Um dicionário para traduzir o ID no nome bonito que vai aparecer no botão
+const TRACK_NAMES: Record<string, string> = {
+    'meio_ambiente': 'Meio Ambiente',
+    'urbanizacao': 'Urbanização',
+    'geopolitica': 'Geopolítica',
+    'agraria': 'Geografia Agrária'
+};
+
 // --- COMPONENTE ROOT / CONTAINER --- //
 export default function App() {
-  // ADICIONAMOS 'agraria' AOS ESTADOS POSSÍVEIS DA TELA
   const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
@@ -47,12 +57,15 @@ export default function App() {
   const [maxTrackScore, setMaxTrackScore] = useState(0); 
   const [finalTrackName, setFinalTrackName] = useState("");
   
+  // NOVO ESTADO: Guarda as trilhas que o jogador já completou
+  const [completedTracks, setCompletedTracks] = useState<string[]>([]);
+  
   const isAdvancingRef = useRef(false);
 
   const handleSelectTheme = (themeId: string, name: string) => {
     setPlayerName(name);
     setCurrentScreen(themeId as any);
-    setAccumulatedScore(0); // Reseta a soma ao iniciar novo tema
+    setAccumulatedScore(0);
     isAdvancingRef.current = false;
   };
 
@@ -90,6 +103,10 @@ export default function App() {
                 setAccumulatedScore(prev => prev + score); 
                 setMaxTrackScore(1575); 
                 setFinalTrackName('Trilha Meio Ambiente');
+                
+                // Marca a trilha como completa
+                setCompletedTracks(prev => Array.from(new Set([...prev, 'meio_ambiente'])));
+
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -97,9 +114,8 @@ export default function App() {
       );
   }
 
-// ========================================================= //
-  // TRILHA 2: URBANIZAÇÃO (Macrocefalia Urbana -> Fim da Trilha)
-  // ALTERAÇÃO: A trilha agora acaba aqui. O jogador vai direto para o resultado final.
+  // ========================================================= //
+  // TRILHA 2: URBANIZAÇÃO (Macrocefalia Urbana)
   // ========================================================= //
   if (currentScreen === 'urbanizacao') {
       return (
@@ -109,11 +125,12 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true; 
                 setAccumulatedScore(score); 
-                // ALTERAÇÃO: Define a pontuação máxima da trilha (ajuste este valor se necessário)
-                // Usando um valor fictício de 300, como exemplo. Substitua pela pontuação máxima real.
                 setMaxTrackScore(550); 
                 setFinalTrackName('Trilha Urbanização');
-                // ALTERAÇÃO: Redireciona direto para a tela de resultado final
+
+                // Marca a trilha como completa
+                setCompletedTracks(prev => Array.from(new Set([...prev, 'urbanizacao'])));
+
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500); 
             }} 
@@ -121,8 +138,6 @@ export default function App() {
       );
   }
 
-  // ALTERAÇÃO: Os blocos 'detetive_ibge' e 'corrida_pendular' foram removidos 
-  // do encadeamento da Trilha 2, pois ela agora termina na Macrocefalia.
   // ========================================================= //
   // TRILHA 3: GEOPOLÍTICA (Efeito Dominó Global)
   // ========================================================= //
@@ -134,10 +149,12 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(score); 
-                
                 setMaxTrackScore(500); 
                 setFinalTrackName('Trilha Geopolítica'); 
                 
+                // Marca a trilha como completa
+                setCompletedTracks(prev => Array.from(new Set([...prev, 'geopolitica'])));
+
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -156,11 +173,12 @@ export default function App() {
             onSaveScore={(score) => {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(score); 
-                
-                // São 5 cartas a 50 pontos cada, somando o máximo de 250 pontos na Fase 1
                 setMaxTrackScore(3000); 
                 setFinalTrackName('Trilha Geografia Agrária'); 
                 
+                // Marca a trilha como completa
+                setCompletedTracks(prev => Array.from(new Set([...prev, 'agraria'])));
+
                 setCurrentScreen('resultado_final'); 
                 setTimeout(() => isAdvancingRef.current = false, 500);
             }} 
@@ -180,6 +198,10 @@ export default function App() {
       else if (percentage >= 70) { feedbackMessage = "Ótimo Trabalho!"; feedbackColor = "text-blue-400"; }
       else if (percentage >= 50) { feedbackMessage = "Bom, mas pode melhorar!"; feedbackColor = "text-yellow-400"; }
       else { feedbackMessage = "Continue Estudando!"; feedbackColor = "text-red-400"; }
+
+      // ENCONTRA O PRÓXIMO MÓDULO DISPONÍVEL
+      // O método .find() procura na lista ALL_TRACKS o primeiro item que ainda NÃO está na lista completedTracks
+      const nextTrackId = ALL_TRACKS.find(track => !completedTracks.includes(track));
 
       return (
           <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -213,15 +235,35 @@ export default function App() {
                       <p className="text-right text-slate-400 text-sm mt-3 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
                   </div>
 
-                  <Button 
-                    onClick={() => {
-                        saveScore(playerName, accumulatedScore, finalTrackName);
-                        setCurrentScreen('hub');
-                    }}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105 active:scale-95"
-                  >
-                      Salvar no Ranking e Sair <Home className="ml-3" />
-                  </Button>
+                  <div className="flex flex-col gap-4">
+                      {/* LÓGICA DE BOTÃO DINÂMICO: Se existir uma próxima trilha, mostra o botão para ela */}
+                      {nextTrackId ? (
+                          <Button 
+                            onClick={() => {
+                                saveScore(playerName, accumulatedScore, finalTrackName); // Guarda os pontos do módulo atual
+                                setAccumulatedScore(0); // Limpa os pontos para o próximo
+                                setCurrentScreen(nextTrackId as any); // Leva o utilizador para o módulo que falta
+                            }}
+                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 text-xl rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all hover:scale-105 active:scale-95"
+                          >
+                              Continuar para: {TRACK_NAMES[nextTrackId]} <Play className="ml-3" />
+                          </Button>
+                      ) : (
+                          <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center">
+                              🎉 Impressionante! Você completou todos os módulos disponíveis!
+                          </div>
+                      )}
+
+                      <Button 
+                        onClick={() => {
+                            saveScore(playerName, accumulatedScore, finalTrackName);
+                            setCurrentScreen('hub');
+                        }}
+                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-6 text-lg rounded-2xl transition-all hover:scale-105 active:scale-95"
+                      >
+                          Salvar no Ranking e Voltar ao Início <Home className="ml-3 w-5 h-5" />
+                      </Button>
+                  </div>
               </motion.div>
           </div>
       );
@@ -234,7 +276,10 @@ export default function App() {
       <MainHub 
         onSelectTheme={handleSelectTheme} 
         initialPlayerName={playerName} 
-        onLogout={() => setPlayerName('')} 
+        onLogout={() => {
+            setPlayerName('');
+            setCompletedTracks([]); // Limpa a memória das trilhas caso o utilizador saia do jogo (Logout)
+        }} 
         getLeaderboard={getLeaderboard} 
       />
   );
