@@ -23,7 +23,6 @@ const fadeUpItem = {
 };
 
 // --- TELA DE CARREGAMENTO GLOBAL --- //
-// --- TELA DE CARREGAMENTO GLOBAL --- //
 const LoadingScreen = () => (
     <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white relative overflow-hidden">
         <motion.div 
@@ -38,15 +37,14 @@ const LoadingScreen = () => (
                 transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
                 className="mb-8 p-4 rounded-full border-2 border-dashed border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)] flex items-center justify-center"
             >
-                {/* --- AQUI ESTÁ O SEU FAVICON A GIRAR! --- */}
                 <img 
-    src="/favicon.ico" 
-    alt="A carregar..." 
-    className="w-20 h-20 aspect-square shrink-0 object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
-/>
+                    src="/favicon.ico" 
+                    alt="A carregar..." 
+                    className="w-20 h-20 aspect-square shrink-0 object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+                />
             </motion.div>
             
-            {/* LOGÓTIPO PRINCIPAL (Adicionado aqui no carregamento) */}
+            {/* LOGÓTIPO PRINCIPAL */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }} 
                 animate={{ opacity: 1, y: 0 }} 
@@ -74,6 +72,7 @@ const LoadingScreen = () => (
     </div>
 );
 
+// --- COMPONENTE DE INSTRUÇÕES --- //
 const HowToStep = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
     <motion.div variants={fadeUpItem} className="text-center bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 hover:bg-slate-800/60 transition-colors shadow-lg hover:shadow-blue-900/20 group relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -87,6 +86,7 @@ const HowToStep = ({ icon, title, description }: { icon: React.ReactNode, title:
     </motion.div>
 );
 
+// --- CARTÃO DOS MÓDULOS DE JOGO --- //
 const GameModeCard = ({ icon, title, description, onClick, enabled = true }: { icon: React.ReactNode, title: string, description: string, onClick: () => void, enabled?: boolean }) => (
     <motion.div
         variants={fadeUpItem}
@@ -109,6 +109,7 @@ const GameModeCard = ({ icon, title, description, onClick, enabled = true }: { i
     </motion.div>
 );
 
+// --- INTERFACES --- //
 interface MainHubProps {
     onSelectTheme: (themeId: string, playerName: string) => void;
     initialPlayerName: string;
@@ -126,28 +127,23 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
 
    useEffect(() => {
         if (typeof window !== 'undefined') {
-            // O navegador verifica se a pessoa já tem um "carimbo" de visita
             const hasLoadedBefore = sessionStorage.getItem('bioguesser_has_loaded');
             
             if (hasLoadedBefore) {
-                // CENÁRIO 1: Utilizador já visitou antes (fez um Refresh/F5)
-                // Demora apenas 2 segundos (2000ms)
                 const timer = setTimeout(() => {
                     setIsLoading(false);
                 }, 2000); 
                 return () => clearTimeout(timer);
             } else {
-                // CENÁRIO 2: NOVO UTILIZADOR (Entrou pela primeira vez)
-                // Demora 5 segundos (5000ms) para mostrar bem a animação
                 const timer = setTimeout(() => {
                     setIsLoading(false);
-                    // Deixa o "carimbo" para que na próxima vez ele seja mais rápido
                     sessionStorage.setItem('bioguesser_has_loaded', 'true');
                 }, 5000); 
                 return () => clearTimeout(timer);
             }
         }
     }, []);
+
     useEffect(() => {
         if (view === 'ranking') setLeaderboard(getLeaderboard());
     }, [view, getLeaderboard]);
@@ -186,7 +182,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
 
     if (isLoading) return <LoadingScreen />;
 
-    // --- TELA: SIMULAÇÃO DE LOGIN DO GOOGLE --- //
+    // --- TELA DE LOGIN SIMULADA --- //
     if (view === 'fake_login') {
         return (
             <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -243,67 +239,69 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
         )
     }
 
+    // --- TELA DE INPUT DO NOME --- //
     if (view === 'name_input') {
-    return (
-        <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
-            
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: "spring", damping: 20 }}
-                className="bg-slate-900/90 backdrop-blur-xl p-5 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] border border-slate-700/50 max-w-sm md:max-w-md w-full text-center shadow-[0_0_80px_rgba(16,185,129,0.15)] relative z-10"
-            >
+        return (
+            <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
+                
                 <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.1, type: "spring" }}
-                    className="flex justify-center mb-5 md:mb-6"
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: "spring", damping: 20 }}
+                    className="bg-slate-900/90 backdrop-blur-xl p-5 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] border border-slate-700/50 max-w-sm md:max-w-md w-full text-center shadow-[0_0_80px_rgba(16,185,129,0.15)] relative z-10"
                 >
-                    <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 p-4 md:p-5 rounded-full border border-emerald-500/30 shadow-inner">
-                        <ShieldCheck className="text-emerald-400 w-8 h-8 md:w-10 md:h-10" />
+                    <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.1, type: "spring" }}
+                        className="flex justify-center mb-5 md:mb-6"
+                    >
+                        <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 p-4 md:p-5 rounded-full border border-emerald-500/30 shadow-inner">
+                            <ShieldCheck className="text-emerald-400 w-8 h-8 md:w-10 md:h-10" />
+                        </div>
+                    </motion.div>
+                    
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                        Login Aprovado!
+                    </h2>
+
+                    <p className="text-slate-400 mb-6 text-sm sm:text-base leading-relaxed font-medium px-1">
+                        Conta conectada com sucesso. Como quer ser chamado no Ranking dos Estudantes?
+                    </p>
+                    
+                    <Input 
+                        type="text" 
+                        placeholder="Ex: João Silva" 
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
+                        className="bg-slate-950/50 border-slate-700 text-white font-black text-base sm:text-lg md:text-xl py-5 sm:py-6 md:py-8 mb-6 text-center rounded-xl md:rounded-2xl shadow-inner focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
+                        maxLength={15}
+                    />
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                        <Button
+                            onClick={() => setView('home')}
+                            variant="outline"
+                            className="flex-1 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 py-3 md:py-7 text-sm md:text-lg rounded-xl font-bold transition-all min-h-[48px] md:min-h-[64px]"
+                        >
+                            Voltar
+                        </Button>
+
+                        <Button
+                            onClick={handleStartGame}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 md:py-7 text-sm md:text-lg rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-all min-h-[48px] md:min-h-[64px]"
+                        >
+                            Salvar Perfil
+                        </Button>
                     </div>
                 </motion.div>
-                
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-                    Login Aprovado!
-                </h2>
+            </div>
+        )
+    }
 
-                <p className="text-slate-400 mb-6 text-sm sm:text-base leading-relaxed font-medium px-1">
-                    Conta conectada com sucesso. Como quer ser chamado no Ranking dos Estudantes?
-                </p>
-                
-                <Input 
-                    type="text" 
-                    placeholder="Ex: João Silva" 
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
-                    className="bg-slate-950/50 border-slate-700 text-white font-black text-base sm:text-lg md:text-xl py-5 sm:py-6 md:py-8 mb-6 text-center rounded-xl md:rounded-2xl shadow-inner focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-                    maxLength={15}
-                />
-                
-               <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-    <Button
-        onClick={() => setView('home')}
-        variant="outline"
-        className="flex-1 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 py-3 md:py-7 text-sm md:text-lg rounded-xl font-bold transition-all min-h-[48px] md:min-h-[64px]"
-    >
-        Voltar
-    </Button>
-
-    <Button
-        onClick={handleStartGame}
-        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 md:py-7 text-sm md:text-lg rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-all min-h-[48px] md:min-h-[64px]"
-    >
-        Salvar Perfil
-    </Button>
-</div>
-            </motion.div>
-        </div>
-    )
-}
-
+    // --- TELA DE RANKING --- //
     if (view === 'ranking') {
         return (
             <div className="min-h-screen bg-[#020617] p-4 md:p-10 flex flex-col items-center relative overflow-hidden">
@@ -336,7 +334,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                                             </span>
                                             <div className="flex flex-col">
                                                 <span className="text-white font-black text-lg md:text-xl">{entry.name}</span>
-                                                {/* É AQUI QUE O NOME DA TRILHA APARECE! */}
                                                 <span className="text-blue-400 font-bold text-xs uppercase tracking-widest">{entry.mode || 'Missão Concluída'}</span>
                                             </div>
                                         </div>
@@ -372,96 +369,89 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                 />
             </div>
 
-           {/* HEADER - Já está bom, só vou ajustar o padding no mobile */}
-<header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-2 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
-    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
-        <img 
-            src="/icon.png" 
-            alt="Logotipo BioGuesser" 
-            className="h-5 md:h-16 w-auto object-contain drop-shadow-md" 
-        />
-    </motion.div>
-    
-    <AnimatePresence>
-        {initialPlayerName && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
-                <span className="text-slate-400 text-[8px] md:text-sm hidden sm:inline bg-slate-800/50 px-1.5 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
-                    <strong className="text-white font-black ml-0.5 md:ml-1">{initialPlayerName}</strong>
-                </span>
-                <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
-                    Sair
-                </Button>
-            </motion.div>
-        )}
-    </AnimatePresence>
-</header>
+            {/* HEADER */}
+            <header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-2 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
+                    <img 
+                        src="/icon.png" 
+                        alt="Logotipo BioGuesser" 
+                        className="h-5 md:h-16 w-auto object-contain drop-shadow-md" 
+                    />
+                </motion.div>
+                
+                <AnimatePresence>
+                    {initialPlayerName && (
+                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
+                            <span className="text-slate-400 text-[8px] md:text-sm hidden sm:inline bg-slate-800/50 px-1.5 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
+                                <strong className="text-white font-black ml-0.5 md:ml-1">{initialPlayerName}</strong>
+                            </span>
+                            <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
+                                Sair
+                            </Button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </header>
 
-{/* HERO SECTION - VERSÃO COMPLETAMENTE ARRUMADA */}
-<section className="relative w-full text-center py-8 md:py-32 px-3 md:px-4 flex-shrink-0 min-h-[40vh] md:min-h-[90vh] flex flex-col items-center justify-center">
-  
-    {/* FUNDO COM IMAGEM DA CAATINGA - Ajustado para não atrapalhar */}
-    <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
-        <img 
-            src="/fundo.png" 
-            alt="Bioma Caatinga - Exclusivo do Brasil" 
-            className="w-full md:w-[95%] h-full object-cover object-top"
-        />
-        {/* OVERLAY SUAVE PARA MELHOR LEGIBILIDADE NO MOBILE */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A1024]/40 via-transparent to-[#0A1024]/60"></div>
-    </div>
-    
-    <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
-        
-        {/* LOGOTIPO "BIOGUESSER" - Tamanho ajustado para mobile */}
-        <motion.div 
-            initial={{ opacity: 0, y: -20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, type: "spring" }}
-            className="mb-4 md:mb-6 w-full max-w-4xl px-2 md:px-4 flex justify-center"
-        >
-            <img 
-                src="/escrito.png" 
-                alt="BioGuesser Logo" 
-                className="w-[85%] md:w-full max-w-[300px] md:max-w-[600px] object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.3)] md:drop-shadow-[0_0_60px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-transform duration-700"
-            />
-        </motion.div>
-        
-        {/* BOTÕES - TOTALMENTE RESPONSIVOS E VISÍVEIS */}
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row justify-center items-center gap-3 md:gap-5 w-full sm:w-auto mb-6 md:mb-8 px-2"
-        >
-            {/* BOTÃO JOGAR AGORA - Ajustado para mobile */}
-            <Button 
-                onClick={() => document.getElementById('modos')?.scrollIntoView({ behavior: 'smooth' })} 
-                className="w-[95%] sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-xl md:rounded-2xl px-6 md:px-12 py-4 md:py-7 text-sm md:text-xl shadow-[0_0_30px_rgba(16,185,129,0.3)] md:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all duration-300 border border-emerald-400/30"
-            >
-                Jogar Agora
-            </Button>
-            
-            {/* BOTÃO RANKING - Ajustado para mobile */}
-            <Button 
-                onClick={() => setView('ranking')} 
-                className="w-[95%] sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-xl md:rounded-2xl px-6 md:px-10 py-4 md:py-7 text-sm md:text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
-            >
-                <Trophy className="mr-2 md:mr-3 text-yellow-400 group-hover:scale-110 transition-transform w-4 h-4 md:w-5 md:h-5" /> 
-                Ranking
-            </Button>
-        </motion.div>
-        
-        {/* LEGENDA DA IMAGEM - Ajustada */}
-        <motion.p 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-[8px] md:text-sm text-white/40 md:text-white/60 max-w-2xl mx-auto font-light tracking-wider mt-8 md:mt-16 px-2"
-        >
-            Imagem da Caatinga, o único bioma exclusivo do Brasil
-        </motion.p>
-    </div>
-</section>
+            {/* HERO SECTION */}
+            <section className="relative w-full text-center py-8 md:py-32 px-3 md:px-4 flex-shrink-0 min-h-[40vh] md:min-h-[90vh] flex flex-col items-center justify-center">
+              
+                <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="/fundo.png" 
+                        alt="Bioma Caatinga - Exclusivo do Brasil" 
+                        className="w-full md:w-[95%] h-full object-cover object-top"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0A1024]/40 via-transparent to-[#0A1024]/60"></div>
+                </div>
+                
+                <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ duration: 0.6, type: "spring" }}
+                        className="mb-4 md:mb-6 w-full max-w-4xl px-2 md:px-4 flex justify-center"
+                    >
+                        <img 
+                            src="/escrito.png" 
+                            alt="BioGuesser Logo" 
+                            className="w-[85%] md:w-full max-w-[300px] md:max-w-[600px] object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.3)] md:drop-shadow-[0_0_60px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-transform duration-700"
+                        />
+                    </motion.div>
+                    
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        className="flex flex-col sm:flex-row justify-center items-center gap-3 md:gap-5 w-full sm:w-auto mb-6 md:mb-8 px-2"
+                    >
+                        <Button 
+                            onClick={() => document.getElementById('modos')?.scrollIntoView({ behavior: 'smooth' })} 
+                            className="w-[95%] sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-xl md:rounded-2xl px-6 md:px-12 py-4 md:py-7 text-sm md:text-xl shadow-[0_0_30px_rgba(16,185,129,0.3)] md:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-105 transition-all duration-300 border border-emerald-400/30"
+                        >
+                            Jogar Agora
+                        </Button>
+                        
+                        <Button 
+                            onClick={() => setView('ranking')} 
+                            className="w-[95%] sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-xl md:rounded-2xl px-6 md:px-10 py-4 md:py-7 text-sm md:text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
+                        >
+                            <Trophy className="mr-2 md:mr-3 text-yellow-400 group-hover:scale-110 transition-transform w-4 h-4 md:w-5 md:h-5" /> 
+                            Ranking
+                        </Button>
+                    </motion.div>
+                    
+                    <motion.p 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        className="text-[8px] md:text-sm text-white/40 md:text-white/60 max-w-2xl mx-auto font-light tracking-wider mt-8 md:mt-16 px-2"
+                    >
+                        Imagem da Caatinga, o único bioma exclusivo do Brasil
+                    </motion.p>
+                </div>
+            </section>
+
             {/* SECÇÃO COMO FUNCIONA */}
             <section className="py-24 relative z-10">
                 <div className="absolute inset-0 bg-slate-900/40 border-y border-slate-800/50" />
@@ -489,8 +479,8 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                 </div>
             </section>
 
-            {/* SECÇÃO MÓDULOS (JOGOS) */}
-            <section id="modos" className="py-32 px-4 relative flex-grow z-10">
+            {/* SECÇÃO MÓDULOS (JOGOS) - Ajuste de padding aqui */}
+            <section id="modos" className="pt-32 pb-8 px-4 relative flex-grow z-10">
                  <div className="max-w-7xl mx-auto">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Módulos de Missão</h2>
@@ -528,6 +518,19 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             enabled={true} 
                         />
                     </motion.div>
+
+                    {/* --- NOVO MÓDULO: SIMULADOS - Ajuste de margem aqui --- */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-6 flex justify-center">
+                        <div className="w-full max-w-3xl">
+                            <GameModeCard 
+                                icon={<BrainCircuit size={56} className="drop-shadow-md text-blue-400"/>} 
+                                title="Simulados ENEM" 
+                                description="O desafio final. Teste os seus conhecimentos com um simulado que mistura questões de todos os módulos ao estilo do Enem." 
+                                onClick={() => handleModeSelection('simulados', true)} 
+                                enabled={true} 
+                            />
+                        </div>
+                    </motion.div>
                  </div>
             </section>
 
@@ -544,7 +547,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </motion.div>
                     
                     <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-slate-500 text-center font-medium max-w-3xl bg-slate-900/50 py-3 px-6 rounded-full border border-slate-800">
-                        Desenvolvido  por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
+                        Desenvolvido por: <span className="text-blue-400 font-bold tracking-wide">Vitor Rafael, Vitoria, Murillo, Luiz e Pedro Henrique Fabiano</span>
                     </motion.div>
                 </div>
             </footer>

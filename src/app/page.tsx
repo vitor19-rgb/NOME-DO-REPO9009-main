@@ -10,7 +10,7 @@ import CorridaPendularGame from '@/components/game/CorridaPendularGame';
 import EfeitoDominoGlobalGame from '@/components/game/EfeitoDominoGlobalGame';
 import EscudoDaVerdadeGame from '@/components/game/EscudoDaVerdadeGame'; 
 import { Button } from '@/components/ui/button';
-import { Trophy, Home, Target, Play } from 'lucide-react'; // Importamos o ícone Play para o novo botão
+import { Trophy, Home, Target, Play } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 
 // --- LÓGICA GLOBAL DE RANKING --- //
@@ -36,20 +36,22 @@ export const saveScore = (name: string, score: number, mode: string) => {
 };
 
 // --- DEFINIÇÃO DAS TRILHAS DISPONÍVEIS --- //
-// Uma lista com o ID de todas as trilhas do teu jogo na ordem desejada
-const ALL_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria'];
+// Adicionamos 'simulados' no final da lista
+const ALL_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria', 'simulados'];
 
-// Um dicionário para traduzir o ID no nome bonito que vai aparecer no botão
+// Adicionamos o nome bonito para os Simulados
 const TRACK_NAMES: Record<string, string> = {
     'meio_ambiente': 'Meio Ambiente',
     'urbanizacao': 'Urbanização',
     'geopolitica': 'Geopolítica',
-    'agraria': 'Geografia Agrária'
+    'agraria': 'Geografia Agrária',
+    'simulados': 'Simulados ENEM'
 };
 
 // --- COMPONENTE ROOT / CONTAINER --- //
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'resultado_final'>('hub');
+  // Adicionamos 'simulados' aos tipos permitidos do currentScreen
+  const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'simulados' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
   // ESTADOS PARA PONTUAÇÃO E RESULTADO
@@ -57,7 +59,7 @@ export default function App() {
   const [maxTrackScore, setMaxTrackScore] = useState(0); 
   const [finalTrackName, setFinalTrackName] = useState("");
   
-  // NOVO ESTADO: Guarda as trilhas que o jogador já completou
+  // ESTADO: Guarda as trilhas que o jogador já completou
   const [completedTracks, setCompletedTracks] = useState<string[]>([]);
   
   const isAdvancingRef = useRef(false);
@@ -187,6 +189,32 @@ export default function App() {
   }
 
   // ========================================================= //
+  // TRILHA 5: SIMULADOS ENEM (Corrida Pendular)
+  // ========================================================= //
+  if (currentScreen === 'simulados') {
+      return (
+          <CorridaPendularGame 
+            playerName={playerName} 
+            onComplete={handleBackToHub} 
+            onSaveScore={(score) => {
+                isAdvancingRef.current = true;
+                setAccumulatedScore(score); 
+                
+                // A corrida pendular tem 5 questões de 25 pontos cada, logo máximo é 125
+                setMaxTrackScore(125); 
+                setFinalTrackName('Trilha do Simulado Enem'); 
+                
+                // Marca a trilha de simulados como completa
+                setCompletedTracks(prev => Array.from(new Set([...prev, 'simulados'])));
+
+                setCurrentScreen('resultado_final'); 
+                setTimeout(() => isAdvancingRef.current = false, 500);
+            }} 
+          />
+      );
+  }
+
+  // ========================================================= //
   // TELA GLOBAL: RESULTADO FINAL DA TRILHA
   // ========================================================= //
   if (currentScreen === 'resultado_final') {
@@ -235,40 +263,38 @@ export default function App() {
                       <p className="text-right text-slate-400 text-sm mt-3 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
                   </div>
 
-             <div className="flex flex-col gap-4">
-    {/* LÓGICA DE BOTÃO DINÂMICO */}
-    {nextTrackId ? (
-        <Button 
-        onClick={() => {
-            saveScore(playerName, accumulatedScore, finalTrackName);
-            setAccumulatedScore(0);
-            setCurrentScreen(nextTrackId as any);
-        }}
-        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 md:py-8 text-base md:text-xl rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
-        >
-            <span>Continuar para: {TRACK_NAMES[nextTrackId]}</span> 
-            {/* Oculto por padrão (mobile), visível a partir de ecrãs médios (md) */}
-            <Play className="hidden md:block w-5 h-5 shrink-0" />
-        </Button>
-    ) : (
-        <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center text-sm md:text-base">
-            🎉 Impressionante! Você completou todos os módulos disponíveis!
-        </div>
-    )}
+                  <div className="flex flex-col gap-4">
+                      {/* LÓGICA DE BOTÃO DINÂMICO */}
+                      {nextTrackId ? (
+                          <Button 
+                            onClick={() => {
+                                saveScore(playerName, accumulatedScore, finalTrackName);
+                                setAccumulatedScore(0);
+                                setCurrentScreen(nextTrackId as any);
+                            }}
+                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 md:py-8 text-base md:text-xl rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
+                          >
+                              <span>Continuar para: {TRACK_NAMES[nextTrackId]}</span> 
+                              <Play className="hidden md:block w-5 h-5 shrink-0" />
+                          </Button>
+                      ) : (
+                          <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center text-sm md:text-base">
+                              🎉 Impressionante! Você completou todos os módulos disponíveis!
+                          </div>
+                      )}
 
-    {/* BOTÃO VOLTAR AO INÍCIO */}
-    <Button 
-    onClick={() => {
-        saveScore(playerName, accumulatedScore, finalTrackName);
-        setCurrentScreen('hub');
-    }}
-    className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 md:py-6 text-sm md:text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
-    >
-        <span>Salvar no Ranking e Voltar ao Início</span> 
-        {/* Oculto por padrão (mobile), visível a partir de ecrãs médios (md) */}
-        <Home className="hidden md:block w-5 h-5 shrink-0" />
-    </Button>
-</div>
+                      {/* BOTÃO VOLTAR AO INÍCIO */}
+                      <Button 
+                        onClick={() => {
+                            saveScore(playerName, accumulatedScore, finalTrackName);
+                            setCurrentScreen('hub');
+                        }}
+                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 md:py-6 text-sm md:text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
+                      >
+                          <span>Salvar no Ranking e Voltar ao Início</span> 
+                          <Home className="hidden md:block w-5 h-5 shrink-0" />
+                      </Button>
+                  </div>
               </motion.div>
           </div>
       );
@@ -283,7 +309,7 @@ export default function App() {
         initialPlayerName={playerName} 
         onLogout={() => {
             setPlayerName('');
-            setCompletedTracks([]); // Limpa a memória das trilhas caso o utilizador saia do jogo (Logout)
+            setCompletedTracks([]); 
         }} 
         getLeaderboard={getLeaderboard} 
       />
