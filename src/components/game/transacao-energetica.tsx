@@ -286,7 +286,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         <p className="text-6xl font-black text-yellow-400 drop-shadow-md">+{score} pts</p>
                     </div>
                     <Button onClick={() => onSaveScore(score)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">
-                        Salvar Pontuação e Voltar
+                        Salvar Pontuação 
                     </Button>
                 </motion.div>
             </div>
