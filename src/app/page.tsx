@@ -217,7 +217,7 @@ export default function App() {
                 setAccumulatedScore(score); 
                 
                 // Pontuação máxima da Corrida Pendular
-                setMaxTrackScore(125); 
+                setMaxTrackScore(5000); 
                 setFinalTrackName('Trilha do Simulado Enem'); 
                 
                 setCurrentScreen('resultado_final'); 
