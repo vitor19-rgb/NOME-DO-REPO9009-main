@@ -31,6 +31,80 @@ const shuffleArray = (array: any[]) => {
     return newArray;
 };
 
+// --- NOVO: COMPONENTE DE IMAGEM COM FALLBACK VISÍVEL ---
+// Se a imagem falhar ao carregar (404, CORS, url quebrada etc.),
+// mostra a URL como link clicável em vez do ícone de imagem quebrada,
+// facilitando o debug de qual link está com problema.
+const QuestionImage = ({ url }: { url: string }) => {
+    const [failed, setFailed] = useState(false);
+
+    if (failed) {
+        return (
+            <div className="my-3 p-3 rounded-lg border border-red-500/40 bg-red-900/20 text-red-300 text-xs">
+                <p className="font-bold mb-1">⚠️ Não foi possível carregar a imagem:</p>
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline break-all"
+                >
+                    {url}
+                </a>
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={url}
+            alt="Imagem da questão"
+            className="my-3 max-w-full rounded-lg border border-slate-700/50 mx-auto block"
+            loading="lazy"
+            onError={() => setFailed(true)}
+        />
+    );
+};
+
+// --- NOVO: RENDERIZADOR DE CONTEXTO COM SUPORTE A IMAGENS MARKDOWN ---
+// Detecta padrões ![alt](url) dentro do texto e renderiza como <img>,
+// mantendo o restante do texto normalmente. Se não houver nenhuma
+// imagem no contexto, o texto é exibido exatamente como antes.
+const renderContextWithImages = (text: string) => {
+    if (!text) return null;
+
+    const imageRegex = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+    const parts: (string | { url: string })[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = imageRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push(text.slice(lastIndex, match.index));
+        }
+        parts.push({ url: match[1] });
+        lastIndex = imageRegex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+        parts.push(text.slice(lastIndex));
+    }
+
+    // Nenhuma imagem encontrada: devolve o texto puro (comportamento antigo)
+    if (parts.length === 1 && typeof parts[0] === 'string') {
+        return text;
+    }
+
+    return parts.map((part, i) => {
+        if (typeof part === 'string') {
+            // Ignora fragmentos vazios/só espaços entre imagens
+            if (!part.trim()) return null;
+            return (
+                <span key={i} className="whitespace-pre-wrap">{part}</span>
+            );
+        }
+        return <QuestionImage key={i} url={part.url} />;
+    });
+};
+
 // --- NOVO: SISTEMA DE RANKS (PATENTES) ---
 const getPlayerRank = (currentScore: number) => {
     if (currentScore >= 5000) return { title: "Geógrafo Master", color: "text-red-400 bg-red-900/30 border-red-500/50", icon: <Star size={16} className="text-red-400"/> };
@@ -442,9 +516,9 @@ export default function CorridaPendularGame({ playerName, onComplete, onSaveScor
                             </div>
                             
                             <div className="mb-6 bg-slate-800/40 p-4 md:p-6 rounded-2xl border border-slate-700/50 max-h-48 md:max-h-64 overflow-y-auto custom-scrollbar">
-                                <p className="text-slate-300 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                                    {currentQuestion.context}
-                                </p>
+                                <div className="text-slate-300 text-sm md:text-base leading-relaxed">
+                                    {renderContextWithImages(currentQuestion.context)}
+                                </div>
                             </div>
 
                             <div className="mb-6">
