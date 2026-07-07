@@ -1451,37 +1451,39 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                                     }}
                                                     className="text-[11px] font-bold text-slate-400 hover:text-white mb-3 self-start transition-colors"
                                                 >
-                                                    {expandedCards.has(card.id) ? 'Ver menos' : 'Ver mais'}
+                                                  
                                                 </button>
                                             )}
-                                            
-                                            <div className={isMobile ? "flex flex-col gap-2 mt-auto" : "flex gap-2 mt-auto"}>
-                                                {(!isMobile || expandedCards.has(card.id)) && (
-                                                    <Button 
-                                                        onClick={() => setSelectedCardDescription(card)}
-                                                        variant="outline"
-                                                        className={isMobile ? "w-full bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all" : "flex-1 bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all"}
-                                                    >
-                                                        <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" /> 
-                                                        Detalhes
-                                                    </Button>
-                                                )}
-                                                <Button 
-                                                    onClick={() => executeTurn(card)} 
-                                                    disabled={!canAfford}
-                                                    className={`${isMobile ? 'w-full' : 'flex-1'} font-bold rounded-xl py-2.5 md:py-3 text-xs md:text-sm transition-all active:scale-95 ${
-                                                        canAfford 
-                                                        ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-lg shadow-white/10' 
-                                                        : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
-                                                    }`}
-                                                >
-                                                    {canAfford ? ' Aprovar' : ' Sem Verba'}
-                                                </Button>
-                                            </div>
-                                            
-                                            <div className="absolute bottom-2 right-3 text-[8px] md:text-[10px] text-white/10 font-mono">
-                                                #{idx + 1}
-                                            </div>
+                                         <div className={isMobile ? "flex flex-col gap-2 mt-auto" : "flex gap-2 mt-auto"}>
+    
+    {/* O botão Detalhes agora está livre da condição e aparecerá sempre */}
+    <Button 
+        onClick={() => setSelectedCardDescription(card)}
+        variant="outline"
+        className={isMobile ? "w-full flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all" : "flex-1 flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all"}
+    >
+        <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" /> 
+        Detalhes
+    </Button>
+
+    {/* O botão Aprovar continua igual */}
+    <Button 
+        onClick={() => executeTurn(card)} 
+        disabled={!canAfford}
+        className={`${isMobile ? 'w-full' : 'flex-1'} font-bold rounded-xl py-2.5 md:py-3 text-xs md:text-sm transition-all active:scale-95 ${
+            canAfford 
+            ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-lg shadow-white/10' 
+            : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+        }`}
+    >
+        {canAfford ? ' Aprovar' : ' Sem Verba'}
+    </Button>
+
+</div>
+
+<div className="absolute bottom-2 right-3 text-[8px] md:text-[10px] text-white/10 font-mono">
+    #{idx + 1}
+</div>
                                         </motion.div>
                                     );
                                 })}
