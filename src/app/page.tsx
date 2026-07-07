@@ -283,21 +283,7 @@ export default function App() {
                   <h1 className="text-4xl md:text-5xl font-black mb-2 text-white">Expedição Concluída!</h1>
                   <p className="text-slate-400 text-lg mb-8">Agente <strong>{playerName}</strong>, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
                   
-                  {/* Mostra a dificuldade se for Urbanização */}
-                  {finalTrackName === 'Trilha Urbanização' && (
-                      <div className="mb-4 inline-block bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
-                          <span className="text-sm text-slate-400">Dificuldade: </span>
-                          <span className={`font-bold ${
-                              urbanizationDifficulty === 'easy' ? 'text-green-400' :
-                              urbanizationDifficulty === 'medium' ? 'text-yellow-400' :
-                              'text-red-400'
-                          }`}>
-                              {urbanizationDifficulty === 'easy' ? '🌱 Fácil' :
-                               urbanizationDifficulty === 'medium' ? '🎯 Médio' :
-                               '💀 Difícil'}
-                          </span>
-                      </div>
-                  )}
+                
                   
                   <div className="bg-slate-950/80 rounded-3xl p-8 border border-slate-800 mb-10 shadow-inner">
                       <div className="flex items-center justify-center gap-2 mb-4">
