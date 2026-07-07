@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MainHub from '@/components/game/MainHub';
 import MeioAmbienteGame from '@/components/game/MeioAmbienteGame';
 import MacrocefaliaUrbanaGame from '@/components/game/macrocefalia-urbana';
@@ -19,49 +19,72 @@ export interface ScoreEntry {
     score: number;
     date: string;
     mode?: string;
+    difficulty?: 'easy' | 'medium' | 'hard'; // Para a trilha de urbanização
 }
 
+// --- RANKING GERAL (todos os jogos) --- //
 export const getLeaderboard = (): ScoreEntry[] => {
     if (typeof window === 'undefined') return [];
     const data = localStorage.getItem('bioguesser_leaderboard');
     return data ? JSON.parse(data) : [];
 };
 
-// ATUALIZAÇÃO: Lógica para manter a maior pontuação e guardar todo o histórico
-export const saveScore = (name: string, score: number, mode: string) => {
+export const saveScore = (name: string, score: number, mode: string, difficulty?: 'easy' | 'medium' | 'hard') => {
     if (typeof window === 'undefined') return;
     const leaderboard = getLeaderboard();
 
-    // Procura se este jogador já jogou este modo de jogo antes
     const existingEntryIndex = leaderboard.findIndex(
-        (entry) => entry.name === name && entry.mode === mode
+        (entry) => entry.name === name && entry.mode === mode && entry.difficulty === difficulty
     );
 
     if (existingEntryIndex !== -1) {
-        // Se já jogou, verifica se a nova pontuação é MAIOR do que a antiga
         if (score > leaderboard[existingEntryIndex].score) {
             leaderboard[existingEntryIndex].score = score;
             leaderboard[existingEntryIndex].date = new Date().toISOString();
         }
-        // Se não for maior, não faz nada (mantém a pontuação alta antiga)
     } else {
-        // Se nunca jogou, adiciona um novo registo
-        leaderboard.push({ name, score, date: new Date().toISOString(), mode });
+        leaderboard.push({ name, score, date: new Date().toISOString(), mode, difficulty });
     }
 
-    // Ordena do maior para o menor
     leaderboard.sort((a, b) => b.score - a.score);
-    
-    // ATUALIZAÇÃO: Retiramos o .slice(0, 10) para não apagar o progresso dos jogadores,
-    // garantindo que o MainHub consegue calcular a "Trilha Total".
     localStorage.setItem('bioguesser_leaderboard', JSON.stringify(leaderboard));
 };
 
+// --- RANKING ESPECÍFICO DA URBANIZAÇÃO (10 melhores por dificuldade) --- //
+export interface UrbanizationRanking {
+    easy: ScoreEntry[];
+    medium: ScoreEntry[];
+    hard: ScoreEntry[];
+}
+
+const getUrbanizationRanking = (): UrbanizationRanking => {
+    if (typeof window === 'undefined') return { easy: [], medium: [], hard: [] };
+    
+    const allScores = getLeaderboard();
+    const urbanScores = allScores.filter(entry => entry.mode === 'Trilha Urbanização');
+    
+    const easy = urbanScores.filter(e => e.difficulty === 'easy').sort((a, b) => b.score - a.score).slice(0, 10);
+    const medium = urbanScores.filter(e => e.difficulty === 'medium').sort((a, b) => b.score - a.score).slice(0, 10);
+    const hard = urbanScores.filter(e => e.difficulty === 'hard').sort((a, b) => b.score - a.score).slice(0, 10);
+    
+    return { easy, medium, hard };
+};
+
+// --- MELHOR PONTUAÇÃO DO JOGADOR NA URBANIZAÇÃO (independente da dificuldade) --- //
+export const getBestUrbanizationScore = (playerName: string): number => {
+    if (typeof window === 'undefined') return 0;
+    const allScores = getLeaderboard();
+    const urbanScores = allScores.filter(
+        entry => entry.mode === 'Trilha Urbanização' && entry.name === playerName
+    );
+    
+    if (urbanScores.length === 0) return 0;
+    return Math.max(...urbanScores.map(e => e.score));
+};
+
 // --- DEFINIÇÃO DAS TRILHAS DISPONÍVEIS --- //
-// ATUALIZAÇÃO: Separamos as 4 trilhas principais. O Simulado fica independente.
 const MAIN_TRACKS = ['meio_ambiente', 'urbanizacao', 'geopolitica', 'agraria'];
 
-// Dicionário para traduzir o ID no nome do botão
 const TRACK_NAMES: Record<string, string> = {
     'meio_ambiente': 'Meio Ambiente',
     'urbanizacao': 'Urbanização',
@@ -69,18 +92,18 @@ const TRACK_NAMES: Record<string, string> = {
     'agraria': 'Geografia Agrária'
 };
 
-// --- COMPONENTE ROOT / CONTAINER --- //
+// --- COMPONENTE ROOT --- //
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'hub' | 'meio_ambiente' | 'urbanizacao' | 'energia' | 'detetive_ibge' | 'corrida_pendular' | 'geopolitica' | 'agraria' | 'simulados' | 'resultado_final'>('hub');
   const [playerName, setPlayerName] = useState<string>('');
   
-  // ESTADOS PARA PONTUAÇÃO E RESULTADO
   const [accumulatedScore, setAccumulatedScore] = useState(0);
   const [maxTrackScore, setMaxTrackScore] = useState(0); 
   const [finalTrackName, setFinalTrackName] = useState("");
-  
-  // ESTADO: Guarda as trilhas principais que o jogador já completou
   const [completedTracks, setCompletedTracks] = useState<string[]>([]);
+  
+  // Estado para armazenar a dificuldade da urbanização
+  const [urbanizationDifficulty, setUrbanizationDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   
   const isAdvancingRef = useRef(false);
 
@@ -143,11 +166,12 @@ export default function App() {
           <MacrocefaliaUrbanaGame 
             playerName={playerName} 
             onReturnHome={handleBackToHub} 
-            onSaveScore={(score) => {
+            onSaveScore={(score, difficulty) => {
                 isAdvancingRef.current = true; 
                 setAccumulatedScore(score); 
-                setMaxTrackScore(550); 
+                setMaxTrackScore(1500); // Máximo da dificuldade mais alta
                 setFinalTrackName('Trilha Urbanização');
+                setUrbanizationDifficulty(difficulty || 'medium');
 
                 setCompletedTracks(prev => Array.from(new Set([...prev, 'urbanizacao'])));
 
@@ -216,7 +240,6 @@ export default function App() {
                 isAdvancingRef.current = true;
                 setAccumulatedScore(score); 
                 
-                // Pontuação máxima da Corrida Pendular
                 setMaxTrackScore(5000); 
                 setFinalTrackName('Trilha do Simulado Enem'); 
                 
@@ -231,6 +254,13 @@ export default function App() {
   // TELA GLOBAL: RESULTADO FINAL
   // ========================================================= //
   if (currentScreen === 'resultado_final') {
+      // Salva a pontuação com a dificuldade (se for urbanização)
+      if (finalTrackName === 'Trilha Urbanização') {
+          saveScore(playerName, accumulatedScore, finalTrackName, urbanizationDifficulty);
+      } else {
+          saveScore(playerName, accumulatedScore, finalTrackName);
+      }
+
       const percentage = Math.min((accumulatedScore / maxTrackScore) * 100, 100);
       let feedbackMessage = "";
       let feedbackColor = "";
@@ -240,8 +270,6 @@ export default function App() {
       else if (percentage >= 50) { feedbackMessage = "Bom, mas pode melhorar!"; feedbackColor = "text-yellow-400"; }
       else { feedbackMessage = "Continue Estudando!"; feedbackColor = "text-red-400"; }
 
-      // ATUALIZAÇÃO: Só sugere continuar se o jogador estiver a fazer uma das 4 trilhas principais.
-      // O Simulado é independente e não entra neste ciclo.
       const nextTrackId = finalTrackName !== 'Trilha do Simulado Enem' 
           ? MAIN_TRACKS.find(track => !completedTracks.includes(track)) 
           : null;
@@ -254,6 +282,22 @@ export default function App() {
                   <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-6" />
                   <h1 className="text-4xl md:text-5xl font-black mb-2 text-white">Expedição Concluída!</h1>
                   <p className="text-slate-400 text-lg mb-8">Agente <strong>{playerName}</strong>, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
+                  
+                  {/* Mostra a dificuldade se for Urbanização */}
+                  {finalTrackName === 'Trilha Urbanização' && (
+                      <div className="mb-4 inline-block bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+                          <span className="text-sm text-slate-400">Dificuldade: </span>
+                          <span className={`font-bold ${
+                              urbanizationDifficulty === 'easy' ? 'text-green-400' :
+                              urbanizationDifficulty === 'medium' ? 'text-yellow-400' :
+                              'text-red-400'
+                          }`}>
+                              {urbanizationDifficulty === 'easy' ? '🌱 Fácil' :
+                               urbanizationDifficulty === 'medium' ? '🎯 Médio' :
+                               '💀 Difícil'}
+                          </span>
+                      </div>
+                  )}
                   
                   <div className="bg-slate-950/80 rounded-3xl p-8 border border-slate-800 mb-10 shadow-inner">
                       <div className="flex items-center justify-center gap-2 mb-4">
@@ -278,11 +322,9 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col gap-4">
-                      {/* BOTÃO DINÂMICO PARA AS 4 TRILHAS BASE */}
                       {nextTrackId ? (
                           <Button 
                             onClick={() => {
-                                saveScore(playerName, accumulatedScore, finalTrackName);
                                 setAccumulatedScore(0);
                                 setCurrentScreen(nextTrackId as any);
                             }}
@@ -292,7 +334,6 @@ export default function App() {
                               <Play className="hidden md:block w-5 h-5 shrink-0" />
                           </Button>
                       ) : (
-                          // Se for o Simulado ou já tiver completado as 4 trilhas, mostra a mensagem de sucesso
                           <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold py-4 px-6 rounded-2xl text-center text-sm md:text-base">
                               {finalTrackName === 'Trilha do Simulado Enem' 
                                 ? "🎉 Simulado Concluído com Sucesso!" 
@@ -300,15 +341,13 @@ export default function App() {
                           </div>
                       )}
 
-                      {/* BOTÃO VOLTAR AO INÍCIO */}
                       <Button 
                         onClick={() => {
-                            saveScore(playerName, accumulatedScore, finalTrackName);
                             setCurrentScreen('hub');
                         }}
                         className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 md:py-6 text-sm md:text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 h-auto text-center whitespace-normal"
                       >
-                          <span>Salvar no Ranking e Voltar ao Início</span> 
+                          <span>Voltar ao Início</span> 
                           <Home className="hidden md:block w-5 h-5 shrink-0" />
                       </Button>
                   </div>
@@ -328,7 +367,9 @@ export default function App() {
             setPlayerName('');
             setCompletedTracks([]); 
         }} 
-        getLeaderboard={getLeaderboard} 
+        getLeaderboard={getLeaderboard}
+        getBestUrbanizationScore={getBestUrbanizationScore}
+        getUrbanizationRanking={getUrbanizationRanking}
       />
   );
 }
