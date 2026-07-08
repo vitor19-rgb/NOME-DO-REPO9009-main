@@ -2,14 +2,119 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Zap, Wind, Droplet, Leaf, ArrowLeft, ShieldCheck, Map as MapIcon, CheckCircle2, Lock, HelpCircle, BookOpen, ZoomIn, X, BatteryCharging, AlertCircle, Info, Target } from 'lucide-react';
+import { AlertTriangle, Zap, Wind, Droplet, Leaf, ArrowLeft, ShieldCheck, Map as MapIcon, CheckCircle2, Lock, HelpCircle, BookOpen, ZoomIn, X, BatteryCharging, AlertCircle, Info, Target, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
+// ============================================================ //
+// FUNÇÃO PARA SALVAR NO BANCO DE DADOS
+// ============================================================ //
+const saveEnergiaScore = async (playerName: string, userId: string | undefined, score: number): Promise<boolean> => {
+    console.log('💾 Salvando pontuação da Matriz Energética:', { playerName, userId, score });
+
+    const finalUserId = userId || '';
+
+    let saved = false;
+
+    // 1. SALVAR NO LOCAL STORAGE
+    try {
+        if (typeof window !== 'undefined') {
+            const leaderboardKey = 'bioguesser_leaderboard';
+            let leaderboard: any[] = [];
+            
+            try {
+                const existingData = localStorage.getItem(leaderboardKey);
+                if (existingData) {
+                    const parsed = JSON.parse(existingData);
+                    if (Array.isArray(parsed)) {
+                        leaderboard = parsed;
+                    }
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Erro ao parsear localStorage');
+                leaderboard = [];
+            }
+
+            // Busca por userId primeiro, depois por nome
+            const existingIndex = leaderboard.findIndex(
+                (entry: any) => 
+                    entry && 
+                    ((entry.userId && entry.userId === finalUserId) || 
+                     (entry.name === playerName && entry.mode === 'Trilha Meio Ambiente'))
+            );
+            
+            if (existingIndex !== -1 && leaderboard[existingIndex]) {
+                const currentScore = leaderboard[existingIndex].score || 0;
+                if (score > currentScore) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                    if (finalUserId) leaderboard[existingIndex].userId = finalUserId;
+                    saved = true;
+                } else {
+                    return true;
+                }
+            } else {
+                const newEntry: any = {
+                    name: playerName,
+                    score: score,
+                    mode: 'Trilha Meio Ambiente',
+                    date: new Date().toISOString()
+                };
+                if (finalUserId) newEntry.userId = finalUserId;
+                leaderboard.push(newEntry);
+                saved = true;
+            }
+            
+            leaderboard.sort((a: any, b: any) => (b?.score || 0) - (a?.score || 0));
+            localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+            console.log('✅ Pontuação salva no localStorage!');
+        }
+    } catch (localError) {
+        console.error('❌ Erro ao salvar no localStorage:', localError);
+    }
+
+    if (!saved) {
+        console.log('ℹ️ Pontuação não é recorde, pulando API');
+        return true;
+    }
+
+    // 2. TENTAR SALVAR NO BANCO DE DADOS
+    try {
+        console.log('🌐 Salvando novo recorde no banco de dados...');
+        
+        const response = await fetch('/api/ranking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: playerName,
+                userId: finalUserId,
+                score: score,
+                mode: 'Trilha Meio Ambiente',
+                date: new Date().toISOString()
+            }),
+        });
+
+        if (!response.ok) {
+            console.warn('⚠️ API retornou erro:', await response.text());
+            return true;
+        }
+
+        console.log('✅ Novo recorde salvo no banco de dados!');
+        return true;
+
+    } catch (error) {
+        console.warn('⚠️ Erro ao salvar no banco:', error);
+        return true;
+    }
+};
+
 // --- TIPAGENS --- //
 interface TransacaoEnergeticaGameProps {
     playerName: string;
+    userId?: string; // ADICIONADO
     onReturnHome: () => void;
     onSaveScore: (score: number) => void;
 }
@@ -91,14 +196,11 @@ const ERROR_MESSAGES: Record<BiomeId, Partial<Record<PlantType, string>>> = {
 const GameHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            {/* ALTERAÇÃO AQUI: Botão com texto e borda verde padronizada */}
             <Button variant="outline" className="bg-emerald-900/40 border-emerald-500/50 text-emerald-200 hover:bg-emerald-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
             </Button>
         </SheetTrigger>
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
-             
-             {/* ALTERAÇÃO AQUI: Título invisível para evitar o erro do Leitor de Tela (Screen Reader) */}
              <SheetTitle className="sr-only">Painel de Ajuda e Revisão ENEM</SheetTitle>
              
              <div className="p-8">
@@ -110,7 +212,6 @@ const GameHelpPanel = () => (
                 </div>
                 
                 <div className="space-y-8 text-left">
-                    {/* COMO JOGAR */}
                     <div>
                         <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
                         <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
@@ -122,7 +223,6 @@ const GameHelpPanel = () => (
 
                     <hr className="border-slate-800" />
 
-                    {/* REVISÃO ENEM */}
                     <div>
                         <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight flex items-center gap-2">
                             <BookOpen className="w-5 h-5" /> Revisão ENEM
@@ -146,7 +246,7 @@ const GameHelpPanel = () => (
 );
 
 // --- COMPONENTE PRINCIPAL --- //
-export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSaveScore }: TransacaoEnergeticaGameProps) {
+export default function TransacaoEnergeticaGame({ playerName, userId, onReturnHome, onSaveScore }: TransacaoEnergeticaGameProps) {
     const [selectedPlant, setSelectedPlant] = useState<PlantType | null>(null);
     const [solvedBiomes, setSolvedBiomes] = useState<BiomeId[]>([]);
     
@@ -159,6 +259,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
     const [shakeBiome, setShakeBiome] = useState<BiomeId | null>(null);
     const [expandedImage, setExpandedImage] = useState<string | null>(null);
     const [score, setScore] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Checa vitória após fechar o alerta
     useEffect(() => {
@@ -189,19 +290,16 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
         const biome = BIOMES.find(b => b.id === biomeId);
         
         if (biome && biome.correctPlant === selectedPlant) {
-            // ACERTOU
             setSolvedBiomes(prev => [...prev, biomeId]);
             setScore(prev => prev + 50);
             setSelectedPlant(null);
             
-            // Dispara a mensagem educativa do ENEM de sucesso
             setAlertMessage({
                 title: biome.successTitle,
                 text: biome.successText,
                 type: 'success'
             });
         } else {
-            // ERROU 
             const newErrors = errorCount + 1;
             setErrorCount(newErrors);
             setShakeBiome(biomeId);
@@ -226,9 +324,6 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
             <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-emerald-600/10 blur-[120px] rounded-full pointer-events-none" />
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
-                    
-                   
-
                     <div className="flex justify-center mb-6 mt-4">
                         <div className="bg-emerald-600/20 p-5 rounded-3xl border border-emerald-500/30">
                             <Zap className="w-16 h-16 text-emerald-400" />
@@ -273,6 +368,34 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
     }
 
     if (status === 'victory') {
+        const handleSave = async () => {
+            setIsSaving(true);
+            try {
+                // Salva no banco de dados
+                await saveEnergiaScore(playerName, userId, score);
+                
+                // Chama o callback do componente pai com a pontuação
+                onSaveScore(score);
+                
+                toast({
+                    title: "🏆 Matriz Energética Concluída!",
+                    description: `Você ganhou ${score} pontos!`,
+                    variant: "default"
+                });
+            } catch (error) {
+                console.error('Erro ao salvar pontuação:', error);
+                toast({
+                    title: "⚠️ Aviso",
+                    description: "Pontuação salva localmente. Sincronização pendente.",
+                    variant: "default"
+                });
+                // Mesmo com erro, chama o callback
+                onSaveScore(score);
+            } finally {
+                setIsSaving(false);
+            }
+        };
+
         return (
             <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white p-4">
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
@@ -285,9 +408,17 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">Pontuação Final</p>
                         <p className="text-6xl font-black text-yellow-400 drop-shadow-md">+{score} pts</p>
                     </div>
-                    <Button onClick={() => onSaveScore(score)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">
-                        Salvar Pontuação 
-                    </Button>
+
+                    {isSaving ? (
+                        <div className="flex items-center justify-center gap-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-4 mb-4 w-full">
+                            <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+                            <p className="text-yellow-400 font-bold">Salvando sua pontuação...</p>
+                        </div>
+                    ) : (
+                        <Button onClick={handleSave} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-xl hover:scale-105 transition-transform">
+                            Salvar Pontuação 
+                        </Button>
+                    )}
                 </motion.div>
             </div>
         );
@@ -351,11 +482,9 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                 )}
             </AnimatePresence>
 
-          {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
+            {/* CABEÇALHO */}
             <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
                 <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
-                    
-                    {/* ALTERAÇÃO AQUI: Botão de voltar padronizado com fundo verde esmeralda */}
                     <Button 
                         variant="ghost" 
                         size="icon" 
@@ -365,7 +494,6 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
                     
-                    {/* ALTERAÇÃO AQUI: Título limpo, sem o ícone do raio */}
                     <div className="flex items-center gap-2 md:gap-3">
                         <div className="flex flex-col">
                             <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Matriz Energética</span>
@@ -373,9 +501,7 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                     </div>
                 </div>
 
-                {/* Status da Direita (Ajuda, Erros, Meta e Score) */}
                 <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
-                    
                     <GameHelpPanel />
                     
                     <div className="w-px h-6 bg-white/10 hidden md:block" />
@@ -407,10 +533,10 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                     </div>
                 </div>
             </header>
-            {/* FIM DO CABEÇALHO PADRONIZADO */}
+
             <main className="flex-grow flex flex-col max-w-6xl mx-auto w-full p-4 md:p-8 gap-6 md:gap-8 relative z-10">
                 
-                {/* PERGUNTA MAIS LÓGICA E EXPLÍCITA AQUI */}
+                {/* PERGUNTA */}
                 <div className="bg-slate-900/80 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-800 text-center relative z-20">
                     <h2 className="text-xl md:text-2xl font-black text-emerald-400 mb-2">Desafio Geográfico</h2>
                     <p className="text-sm md:text-base text-slate-300 font-medium mb-4">
@@ -498,7 +624,6 @@ export default function TransacaoEnergeticaGame({ playerName, onReturnHome, onSa
                         {(Object.keys(PLANTS) as PlantType[]).map((key) => {
                             const plant = PLANTS[key];
                             const isSelected = selectedPlant === key;
-                            // Se algum bioma cuja energia correta é esta já foi resolvido, desabilita a carta.
                             const isAlreadyUsed = solvedBiomes.some(b => BIOMES.find(bio => bio.id === b)?.correctPlant === key);
 
                             return (

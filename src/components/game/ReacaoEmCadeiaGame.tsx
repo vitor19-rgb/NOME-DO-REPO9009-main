@@ -9,8 +9,96 @@ import {
   Trees, Flame, Factory, Sun, 
   Tractor, ArrowDownToLine, HeartCrack, Wind, 
   Leaf, CloudRain, Mountain, ShieldAlert,
-  ArrowRight, ArrowLeft, RefreshCw, CheckCircle2, ShieldBan, HelpCircle, ZoomIn, X, BookOpen, AlertCircle, Info, AlertTriangle
+  ArrowRight, ArrowLeft, RefreshCw, CheckCircle2, ShieldBan, HelpCircle, ZoomIn, X, BookOpen, AlertCircle, Info, AlertTriangle, Loader2, ShieldCheck
 } from 'lucide-react';
+
+// ============================================================ //
+// FUNÇÃO PARA SALVAR NO BANCO DE DADOS
+// ============================================================ //
+const saveBonusScore = async (playerName: string, userId: string | undefined, score: number): Promise<boolean> => {
+    console.log('💾 Salvando pontuação Bônus (Efeito Dominó):', { playerName, userId, score });
+
+    const finalUserId = userId || '';
+
+    let saved = false;
+
+    try {
+        if (typeof window !== 'undefined') {
+            const leaderboardKey = 'bioguesser_leaderboard';
+            let leaderboard: any[] = [];
+            
+            try {
+                const existingData = localStorage.getItem(leaderboardKey);
+                if (existingData) {
+                    const parsed = JSON.parse(existingData);
+                    if (Array.isArray(parsed)) {
+                        leaderboard = parsed;
+                    }
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Erro ao parsear localStorage');
+                leaderboard = [];
+            }
+
+            const existingIndex = leaderboard.findIndex(
+                (entry: any) => 
+                    entry && 
+                    ((entry.userId && entry.userId === finalUserId) || 
+                     (entry.name === playerName && entry.mode === 'Trilha Meio Ambiente'))
+            );
+            
+            if (existingIndex !== -1 && leaderboard[existingIndex]) {
+                const currentScore = leaderboard[existingIndex].score || 0;
+                if (score > currentScore) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                    if (finalUserId) leaderboard[existingIndex].userId = finalUserId;
+                    saved = true;
+                } else {
+                    return true;
+                }
+            } else {
+                const newEntry: any = {
+                    name: playerName,
+                    score: score,
+                    mode: 'Trilha Meio Ambiente',
+                    date: new Date().toISOString()
+                };
+                if (finalUserId) newEntry.userId = finalUserId;
+                leaderboard.push(newEntry);
+                saved = true;
+            }
+            
+            leaderboard.sort((a: any, b: any) => (b?.score || 0) - (a?.score || 0));
+            localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+        }
+    } catch (localError) {
+        console.error('❌ Erro ao salvar no localStorage:', localError);
+    }
+
+    if (!saved) return true;
+
+    try {
+        const response = await fetch('/api/ranking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: playerName,
+                userId: finalUserId,
+                score: score,
+                mode: 'Trilha Meio Ambiente',
+                date: new Date().toISOString()
+            }),
+        });
+
+        if (!response.ok) return true;
+        return true;
+    } catch (error) {
+        return true;
+    }
+};
 
 // --- UTILITÁRIOS --- //
 function shuffle<T>(array: T[]): T[] {
@@ -122,27 +210,26 @@ const PHASES: PhaseData[] = [
     }
 ];
 
-// --- PAINEL DE AJUDA UNIFICADO (COMO JOGAR + ENEM) --- //
+// --- PAINEL DE AJUDA UNIFICADO (Totalmente em tons Esmeralda) --- //
 const GameHelpPanel = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="outline" className="bg-red-900/40 border-red-500/50 text-red-200 hover:bg-red-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
+            <Button variant="outline" className="bg-emerald-900/40 border-emerald-500/50 text-emerald-200 hover:bg-emerald-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
                 <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
             </Button>
         </SheetTrigger>
-        <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
+        <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-emerald-700/50 w-full sm:max-w-lg p-0 overflow-y-auto">
              <div className="p-8 h-full overflow-y-auto">
                 <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
-                    <div className="bg-red-500/20 p-3 rounded-xl border border-red-500/30">
-                        <Info className="text-red-400 w-8 h-8"/>
+                    <div className="bg-emerald-500/20 p-3 rounded-xl border border-emerald-500/30">
+                        <Info className="text-emerald-400 w-8 h-8"/>
                     </div>
                     <h2 className="text-3xl font-black text-white">O que cai no ENEM?</h2>
                 </div>
                 
                 <div className="space-y-8 text-left pb-8">
-                    {/* COMO JOGAR */}
                     <div>
-                        <h3 className="font-black text-xl text-red-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
+                        <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight">Como Funciona o Jogo</h3>
                         <ul className="list-decimal list-inside space-y-3 text-slate-300 text-[15px]">
                             <li><strong>Leia a Pergunta:</strong> Identifique o processo de degradação ambiental exigido.</li>
                             <li><strong>Analise o Sistema:</strong> O ecossistema é conectado. Qual evento causa o próximo?</li>
@@ -153,9 +240,8 @@ const GameHelpPanel = () => (
 
                     <hr className="border-slate-800" />
 
-                    {/* REVISÃO ENEM */}
                     <div>
-                        <h3 className="font-black text-xl text-red-400 mb-3 tracking-tight flex items-center gap-2">
+                        <h3 className="font-black text-xl text-emerald-400 mb-3 tracking-tight flex items-center gap-2">
                             <BookOpen className="w-5 h-5" /> Para que serve no ENEM?
                         </h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
@@ -179,17 +265,20 @@ const GameHelpPanel = () => (
 );
 
 interface ReacaoEmCadeiaGameProps {
+    playerName: string;
+    userId?: string;
     onFinishGame: (bonusScore: number) => void;
     onReturnHome: () => void; 
 }
 
-export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: ReacaoEmCadeiaGameProps) {
+export default function ReacaoEmCadeiaGame({ playerName, userId, onFinishGame, onReturnHome }: ReacaoEmCadeiaGameProps) {
     const [phaseIndex, setPhaseIndex] = useState(0);
     const [placedCards, setPlacedCards] = useState<EventCard[]>([]);
     const [availableCards, setAvailableCards] = useState<EventCard[]>([]);
     const [gameState, setGameState] = useState<'intro' | 'playing' | 'game_over' | 'phase_complete' | 'all_complete'>('intro');
     const [score, setScore] = useState(0);
-    const [isImageExpanded, setIsImageExpanded] = useState(false); 
+    const [isImageExpanded, setIsImageExpanded] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const currentPhase = PHASES[phaseIndex];
 
@@ -235,42 +324,70 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
         setupPhase();
     };
 
-    const handleFinish = () => {
-        onFinishGame(score);
+    const handleFinish = async () => {
+        setIsSaving(true);
+        try {
+            await saveBonusScore(playerName, userId, score);
+            toast({
+                title: "🏆 Bônus Salvo!",
+                description: `Você ganhou ${score} pontos bônus no Efeito Dominó!`,
+                variant: "default"
+            });
+        } catch (error) {
+            toast({
+                title: "⚠️ Aviso",
+                description: "Pontuação salva localmente. Sincronização pendente.",
+                variant: "default"
+            });
+        } finally {
+            setIsSaving(false);
+            onFinishGame(score);
+        }
     };
 
+    // TELA INICIAL DA FASE
     if (gameState === 'intro') {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-4xl mx-auto mt-10 relative">
-                
-                {/* Os botões de voltar e ajuda foram removidos desta tela conforme solicitado */}
-
-                <ShieldBan className="w-20 h-20 text-red-500 mb-6 mt-4" />
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-emerald-500/30 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.1)] max-w-4xl mx-auto mt-10 relative">
+                <ShieldCheck className="w-20 h-20 text-emerald-500 mb-6 mt-4" />
                 <h2 className="text-4xl font-black text-white mb-2">Desafio Final: Efeito Dominó</h2>
-                <h3 className="text-2xl text-red-400 mb-6">{currentPhase.name} - {currentPhase.theme}</h3>
+                <h3 className="text-2xl text-emerald-400 mb-6">{currentPhase.name} - {currentPhase.theme}</h3>
                 <p className="text-slate-300 text-lg max-w-2xl mb-10 leading-relaxed">
                     A natureza é um sistema conectado. Uma ação destrutiva desencadeia a próxima. 
                     Sua missão é colocar os eventos de degradação na <strong>ordem cronológica exata</strong>. 
                 </p>
-                <Button onClick={handleStart} className="bg-red-600 hover:bg-red-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.3)]">
+                <Button onClick={handleStart} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                     Iniciar Simulação
                 </Button>
             </div>
         );
     }
 
+    // TELA FINALIZADA COM SUCESSO (Verde)
     if (gameState === 'all_complete') {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-green-500/50 rounded-3xl shadow-[0_0_50px_rgba(34,197,94,0.2)] max-w-4xl mx-auto mt-10">
-                <CheckCircle2 className="w-24 h-24 text-green-400 mb-6" />
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-8 bg-slate-900 border border-emerald-500/50 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.2)] max-w-4xl mx-auto mt-10">
+                <CheckCircle2 className="w-24 h-24 text-emerald-400 mb-6" />
                 <h2 className="text-5xl font-black text-white mb-4">Análise Concluída!</h2>
                 <p className="text-xl text-slate-400 mb-8 max-w-2xl">Você mapeou perfeitamente as cadeias de degradação ambiental.</p>
-                <div className="bg-slate-800 p-6 rounded-2xl mb-10 border border-slate-700">
+                <div className="bg-slate-800 p-6 rounded-2xl mb-6 border border-slate-700">
                     <p className="text-sm uppercase tracking-widest text-slate-500 mb-1">Bônus de Investigação</p>
                     <p className="text-5xl font-black text-yellow-400">+{score} pts</p>
                 </div>
-                <Button onClick={handleFinish} className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all shadow-lg">
-                    Concluir Missão <ArrowRight className="ml-2" />
+
+                {isSaving ? (
+                    <div className="flex items-center justify-center gap-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-4 mb-4 w-full">
+                        <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+                        <p className="text-yellow-400 font-bold">Salvando sua pontuação...</p>
+                    </div>
+                ) : null}
+
+                <Button 
+                    onClick={handleFinish} 
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-6 px-10 text-xl rounded-2xl transition-all shadow-[0_0_30px_rgba(16,185,129,0.4)] w-full sm:w-auto"
+                    disabled={isSaving}
+                >
+                    {isSaving ? 'Salvando...' : 'Concluir Missão'} <ArrowRight className="ml-2" />
                 </Button>
             </div>
         );
@@ -292,21 +409,19 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
     return (
         <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
             
-            {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
+            {/* CABEÇALHO */}
             <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
                 <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
                     
-                    {/* Botão de voltar padronizado com fundo vermelho */}
                     <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={onReturnHome} 
-                        className="bg-red-600 hover:bg-red-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md shrink-0"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md shrink-0"
                     >
                         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
                     
-                    {/* Títulos alinhados e centralizados no mobile */}
                     <div className="flex items-center gap-2 md:gap-3">
                         <div className="flex flex-col text-center md:text-left">
                             <span className="text-[10px] md:text-xs text-slate-400 uppercase tracking-widest font-bold">Bioma: {currentPhase.name}</span>
@@ -316,16 +431,19 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
-                     <GameHelpPanel /> 
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-yellow-500/20 whitespace-nowrap">
+                        <span className="text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-widest">Bônus:</span>
+                        <span className="font-black text-sm md:text-lg text-yellow-400">{score} PTS</span>
+                    </div>
+                    <GameHelpPanel /> 
                 </div>
             </header>
-            {/* FIM DO CABEÇALHO PADRONIZADO */}
 
             <main className="w-full max-w-5xl mx-auto mt-6 px-4 flex flex-col gap-6 relative pb-10 flex-grow">
-                {/* PAINEL DE PERGUNTA */}
-                <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                    <AlertCircle className="text-red-400 shrink-0 w-6 h-6 md:w-8 md:h-8" />
-                    <p className="text-red-100 font-medium text-sm md:text-lg leading-snug">{currentPhase.question}</p>
+                {/* PAINEL DE PERGUNTA EM TONS ESMERALDA */}
+                <div className="bg-emerald-900/20 border border-emerald-500/30 p-4 rounded-xl flex items-center gap-3 shadow-sm">
+                    <AlertCircle className="text-emerald-400 shrink-0 w-6 h-6 md:w-8 md:h-8" />
+                    <p className="text-emerald-100 font-medium text-sm md:text-lg leading-snug">{currentPhase.question}</p>
                 </div>
 
                 {/* SIMULADOR VISUAL */}
@@ -341,18 +459,18 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
 
                     <AnimatePresence>
                         {gameState === 'game_over' && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-red-950/90 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
-                                <ShieldBan className="text-red-500 w-16 h-16 mb-4" />
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-amber-950/90 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
+                                <ShieldBan className="text-amber-500 w-16 h-16 mb-4" />
                                 <h2 className="text-3xl font-bold text-white mb-2">Ordem Incorreta!</h2>
-                                <p className="text-red-200 mb-6">A degradação não segue esse caminho lógico. Tente novamente.</p>
-                                <Button onClick={handleRetryPhase} className="bg-red-600 hover:bg-red-500">Tentar Novamente</Button>
+                                <p className="text-amber-200 mb-6">A degradação não segue esse caminho lógico. Tente novamente.</p>
+                                <Button onClick={handleRetryPhase} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8">Tentar Novamente</Button>
                             </motion.div>
                         )}
                         {gameState === 'phase_complete' && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-green-950/80 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
-                                <CheckCircle2 className="text-green-400 w-16 h-16 mb-4" />
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-emerald-950/80 flex flex-col items-center justify-center p-6 text-center" onClick={(e) => e.stopPropagation()}>
+                                <CheckCircle2 className="text-emerald-400 w-16 h-16 mb-4" />
                                 <h2 className="text-3xl font-bold text-white mb-4">Processo Identificado!</h2>
-                                <Button onClick={handleNextPhase} className="bg-green-600 hover:bg-green-500">Próxima Análise</Button>
+                                <Button onClick={handleNextPhase} className="bg-emerald-600 hover:bg-emerald-500 font-bold px-8">Próxima Análise</Button>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -365,7 +483,7 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
                             <div key={i} className="h-24 md:h-32 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/50 flex flex-col items-center justify-center p-2 text-center">
                                 {placedCards[i] ? (
                                     <>
-                                        <div className="text-red-400 mb-1">{placedCards[i].icon}</div>
+                                        <div className="text-emerald-400 mb-1">{placedCards[i].icon}</div>
                                         <span className="text-[10px] md:text-xs font-bold text-white uppercase">{placedCards[i].text}</span>
                                     </>
                                 ) : (
@@ -382,9 +500,9 @@ export default function ReacaoEmCadeiaGame({ onFinishGame, onReturnHome }: Reaca
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleCardClick(card)}
-                                className="bg-slate-800 border border-slate-600 p-4 rounded-xl flex flex-col items-center gap-2 w-32 md:w-40 hover:border-red-400 transition-colors"
+                                className="bg-slate-800 border border-slate-600 p-4 rounded-xl flex flex-col items-center gap-2 w-32 md:w-40 hover:border-emerald-400 transition-colors"
                             >
-                                <div className="text-red-400">{card.icon}</div>
+                                <div className="text-emerald-400">{card.icon}</div>
                                 <span className="text-xs md:text-sm font-bold text-white">{card.text}</span>
                             </motion.button>
                         ))}

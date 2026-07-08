@@ -8,6 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { ScoreEntry } from '@/app/page';
 
+// IMPORTAÇÕES DO FIREBASE (Para o Login do Google)
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
+
 // --- VARIÁVEIS DE ANIMAÇÃO (FRAMER MOTION) --- //
 const staggerContainer = {
     hidden: { opacity: 0 },
@@ -29,11 +33,11 @@ const getBadgeColor = (mode?: string) => {
     if (!mode) return "text-slate-400";
     if (mode.includes("Meio Ambiente")) return "text-green-400";
     if (mode.includes("Urbanização")) return "text-blue-400";
-    if (mode.includes("Agrária")) return "text-orange-400"; // Laranja/Amarelo
+    if (mode.includes("Agrária")) return "text-orange-400"; 
     if (mode.includes("Geopolítica")) return "text-red-400";
     if (mode.includes("Simulado")) return "text-purple-400";
     if (mode === "Mestre da Geografia") return "text-yellow-400";
-    return "text-blue-400"; // Padrão
+    return "text-blue-400";
 };
 
 // 2. Cor de fundo do Botão (Sub-aba) quando selecionado
@@ -129,24 +133,49 @@ const GameModeCard = ({ icon, title, description, onClick, enabled = true }: { i
 );
 
 interface MainHubProps {
-    onSelectTheme: (themeId: string, playerName: string) => void;
+    onSelectTheme: (themeId: string, playerName: string, userId?: string) => void;
     initialPlayerName: string;
+    initialUserId?: string;
     onLogout: () => void;
-    getLeaderboard: () => ScoreEntry[];
 }
 
-export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, getLeaderboard }: MainHubProps) {
+// ============================================================ //
+// FUNÇÃO PARA CARREGAR O RANKING DO LOCAL STORAGE
+// ============================================================ //
+const loadRankingFromLocalStorage = (): ScoreEntry[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const data = localStorage.getItem('bioguesser_leaderboard');
+        if (data) {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        }
+        return [];
+    } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        return [];
+    }
+};
+
+export default function MainHub({ onSelectTheme, initialPlayerName, initialUserId, onLogout }: MainHubProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [view, setView] = useState<'home' | 'fake_login' | 'name_input' | 'ranking'>('home');
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
+    const [userId, setUserId] = useState(initialUserId || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
+
+    const [isFetchingRanking, setIsFetchingRanking] = useState(false);
 
     const [rankingTab, setRankingTab] = useState<'total' | 'modulos' | 'simulados'>('total');
     const [moduleTab, setModuleTab] = useState<string>('Trilha Meio Ambiente');
 
-   useEffect(() => {
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!initialUserId);
+
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             const hasLoadedBefore = sessionStorage.getItem('bioguesser_has_loaded');
             if (hasLoadedBefore) {
@@ -162,9 +191,45 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
         }
     }, []);
 
+    // ========================================================= //
+    // LÓGICA DO RANKING ONLINE (BANCO DE DADOS)
+    // ========================================================= //
     useEffect(() => {
-        if (view === 'ranking') setLeaderboard(getLeaderboard());
-    }, [view, getLeaderboard]);
+        if (view === 'ranking') {
+            const fetchOnlineRanking = async () => {
+                setIsFetchingRanking(true);
+                try {
+                    const response = await fetch('/api/ranking');
+                    
+                    if (response.ok) {
+                        const dadosDoBanco = await response.json();
+                        setLeaderboard(dadosDoBanco);
+                    } else {
+                        const localData = loadRankingFromLocalStorage();
+                        setLeaderboard(localData);
+                        toast({ 
+                            title: "⚠️ Modo Offline", 
+                            description: "Usando dados salvos localmente.", 
+                            variant: "default" 
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar o ranking global:", error);
+                    const localData = loadRankingFromLocalStorage();
+                    setLeaderboard(localData);
+                    toast({ 
+                        title: "⚠️ Modo Offline", 
+                        description: "Não foi possível conectar ao servidor.", 
+                        variant: "default" 
+                    });
+                } finally {
+                    setIsFetchingRanking(false);
+                }
+            };
+            
+            fetchOnlineRanking();
+        }
+    }, [view]);
 
     const handleModeSelection = (themeId: string, enabled: boolean) => {
         if (!enabled) {
@@ -172,20 +237,64 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             return;
         }
 
-        if (initialPlayerName) {
-            onSelectTheme(themeId, initialPlayerName);
+        if (isUserLoggedIn && userId) {
+            onSelectTheme(themeId, playerName, userId);
         } else {
             setSelectedTheme(themeId);
             setView('fake_login'); 
         }
     }
 
-    const simulateGoogleLogin = () => {
+    // --- LOGIN REAL COM O GOOGLE (COM SUPORTE A UID) --- //
+    const handleGoogleLogin = async () => {
         setIsLoggingIn(true);
-        setTimeout(() => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            if (user.displayName && user.uid) {
+                const nomeCompleto = user.displayName;
+                const uid = user.uid;
+                
+                setPlayerName(nomeCompleto);
+                setUserId(uid);
+                setIsUserLoggedIn(true);
+                
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('bioguesser_user_id', uid);
+                    localStorage.setItem('bioguesser_user_name', nomeCompleto);
+                }
+                
+                if (selectedTheme) {
+                    toast({ 
+                        title: "Login bem-sucedido!", 
+                        description: `Bem-vindo(a), ${nomeCompleto}! Iniciando o jogo...`,
+                        variant: "default" 
+                    });
+                    
+                    onSelectTheme(selectedTheme, nomeCompleto, uid);
+                    return;
+                }
+                
+                setView('home');
+                toast({ 
+                    title: "Login bem-sucedido!", 
+                    description: `Bem-vindo(a), ${nomeCompleto}!`,
+                    variant: "default" 
+                });
+            } else {
+                setView('name_input');
+            }
+        } catch (error) {
+            console.error("Erro ao fazer login com o Google:", error);
+            toast({ 
+                title: "Erro no Login", 
+                description: "Não foi possível conectar com o Google. Tente novamente.", 
+                variant: "destructive" 
+            });
+        } finally {
             setIsLoggingIn(false);
-            setView('name_input');
-        }, 2000);
+        }
     };
 
     const handleStartGame = () => {
@@ -194,38 +303,53 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             return;
         }
         if (selectedTheme) {
-            onSelectTheme(selectedTheme, playerName.trim());
+            setIsUserLoggedIn(true);
+            const finalUserId = userId || `temp_${Date.now()}`;
+            onSelectTheme(selectedTheme, playerName.trim(), finalUserId);
         }
     };
-
-    // ========================================================= //
-    // LÓGICA DE PROCESSAMENTO DO RANKING
-    // ========================================================= //
     
-    const getBestScoresPerPlayer = () => {
+    // ============================================================ //
+    // FUNÇÕES CORRIGIDAS DO RANKING - USANDO userId SEMPRE
+    // ============================================================ //
+    
+    // 1. Agrupa as melhores pontuações por userId (NUNCA por nome)
+    const getBestScoresPerUser = () => {
         const bestScores: Record<string, Record<string, ScoreEntry>> = {};
         
         leaderboard.forEach(entry => {
             if (!entry.mode) return;
-            if (!bestScores[entry.name]) bestScores[entry.name] = {};
             
-            const currentBest = bestScores[entry.name][entry.mode];
+            // SEMPRE usa userId como chave principal
+            // Se não tiver userId, usa o nome (mas isso é fallback)
+            const key = entry.userId || entry.name;
+            
+            if (!bestScores[key]) {
+                bestScores[key] = {};
+                // Guarda o nome associado a este userId
+                bestScores[key]._name = entry.name;
+            }
+            
+            const currentBest = bestScores[key][entry.mode];
             if (!currentBest || entry.score > currentBest.score) {
-                bestScores[entry.name][entry.mode] = entry;
+                bestScores[key][entry.mode] = entry;
             }
         });
+        
         return bestScores;
     };
 
+    // 2. Ranking da Trilha Total (soma de todas as 4 trilhas)
     const getTrilhaTotalRanking = () => {
-        const bestScores = getBestScoresPerPlayer();
+        const bestScores = getBestScoresPerUser();
         const mainTracks = ['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'];
         const totals: ScoreEntry[] = [];
 
-        Object.entries(bestScores).forEach(([name, modes]) => {
+        Object.entries(bestScores).forEach(([userId, modes]) => {
             let totalScore = 0;
             let hasAll = true;
             let latestDate = "";
+            let userName = modes._name || userId; // Usa o nome guardado ou o userId
 
             mainTracks.forEach(track => {
                 if (modes[track]) {
@@ -237,35 +361,56 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
             });
 
             if (hasAll) {
-                totals.push({ name, score: totalScore, date: latestDate, mode: 'Mestre da Geografia' });
+                totals.push({ 
+                    name: userName,
+                    userId: userId,
+                    score: totalScore, 
+                    date: latestDate, 
+                    mode: 'Mestre da Geografia' 
+                });
             }
         });
 
         return totals.sort((a, b) => b.score - a.score).slice(0, 10);
     };
 
+    // 3. Ranking por módulo específico
+    const getModuleRanking = (moduleName: string) => {
+        const bestScores = getBestScoresPerUser();
+        const results: ScoreEntry[] = [];
+
+        Object.entries(bestScores).forEach(([userId, modes]) => {
+            if (modes[moduleName]) {
+                const entry = modes[moduleName];
+                results.push({
+                    ...entry,
+                    userId: userId,
+                    name: modes._name || userId
+                });
+            }
+        });
+
+        return results.sort((a, b) => b.score - a.score).slice(0, 10);
+    };
+
+    // 4. Ranking do Simulado
+    const getSimuladoRanking = () => {
+        return getModuleRanking('Trilha do Simulado Enem');
+    };
+
     let displayLeaderboard: ScoreEntry[] = [];
-    const bestScores = getBestScoresPerPlayer();
 
     if (rankingTab === 'total') {
         displayLeaderboard = getTrilhaTotalRanking();
     } else if (rankingTab === 'simulados') {
-        displayLeaderboard = Object.values(bestScores)
-            .map(player => player['Trilha do Simulado Enem'])
-            .filter(Boolean)
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 10);
+        displayLeaderboard = getSimuladoRanking();
     } else if (rankingTab === 'modulos') {
-        displayLeaderboard = Object.values(bestScores)
-            .map(player => player[moduleTab])
-            .filter(Boolean)
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 10);
+        displayLeaderboard = getModuleRanking(moduleTab);
     }
 
     if (isLoading) return <LoadingScreen />;
 
-    // --- TELA DE LOGIN SIMULADA --- //
+    // --- TELA DE LOGIN --- //
     if (view === 'fake_login') {
         return (
             <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -285,11 +430,11 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </div>
                     
                     <h2 className="text-2xl md:text-3xl font-medium text-white mb-2 tracking-tight">Fazer login</h2>
-                    <p className="text-slate-400 mb-10 font-medium">Use sua Conta do Google para acessar o BioGuesser</p>
+                    <p className="text-slate-400 mb-10 font-medium">Use a sua Conta do Google para acessar o BioGuesser</p>
                     
                     <div className="space-y-4">
                         <Button 
-                            onClick={simulateGoogleLogin} 
+                            onClick={handleGoogleLogin} 
                             disabled={isLoggingIn}
                             className="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-7 text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-3"
                         >
@@ -322,7 +467,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
         )
     }
 
-    // --- TELA DE INPUT DO NOME --- //
+    // --- TELA DE INPUT DO NOME (FALLBACK) --- //
     if (view === 'name_input') {
         return (
             <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -346,11 +491,11 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     </motion.div>
                     
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-                        Login Aprovado!
+                        Como quer ser chamado?
                     </h2>
 
                     <p className="text-slate-400 mb-6 text-sm sm:text-base leading-relaxed font-medium px-1">
-                        Conta conectada com sucesso. Como quer ser chamado no Ranking dos Estudantes?
+                        Digite seu nome para aparecer no Ranking dos Estudantes
                     </p>
                     
                     <Input 
@@ -384,7 +529,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
         )
     }
 
-    // --- TELA DE RANKING DIVIDIDA EM 3 SECÇÕES --- //
+    // --- TELA DE RANKING --- //
     if (view === 'ranking') {
         return (
             <div className="min-h-screen bg-[#020617] p-4 md:p-10 flex flex-col items-center relative overflow-hidden">
@@ -417,7 +562,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             onClick={() => setRankingTab('modulos')}
                             className={`rounded-xl flex-1 py-6 font-bold text-sm md:text-base ${rankingTab === 'modulos' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'border-slate-700 text-slate-400 hover:text-white'}`}
                         >
-                            <Layers className="w-5 h-5 mr-2" /> Indepedentes
+                            <Layers className="w-5 h-5 mr-2" /> Módulos
                         </Button>
                         <Button 
                             variant={rankingTab === 'simulados' ? 'default' : 'outline'} 
@@ -439,7 +584,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                             >
                                 <div className="flex flex-wrap gap-2 justify-center">
                                     {['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'].map(track => {
-                                        // Usa o helper para definir a cor ativa
                                         const isActive = moduleTab === track;
                                         const activeClass = isActive ? getTabActiveColor(track) : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent';
                                         
@@ -461,7 +605,12 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                     
                     {/* LISTA DE PONTUAÇÕES */}
                     <div className="p-4 md:p-8 overflow-y-auto flex-1 max-h-[50vh]">
-                        {displayLeaderboard.length === 0 ? (
+                        {isFetchingRanking ? (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12">
+                                <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+                                <p className="text-slate-400 font-medium">A procurar os melhores na base de dados global...</p>
+                            </motion.div>
+                        ) : displayLeaderboard.length === 0 ? (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
                                 <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                                 <p className="text-slate-400 font-medium text-lg">
@@ -473,14 +622,13 @@ export default function MainHub({ onSelectTheme, initialPlayerName, onLogout, ge
                         ) : (
                             <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4">
                                 {displayLeaderboard.map((entry, index) => (
-                                    <motion.div variants={fadeUpItem} key={index} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
+                                    <motion.div variants={fadeUpItem} key={entry.userId || entry.name + index} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
                                         <div className="flex items-center gap-4 md:gap-6">
                                             <span className={`text-2xl md:text-3xl font-black w-10 text-center transition-transform group-hover:scale-110 ${index === 0 ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]' : index === 1 ? 'text-slate-300 drop-shadow-[0_0_10px_rgba(203,213,225,0.4)]' : index === 2 ? 'text-amber-600 drop-shadow-[0_0_10px_rgba(217,119,6,0.4)]' : 'text-slate-600'}`}>
                                                 #{index + 1}
                                             </span>
                                             <div className="flex flex-col">
                                                 <span className="text-white font-black text-lg md:text-xl">{entry.name}</span>
-                                                {/* Aplicamos aqui a função getBadgeColor para pintar o nome da trilha dinamicamente */}
                                                 <span className={`${getBadgeColor(entry.mode)} font-bold text-xs uppercase tracking-widest`}>
                                                     {entry.mode || 'Missão Concluída'}
                                                 </span>

@@ -7,13 +7,14 @@ import {
     Globe, ArrowLeft, HelpCircle, Trophy, BookOpen, 
     AlertTriangle, Newspaper, Play, CheckCircle2, 
     ArrowRight, RefreshCw, LogOut, ImageIcon, Sparkles, 
-    MousePointerClick, X, FileText, Target
+    MousePointerClick, X, FileText, Target, Loader2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface EfeitoDominoGlobalGameProps {
     playerName: string;
+    userId?: string;
     onComplete?: () => void;
     onSaveScore?: (score: number) => void;
 }
@@ -21,7 +22,7 @@ interface EfeitoDominoGlobalGameProps {
 interface TagItem {
     id: string;
     text: string;
-    correctZone: number; // 1: Evento, 2: Impacto Global/Local, 3: Reflexo Político/Econômico, 0: Distrator
+    correctZone: number;
 }
 
 // --- DADOS DAS 5 FASES DO JOGO --- //
@@ -163,6 +164,109 @@ const shuffleArray = <T,>(array: T[]): T[] => {
     return newArray;
 };
 
+// ============================================================ //
+// FUNÇÃO PARA SALVAR NO BANCO DE DADOS
+// ============================================================ //
+const saveGeopoliticaScore = async (playerName: string, userId: string | undefined, score: number): Promise<boolean> => {
+    console.log('💾 Salvando pontuação da Geopolítica:', { playerName, userId, score });
+
+    const finalUserId = userId || '';
+
+    let saved = false;
+
+    // 1. SALVAR NO LOCAL STORAGE
+    try {
+        if (typeof window !== 'undefined') {
+            const leaderboardKey = 'bioguesser_leaderboard';
+            let leaderboard: any[] = [];
+            
+            try {
+                const existingData = localStorage.getItem(leaderboardKey);
+                if (existingData) {
+                    const parsed = JSON.parse(existingData);
+                    if (Array.isArray(parsed)) {
+                        leaderboard = parsed;
+                    }
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Erro ao parsear localStorage');
+                leaderboard = [];
+            }
+
+            const existingIndex = leaderboard.findIndex(
+                (entry: any) => 
+                    entry && 
+                    ((entry.userId && entry.userId === finalUserId) || 
+                     (entry.name === playerName && entry.mode === 'Trilha Geopolítica'))
+            );
+            
+            if (existingIndex !== -1 && leaderboard[existingIndex]) {
+                const currentScore = leaderboard[existingIndex].score || 0;
+                if (score > currentScore) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                    if (finalUserId) leaderboard[existingIndex].userId = finalUserId;
+                    saved = true;
+                } else {
+                    return true;
+                }
+            } else {
+                const newEntry: any = {
+                    name: playerName,
+                    score: score,
+                    mode: 'Trilha Geopolítica',
+                    date: new Date().toISOString()
+                };
+                if (finalUserId) newEntry.userId = finalUserId;
+                leaderboard.push(newEntry);
+                saved = true;
+            }
+            
+            leaderboard.sort((a: any, b: any) => (b?.score || 0) - (a?.score || 0));
+            localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+            console.log('✅ Pontuação salva no localStorage!');
+        }
+    } catch (localError) {
+        console.error('❌ Erro ao salvar no localStorage:', localError);
+    }
+
+    if (!saved) {
+        console.log('ℹ️ Pontuação não é recorde, pulando API');
+        return true;
+    }
+
+    // 2. TENTAR SALVAR NO BANCO DE DADOS
+    try {
+        console.log('🌐 Salvando novo recorde no banco de dados...');
+        
+        const response = await fetch('/api/ranking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: playerName,
+                userId: finalUserId,
+                score: score,
+                mode: 'Trilha Geopolítica',
+                date: new Date().toISOString()
+            }),
+        });
+
+        if (!response.ok) {
+            console.warn('⚠️ API retornou erro:', await response.text());
+            return true;
+        }
+
+        console.log('✅ Novo recorde salvo no banco de dados!');
+        return true;
+
+    } catch (error) {
+        console.warn('⚠️ Erro ao salvar no banco:', error);
+        return true;
+    }
+};
+
 // --- PAINEL DE AJUDA ENEM --- //
 const EnemHelpPanel = () => (
     <Sheet>
@@ -221,7 +325,7 @@ const EnemHelpPanel = () => (
     </Sheet>
 );
 
-export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveScore }: EfeitoDominoGlobalGameProps) {
+export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete, onSaveScore }: EfeitoDominoGlobalGameProps) {
     const [status, setStatus] = useState<'intro' | 'playing' | 'level_complete' | 'victory'>('intro');
     const [score, setScore] = useState(0);
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0); 
@@ -229,7 +333,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
     const [imageError, setImageError] = useState(false);
     const [zoomedImage, setZoomedImage] = useState<string | null>(null);
     
-    // ORDEM ALEATÓRIA DAS FASES
     const [gameLevels, setGameLevels] = useState<typeof LEVELS>(LEVELS);
     const [alertMessage, setAlertMessage] = useState<{ title: string, hints: string[], pointsDeducted: number } | null>(null);
 
@@ -239,14 +342,17 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
 
     const [inventory, setInventory] = useState<TagItem[]>([]);
 
+    // Estados para controle de salvamento
+    const [isSaving, setIsSaving] = useState(false);
+    const [scoreSaved, setScoreSaved] = useState(false);
+    const [bestScore, setBestScore] = useState(0);
+
     const zone1Ref = useRef<HTMLSpanElement>(null);
     const zone2Ref = useRef<HTMLSpanElement>(null);
     const zone3Ref = useRef<HTMLSpanElement>(null);
 
-    // REFERÊNCIA DE SEGURANÇA PARA O CLIQUE vs ARRASTO
     const isDraggingRef = useRef(false);
 
-    // Nível Atual
     const currentLevel = gameLevels[currentLevelIndex];
 
     // Carregar o Inventário da Fase Atual Embaralhado
@@ -260,19 +366,77 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
         }
     }, [currentLevelIndex, currentLevel]);
 
-    // Função que é chamada ao clicar no botão "Iniciar"
+    // Carregar melhor pontuação
+    useEffect(() => {
+        const loadBestScore = () => {
+            const leaderboardData = localStorage.getItem('bioguesser_leaderboard');
+            if (leaderboardData) {
+                try {
+                    const leaderboard = JSON.parse(leaderboardData);
+                    const myEntry = leaderboard.find((entry: any) => 
+                        (entry.userId && entry.userId === userId) || 
+                        (entry.name === playerName && entry.mode === 'Trilha Geopolítica')
+                    );
+                    if (myEntry) {
+                        setBestScore(myEntry.score);
+                    }
+                } catch (e) {
+                    console.error("Erro ao ler ranking global", e);
+                }
+            }
+        };
+        loadBestScore();
+    }, [playerName, userId]);
+
+    // Salvar pontuação quando o jogo termina
+    useEffect(() => {
+        const saveScoreIfNeeded = async () => {
+            if (status === 'victory' && !scoreSaved && !isSaving) {
+                setIsSaving(true);
+                
+                try {
+                    const success = await saveGeopoliticaScore(playerName, userId, score);
+                    
+                    setScoreSaved(true);
+                    
+                    if (onSaveScore) {
+                        onSaveScore(score);
+                    }
+                    
+                    if (score > bestScore) {
+                        toast({
+                            title: "🏆 Novo Recorde!",
+                            description: `Você alcançou ${score} pontos na Geopolítica!`,
+                            variant: "default"
+                        });
+                    } else {
+                        toast({
+                            title: "✅ Pontuação Salva!",
+                            description: `Você alcançou ${score} pontos. Seu recorde é ${bestScore}.`,
+                            variant: "default"
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao salvar pontuação:', error);
+                    setScoreSaved(true);
+                } finally {
+                    setIsSaving(false);
+                }
+            }
+        };
+
+        saveScoreIfNeeded();
+    }, [status, score, playerName, userId, onSaveScore, scoreSaved, isSaving, bestScore]);
+
     const handleStartGame = () => {
-        // BARALHA AS 5 FASES DE FORMA ALEATÓRIA ANTES DE COMEÇAR!
         const shuffledLevels = shuffleArray(LEVELS);
         setGameLevels(shuffledLevels);
         setCurrentLevelIndex(0);
         setScore(0);
+        setScoreSaved(false);
         setStatus('playing');
     };
 
-    // ---------------------------------------------------------
-    // LÓGICA DE ARRASTAR E SOLTAR (Segura e Livre)
-    // ---------------------------------------------------------
     const handleDragEnd = (event: any, info: any, tag: TagItem) => {
         const pointX = info.point.x;
         const pointY = info.point.y;
@@ -300,7 +464,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
         }
     };
 
-    // Função de Clique Automático (Bloqueada se for um arrasto)
     const handleTagClickFallback = (tag: TagItem) => {
         if (isDraggingRef.current) return; 
         
@@ -324,9 +487,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
         setInventory(prev => [...prev, tag]);
     };
 
-    // ---------------------------------------------------------
-    // VALIDAÇÃO E PROGRESSÃO DAS FASES
-    // ---------------------------------------------------------
     const handleValidate = () => {
         let isAllCorrect = true;
         const returningTags: TagItem[] = [];
@@ -453,7 +613,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                             </p>
                         </div>
 
-                        {/* CHAMADA DA NOVA FUNÇÃO QUE BARALHA */}
                         <Button onClick={handleStartGame} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-7 text-xl rounded-xl shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all transform hover:scale-105">
                             Iniciar Expedição
                         </Button>
@@ -529,7 +688,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                         <div className="text-lg md:text-xl leading-[2.5rem] md:leading-[3rem] text-slate-300 font-medium">
                             {currentLevel.reportParts[0]}
                             
-                            {/* LACUNA 1 */}
                             <span 
                                 ref={zone1Ref}
                                 onClick={() => handleZoneClick(1, zone1)}
@@ -544,7 +702,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                             
                             {currentLevel.reportParts[1]}
                             
-                            {/* LACUNA 2 */}
                             <span 
                                 ref={zone2Ref}
                                 onClick={() => handleZoneClick(2, zone2)}
@@ -559,7 +716,6 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                             
                             {currentLevel.reportParts[2]}
                             
-                            {/* LACUNA 3 */}
                             <span 
                                 ref={zone3Ref}
                                 onClick={() => handleZoneClick(3, zone3)}
@@ -606,11 +762,10 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                                             dragElastic={1}
                                             dragSnapToOrigin={true}
                                             onDragStart={() => {
-                                                isDraggingRef.current = true; // Ativa a barreira de clique acidental
+                                                isDraggingRef.current = true;
                                             }}
                                             onDragEnd={(e, info) => {
                                                 handleDragEnd(e, info, tag);
-                                                // Remove a barreira com delay
                                                 setTimeout(() => { isDraggingRef.current = false; }, 150);
                                             }}
                                             onClick={() => handleTagClickFallback(tag)}
@@ -661,7 +816,7 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                 )}
             </AnimatePresence>
 
-            {/* --- MODAL DE CONTEXTO TEXTO DE APOIO (DINÂMICO) --- */}
+            {/* --- MODAL DE CONTEXTO TEXTO DE APOIO --- */}
             <AnimatePresence>
                 {isNewsModalOpen && (
                     <motion.div 
@@ -708,88 +863,96 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
             </AnimatePresence>
 
             {/* --- MODAL DE TRANSIÇÃO (NÍVEL CONCLUÍDO) --- */}
-            <AnimatePresence>
-                {status === 'level_complete' && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4"
-                    >
-                        <motion.div 
-                            initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }}
-                            className="max-w-2xl w-full bg-slate-900 border-2 border-blue-500 p-8 md:p-12 rounded-[2.5rem] text-center shadow-[0_0_60px_rgba(59,130,246,0.3)] relative overflow-hidden"
-                        >
-                            <div className="absolute top-[-20%] left-[-10%] w-72 h-72 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
-                            
-                            <CheckCircle2 className="w-20 h-20 text-blue-400 mx-auto mb-6" />
-                            <h1 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">Fase Concluída!</h1>
-                            
-                            <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800 text-left mb-8 shadow-inner">
-                                <h4 className="font-black text-blue-400 text-lg mb-3 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5" /> Você decifrou a cadeia de eventos!
-                                </h4>
-                                <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                                    Excelente, <strong>{playerName}</strong>! Você mapeou com perfeição este efeito em cascata. O ENEM valoriza muito essa visão sistêmica. Prepare-se, temos uma nova investigação a caminho.
-                                </p>
-                            </div>
+           {/* --- MODAL DE TRANSIÇÃO (NÍVEL CONCLUÍDO) - COR VERMELHA --- */}
+<AnimatePresence>
+    {status === 'level_complete' && (
+        <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4"
+        >
+            <motion.div 
+                initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }}
+                className="max-w-2xl w-full max-h-[92vh] overflow-y-auto bg-slate-900 border-2 border-red-500 p-6 md:p-12 rounded-[2.5rem] text-center shadow-[0_0_60px_rgba(220,38,38,0.3)] relative"
+            >
+                <div className="absolute top-[-20%] left-[-10%] w-72 h-72 bg-red-500/10 blur-[80px] rounded-full pointer-events-none" />
+                
+                <CheckCircle2 className="w-20 h-20 text-red-400 mx-auto mb-6" />
+                <h1 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">Fase Concluída!</h1>
+                
+                <div className="bg-slate-950 p-4 md:p-6 rounded-3xl border border-red-800/50 text-left mb-6 shadow-inner">
+                    <h4 className="font-black text-red-400 text-base md:text-lg mb-3 flex items-center gap-2">
+                        <Sparkles className="w-5 h-5" /> Você decifrou a cadeia de eventos!
+                    </h4>
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Excelente, <strong>{playerName}</strong>! Você mapeou com perfeição este efeito em cascata. O ENEM valoriza muito essa visão sistêmica. Prepare-se, temos uma nova investigação a caminho.
+                    </p>
+                </div>
 
-                            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 flex flex-col items-center">
-                                <span className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Score Acumulado</span>
-                                <span className="text-5xl font-black text-yellow-400 drop-shadow-md">{score} PTS</span>
-                            </div>
+                <div className="bg-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl mb-6 flex flex-col items-center">
+                    <span className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Score Acumulado</span>
+                    <span className="text-4xl md:text-5xl font-black text-yellow-400 drop-shadow-md">{score} PTS</span>
+                </div>
 
-                            <Button 
-                                onClick={handleNextLevel} 
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-7 text-lg rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-transform hover:scale-105"
-                            >
-                                Avançar para Próxima Missão <ArrowRight className="ml-2 w-5 h-5" />
-                            </Button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                <Button 
+                    onClick={handleNextLevel} 
+                    className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-6 md:py-7 text-base md:text-lg rounded-xl shadow-[0_0_30px_rgba(220,38,38,0.4)] transition-transform hover:scale-105"
+                >
+                    Avançar para Próxima Missão <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
+                </Button>
+            </motion.div>
+        </motion.div>
+    )}
+</AnimatePresence>
 
             {/* --- MODAL DE ERRO PEDAGÓGICO --- */}
-            <AnimatePresence>
-                {alertMessage && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-                    >
-                        <motion.div 
-                            initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}
-                            className="max-w-lg w-full p-8 rounded-3xl border-2 shadow-2xl text-center bg-slate-900 border-amber-500 shadow-[0_0_80px_rgba(245,158,11,0.3)]"
-                        >
-                            <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-amber-400" />
-                            <h2 className="text-2xl md:text-3xl font-black mb-4 text-white tracking-tight">{alertMessage.title}</h2>
-                            
-                            <p className="text-slate-400 mb-6 font-medium">
-                                Os blocos incorretos foram devolvidos ao inventário
-                                {alertMessage.pointsDeducted > 0 ? <span className="text-red-400 font-bold"> (-{alertMessage.pointsDeducted} PTS).</span> : '.'}
-                            </p>
-                            
-                            <div className="text-left bg-slate-950 p-5 rounded-2xl mb-8 space-y-3 border border-slate-800 shadow-inner">
-                                <p className="text-white font-bold mb-3 flex items-center gap-2">
-                                    <HelpCircle className="text-amber-500 w-5 h-5"/> Pistas de Correção:
-                                </p>
-                                {alertMessage.hints.map((hint, i) => (
-                                    <p key={i} className="text-sm text-slate-300 bg-amber-900/20 p-3 rounded-lg border border-amber-500/20 leading-relaxed">
-                                        {hint}
-                                    </p>
-                                ))}
-                            </div>
+    
+<AnimatePresence>
+    {alertMessage && (
+        <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+            <motion.div 
+                initial={{ scale: 0.8, y: 50 }} 
+                animate={{ scale: 1, y: 0 }} 
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="max-w-lg w-full max-h-[92vh] overflow-y-auto p-6 md:p-8 rounded-3xl border-2 shadow-2xl text-center bg-slate-900 border-red-500 shadow-[0_0_80px_rgba(220,38,38,0.3)]"
+            >
+                <AlertTriangle className="w-20 h-20 mx-auto mb-4 text-red-500 flex-shrink-0" />
+                <h2 className="text-2xl md:text-3xl font-black mb-3 text-white tracking-tight">{alertMessage.title}</h2>
+                
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4">
+                    <p className="text-slate-300 text-sm font-medium">
+                        Os blocos incorretos foram devolvidos ao inventário
+                        {alertMessage.pointsDeducted > 0 ? <span className="text-red-400 font-bold"> (-{alertMessage.pointsDeducted} PTS)</span> : ''}
+                    </p>
+                </div>
+                
+                <div className="text-left bg-slate-950/80 p-4 md:p-5 rounded-2xl mb-6 space-y-3 border border-red-500/20 shadow-inner max-h-[40vh] overflow-y-auto">
+                    <p className="text-white font-bold mb-3 flex items-center gap-2 text-sm md:text-base sticky top-0 bg-slate-950/90 py-2">
+                        <HelpCircle className="text-red-400 w-5 h-5"/> Pistas de Correção:
+                    </p>
+                    {alertMessage.hints.map((hint, i) => (
+                        <div key={i} className="text-sm text-slate-300 bg-red-900/20 p-3 rounded-xl border border-red-500/20 leading-relaxed">
+                            <span className="text-red-400 font-bold mr-2">•</span>
+                            {hint}
+                        </div>
+                    ))}
+                </div>
 
-                            <Button 
-                                onClick={() => setAlertMessage(null)} 
-                                className="w-full font-black py-7 text-lg bg-amber-600 hover:bg-amber-500 text-white rounded-xl transition-transform active:scale-95"
-                            >
-                                Reescrever Relatório
-                            </Button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* --- MODAL DE VITÓRIA FINAL --- */}
+                <Button 
+                    onClick={() => setAlertMessage(null)} 
+                    className="w-full font-black py-6 text-lg bg-red-600 hover:bg-red-500 text-white rounded-xl transition-transform active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.3)]"
+                >
+                    Reescrever Relatório
+                </Button>
+            </motion.div>
+        </motion.div>
+    )}
+</AnimatePresence>
+            {/* --- MODAL DE VITÓRIA FINAL (COM SALVAMENTO) --- */}
             <AnimatePresence>
                 {status === 'victory' && (
                     <motion.div 
@@ -814,18 +977,51 @@ export default function EfeitoDominoGlobalGame({ playerName, onComplete, onSaveS
                                 </p>
                             </div>
 
-                       <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 flex flex-col items-center">
+                            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 flex flex-col items-center">
                                 <span className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Pontuação Final Adquirida</span>
                                 <span className="text-5xl font-black text-yellow-400 drop-shadow-md">{score} PTS</span>
                             </div>
 
-                            {/* ALTERAÇÃO: Removido o botão de voltar ao início e deixado apenas o de Salvar ocupando a largura total */}
+                            {isSaving ? (
+                                <div className="flex items-center justify-center gap-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-4 mb-4">
+                                    <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+                                    <p className="text-yellow-400 font-bold">Salvando sua pontuação...</p>
+                                </div>
+                            ) : scoreSaved ? (
+                                <div className="bg-green-500/20 border border-green-500/50 rounded-xl px-6 py-3 mb-4">
+                                    <p className="text-green-400 font-bold">✅ Pontuação salva com sucesso!</p>
+                                </div>
+                            ) : null}
+
                             <div className="flex flex-col gap-4 mt-8">
                                 <Button 
-                                    onClick={() => onSaveScore && onSaveScore(score)} 
+                                    onClick={() => {
+                                        if (!scoreSaved && !isSaving) {
+                                            const saveScore = async () => {
+                                                setIsSaving(true);
+                                                try {
+                                                    await saveGeopoliticaScore(playerName, userId, score);
+                                                    setScoreSaved(true);
+                                                    if (onSaveScore) onSaveScore(score);
+                                                    toast({
+                                                        title: "🏆 Pontuação Salva!",
+                                                        description: `Você alcançou ${score} pontos na Geopolítica!`,
+                                                        variant: "default"
+                                                    });
+                                                } catch (error) {
+                                                    console.error('Erro ao salvar:', error);
+                                                } finally {
+                                                    setIsSaving(false);
+                                                }
+                                            };
+                                            saveScore();
+                                        }
+                                        if (onComplete) onComplete();
+                                    }} 
                                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 text-lg rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-transform hover:scale-105"
+                                    disabled={isSaving}
                                 >
-                                    Salvar a Pontuação (+{score})
+                                    {isSaving ? 'Salvando...' : 'Salvar e Finalizar'}
                                 </Button>
                             </div>
                         </motion.div>

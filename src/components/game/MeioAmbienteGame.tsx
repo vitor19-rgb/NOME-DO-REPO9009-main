@@ -6,16 +6,15 @@ import { ClueTags, type Keyword } from '@/components/game/clue-tags';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { BackToHomeButton } from "@/components/game/back-to-home-button";
 
-// ALTERAÇÃO AQUI: Adicionamos o ArrowLeft na lista de ícones abaixo!
-import { Globe, BrainCircuit, ArrowLeft, ArrowRight, BookOpen, Search, Lightbulb, HelpCircle, RefreshCw, User, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Globe, BrainCircuit, ArrowLeft, ArrowRight, BookOpen, Search, Lightbulb, HelpCircle, RefreshCw, User, CheckCircle2, AlertTriangle, Trophy, Star, Loader2, ShieldCheck } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 
-// IMPORTAÇÃO DO NOVO CHEFÃO (EFEITO DOMINÓ)
+// IMPORTAÇÕES DOS JOGOS
 import ReacaoEmCadeiaGame from '@/components/game/ReacaoEmCadeiaGame';
+import TransacaoEnergeticaGame from '@/components/game/transacao-energetica';
 
 // --- FUNÇÕES UTILITÁRIAS --- //
 function shuffle<T>(array: T[]): T[] {
@@ -93,12 +92,12 @@ const BIOMES: BiomeData[] = [
 const LevelCompleteScreen = ({ biome, score, onNext, isLast }: { biome: BiomeData, score: number, onNext: () => void, isLast: boolean }) => (
     <div className="w-full bg-slate-900 border border-slate-700 p-8 md:p-12 rounded-3xl shadow-2xl text-center">
         <div className="flex justify-center mb-6">
-            <div className="bg-green-500/20 p-4 rounded-full"><CheckCircle2 className="w-16 h-16 text-green-400" /></div>
+            <div className="bg-emerald-500/20 p-4 rounded-full"><CheckCircle2 className="w-16 h-16 text-emerald-400" /></div>
         </div>
         <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Análise Concluída!</h2>
-        <p className="text-xl text-slate-400 mb-8">Você identificou com sucesso o bioma <span className="text-green-400 font-bold">{biome.name}</span>.</p>
+        <p className="text-xl text-slate-400 mb-8">Você identificou com sucesso o bioma <span className="text-emerald-400 font-bold">{biome.name}</span>.</p>
         <div className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl mb-8 text-left">
-            <h3 className="text-2xl font-black text-blue-400 mb-3 flex items-center gap-2"><BookOpen /> Resumo do Bioma</h3>
+            <h3 className="text-2xl font-black text-emerald-400 mb-3 flex items-center gap-2"><BookOpen /> Resumo do Bioma</h3>
             <p className="text-slate-300 leading-relaxed text-lg">{biome.summary}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-950/50 p-6 rounded-2xl border border-white/5">
@@ -106,9 +105,8 @@ const LevelCompleteScreen = ({ biome, score, onNext, isLast }: { biome: BiomeDat
                 <p className="text-sm text-slate-500 uppercase tracking-widest font-bold mb-1">Pontuação Total</p>
                 <p className="text-4xl font-black text-yellow-400">{score} pts</p>
             </div>
-            {/* O texto do botão muda se for a última fase antes do chefão */}
-            <Button onClick={onNext} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-6 px-10 text-lg transition-all shadow-lg shadow-blue-900/50">
-                {isLast ? "Desafio Final" : "Próxima Fase"} <ArrowRight className="ml-2" />
+            <Button onClick={onNext} className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl py-6 px-10 text-lg transition-all shadow-lg shadow-emerald-900/50">
+                {isLast ? "Concluir Análises" : "Próxima Fase"} <ArrowRight className="ml-2" />
             </Button>
         </div>
     </div>
@@ -121,8 +119,39 @@ const GameOverScreen = ({ onRestart }: { onRestart: () => void }) => (
             <p className="text-xl text-slate-300 mb-8">
                 Você cometeu 12 erros e a análise foi comprometida. A expedição será totalmente reiniciada e seus pontos foram zerados.
             </p>
-            <Button onClick={onRestart} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl px-10 py-7 text-lg transition-all">
+            <Button onClick={onRestart} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl px-10 py-7 text-lg transition-all">
                 <RefreshCw className="mr-3" /> Reiniciar Expedição
+            </Button>
+        </motion.div>
+    </div>
+);
+
+// TELA: BIOMAS CONCLUÍDOS
+const BiomesCompleteScreen = ({ score, onNext }: { score: number, onNext: () => void }) => (
+    <div className="w-full h-screen flex flex-col items-center justify-center bg-[#020617] text-white p-4">
+        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl max-w-2xl relative z-10 w-full">
+            <div className="flex justify-center mb-6">
+                <ShieldCheck className="w-24 h-24 text-emerald-400" strokeWidth={1.5} />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-emerald-400 mb-4">
+                Biomas Identificados!
+            </h1>
+            <p className="text-lg md:text-xl text-slate-300 mb-8 leading-relaxed max-w-lg mx-auto">
+                Excelente! Você analisou os biomas brasileiros e compreendeu perfeitamente as características ecológicas cobradas nas provas do ENEM.
+            </p>
+            <div className="bg-slate-800 border border-slate-700/50 p-8 rounded-2xl mb-8 shadow-inner">
+                <p className="text-sm text-slate-400 uppercase tracking-widest font-bold mb-2">
+                    PONTUAÇÃO DA ETAPA
+                </p>
+                <p className="text-6xl md:text-7xl font-black text-yellow-400 drop-shadow-md">
+                    +{score} pts
+                </p>
+            </div>
+            <Button 
+                onClick={onNext} 
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-7 text-xl rounded-2xl transition-transform hover:scale-[1.02] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+            >
+                Continuar Expedição
             </Button>
         </motion.div>
     </div>
@@ -131,16 +160,17 @@ const GameOverScreen = ({ onRestart }: { onRestart: () => void }) => (
 // --- COMPONENTE PRINCIPAL DO JOGO --- //
 interface MeioAmbienteGameProps {
   playerName: string;
+  userId?: string;
   onBackToHub: () => void;
   onSaveScore: (score: number) => void;
 }
 
-export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore }: MeioAmbienteGameProps) {
+export default function MeioAmbienteGame({ playerName, userId, onBackToHub, onSaveScore }: MeioAmbienteGameProps) {
   const [sessionBiomes, setSessionBiomes] = useState<BiomeData[]>([]);
   const [currentBiomeIndex, setCurrentBiomeIndex] = useState(0);
   
-  // O gameState agora inclui a fase bônus
-  const [gameState, setGameState] = useState<'playing' | 'revealed' | 'gameover' | 'bonus_stage'>('playing');
+  // REMOVIDO: O estado 'transition' não existe mais na lista
+  const [gameState, setGameState] = useState<'playing' | 'revealed' | 'gameover' | 'biomes_complete' | 'bonus_stage' | 'energia'>('playing');
   
   const [identifiedKeywords, setIdentifiedKeywords] = useState<Keyword[]>([]);
   const [totalScore, setTotalScore] = useState(0);
@@ -149,15 +179,21 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
   const [searchTerm, setSearchTerm] = useState("");
   const [incorrectGuessCount, setIncorrectGuessCount] = useState(0);
   const [hintsShown, setHintsShown] = useState<string[]>([]);
+  
+  const [isSaving, setIsSaving] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const currentBiome = sessionBiomes[currentBiomeIndex];
 
-  // Inicializa o jogo sorteando 3 biomas
+  // Inicializa o jogo
   useEffect(() => {
     const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
     setSessionBiomes(shuffledBiomes);
     setCurrentBiomeIndex(0);
     setTotalScore(0);
+    setScoreSaved(false);
+    setFinalScore(0);
   }, []);
 
   const setupBiomeRound = useCallback(() => {
@@ -235,84 +271,99 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
     }
   };
 
-  // Função para reiniciar o jogo INTEIRO (Zerar tudo)
   const handleFullRestart = useCallback(() => {
     const shuffledBiomes = shuffle([...BIOMES]).slice(0, 3);
     setSessionBiomes(shuffledBiomes);
-    setCurrentBiomeIndex(0); // Volta para a fase 1
-    setTotalScore(0);        // Zera os pontos
+    setCurrentBiomeIndex(0);
+    setTotalScore(0);
+    setScoreSaved(false);
+    setFinalScore(0);
   }, []);
 
-  // Função que envia o jogador para a fase bônus em vez de encerrar na hora
   const handleNextBiome = () => {
     if (currentBiomeIndex + 1 < sessionBiomes.length) {
         setCurrentBiomeIndex(prev => prev + 1);
     } else {
-        setGameState('bonus_stage'); // Inicia o Efeito Dominó!
+        setGameState('biomes_complete');
     }
   };
 
-  // Função que o Efeito Dominó vai chamar quando o aluno vencer tudo
   const handleCompleteBoss = (bonusScore: number) => {
-      const finalScore = totalScore + bonusScore;
-      onSaveScore(finalScore);
-      toast({ 
-          title: "Missão Concluída com Honras! 🎉", 
-          description: `Sua pontuação final (${finalScore} pts) foi registrada no Ranking.`, 
-          duration: 4000 
-      });
-      onBackToHub(); 
+      const newScore = totalScore + bonusScore;
+      setTotalScore(newScore);
+      setFinalScore(newScore);
+      // ALTERAÇÃO: Ao terminar o bónus, vai direto para a energia sem a tela de transição
+      setGameState('energia');
+  };
+
+  const handleEnergiaComplete = (energiaScore: number) => {
+      const newFinalScore = finalScore + energiaScore;
+      setFinalScore(newFinalScore);
+      onSaveScore(newFinalScore);
   };
 
   const getButtonClass = (word: string) => {
     const state = clickedWords[word];
-    if (state === 'correct') return 'bg-green-500/80 hover:bg-green-500/90 border-green-400 text-white';
+    if (state === 'correct') return 'bg-emerald-500/80 hover:bg-emerald-500/90 border-emerald-400 text-white';
     if (state === 'incorrect') return 'bg-red-500/80 hover:bg-red-500/90 border-red-400 text-white line-through';
     return 'bg-slate-700/50 hover:bg-slate-700/80 border-slate-600 text-[#6c7893]';
   }
 
   const filteredWordBank = wordBank.filter(word => word.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  // 1. Tela de Game Over
   if (gameState === 'gameover') return <GameOverScreen onRestart={handleFullRestart} />;
   
-  // 2. Tela de Fase Bônus (Efeito Dominó)
-  // === AQUI ESTÁ O IF QUE FOI ATUALIZADO NO TÓPICO 2 ===
+  if (gameState === 'biomes_complete') {
+      return (
+          <BiomesCompleteScreen 
+              score={totalScore} 
+              onNext={() => setGameState('bonus_stage')} 
+          />
+      );
+  }
+
   if (gameState === 'bonus_stage') {
       return (
           <div className="min-h-screen bg-[#020617] flex flex-col w-full text-white">
               <ReacaoEmCadeiaGame 
+                  playerName={playerName}
+                  userId={userId}
                   onFinishGame={handleCompleteBoss} 
                   onReturnHome={handleUserExit} 
               />
           </div>
       );
   }
-  // ====================================================
 
-  // Se os dados não tiverem carregado ainda, retorna null (proteção)
+  // TELA DE MATRIZ ENERGÉTICA FICA DIRETAMENTE APÓS O JOGO BONUS
+  if (gameState === 'energia') {
+      return (
+          <TransacaoEnergeticaGame 
+              playerName={playerName}
+              userId={userId}
+              onReturnHome={handleUserExit}
+              onSaveScore={handleEnergiaComplete}
+          />
+      );
+  }
+
   if (!currentBiome) return null;
 
-  // 3. Renderização Principal das 3 Fases de Identificação
   return (
     <main className="min-h-screen bg-[#020617] text-white overflow-x-hidden flex flex-col">
      
-
-     {/* INÍCIO DO CABEÇALHO PADRONIZADO */}
       <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
           <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
               
-              {/* Botão de voltar padronizado com fundo verde */}
               <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={handleUserExit} 
-                  className="bg-green-600 hover:bg-green-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full absolute left-0 md:static md:mr-3 shadow-md"
               >
                   <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
               </Button>
               
-              {/* Título sem o ícone do planeta/globo */}
               <div className="flex items-center gap-2 md:gap-3">
                   <div className="flex flex-col">
                       <span className="font-black text-base md:text-lg tracking-tight leading-none text-white">Meio Ambiente e Clima</span>
@@ -322,50 +373,45 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
 
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-4 w-full md:w-auto">
               
-              {/* Indicador de Fase */}
               <h2 className="text-slate-400 font-black text-xs md:text-sm flex items-center gap-2 uppercase tracking-[0.2em]">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                   Fase {currentBiomeIndex + 1} de {sessionBiomes.length}
               </h2>
 
               <div className="w-px h-6 bg-white/10 hidden md:block" />
               
-              {/* Contador de Erros */}
               <div className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border font-bold transition-all shadow-inner ${incorrectGuessCount >= 9 ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-white/5 border-white/10 text-slate-300'}`}>
                   <span className="text-xs uppercase opacity-60 hidden sm:inline">Erros:</span>
                   <span className="text-sm">{incorrectGuessCount}/12</span>
               </div>
 
-              {/* Nome do Jogador */}
-              <div className="hidden sm:flex items-center gap-1.5 md:gap-2 bg-green-600/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-green-500/20 text-green-300">
+              <div className="hidden sm:flex items-center gap-1.5 md:gap-2 bg-emerald-600/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-emerald-500/20 text-emerald-300">
                   <User size={14} className="opacity-70" />
                   <span className="text-sm font-black truncate max-w-[100px]">{playerName}</span>
               </div>
 
-              {/* PAINEL DE AJUDA PADRONIZADO */}
               <Sheet>
                   <SheetTrigger asChild>
-                      <Button variant="outline" className="bg-green-900/40 border-green-500/50 text-green-200 hover:bg-green-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
+                      <Button variant="outline" className="bg-emerald-900/40 border-emerald-500/50 text-emerald-200 hover:bg-emerald-800 hover:text-white rounded-full px-3 md:px-4 py-1.5 md:py-2 h-auto font-bold shadow-md md:shadow-lg text-xs md:text-sm">
                           <HelpCircle className="w-4 h-4 md:w-5 md:h-5 mr-1.5" /> O que cai no ENEM?
                       </Button>
                   </SheetTrigger>
                   <SheetContent className="bg-slate-900 text-white border-l-slate-700 w-full sm:max-w-lg p-0">
                        <div className="p-6 h-full overflow-y-auto">
                           
-                          {/* COMO JOGAR */}
                           <div className="flex items-center gap-3 mb-6">
-                              <div className="bg-blue-500/20 p-2 rounded-lg">
-                                  <HelpCircle className="text-blue-400" size={24}/>
+                              <div className="bg-emerald-500/20 p-2 rounded-lg">
+                                  <HelpCircle className="text-emerald-400" size={24}/>
                               </div>
                               <h2 className="text-2xl font-black text-white">Como Jogar</h2>
                           </div>
                           <div className="space-y-6 text-left">
                               <div>
-                                  <h3 className="font-bold text-lg text-blue-300 mb-2">Seu Objetivo</h3>
+                                  <h3 className="font-bold text-lg text-emerald-300 mb-2">Seu Objetivo</h3>
                                   <p className="text-slate-300 leading-relaxed">Identifique o bioma correto a partir das imagens e palavras-chave.</p>
                               </div>
                               <div>
-                                  <h3 className="font-bold text-lg text-blue-300 mb-2">Passo a Passo</h3>
+                                  <h3 className="font-bold text-lg text-emerald-300 mb-2">Passo a Passo</h3>
                                   <ol className="list-decimal list-inside space-y-3 text-slate-300">
                                       <li><strong>Analise as Imagens:</strong> Observe a foto da paisagem e o perfil do solo.</li>
                                       <li><strong>Selecione Palavras-Chave:</strong> Escolha os termos que descrevem o que você vê no Banco de Palavras.</li>
@@ -376,16 +422,15 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
 
                           <hr className="border-slate-800 my-8" />
 
-                          {/* REVISÃO ENEM */}
                           <div className="flex items-center gap-3 mb-6">
-                              <div className="bg-green-500/20 p-2 rounded-lg">
-                                  <BookOpen className="text-green-400" size={24}/>
+                              <div className="bg-emerald-500/20 p-2 rounded-lg">
+                                  <BookOpen className="text-emerald-400" size={24}/>
                               </div>
                               <h2 className="text-2xl font-black text-white">Revisão ENEM</h2>
                           </div>
                           <div className="space-y-6 text-left pb-8">
                               <div>
-                                  <h3 className="font-bold text-lg text-green-400 mb-2">A Pegada das Provas</h3>
+                                  <h3 className="font-bold text-lg text-emerald-400 mb-2">A Pegada das Provas</h3>
                                   <p className="text-slate-300 leading-relaxed text-[15px]">
                                       No ENEM, os biomas não são apenas decorados. Eles são cobrados sob a ótica da <strong>interferência humana</strong> (impacto ambiental) e da adaptação da vegetação ao clima (ex: raízes profundas no Cerrado, cactos na Caatinga).
                                   </p>
@@ -408,7 +453,6 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
               </Sheet>
           </div>
       </header>
-      {/* FIM DO CABEÇALHO PADRONIZADO */}
 
       <div className="max-w-4xl mx-auto p-3 md:p-6 lg:p-10 w-full flex-grow flex flex-col justify-center">
         <AnimatePresence mode="wait">
@@ -421,7 +465,7 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
                     <section className="order-2">
                         <div className="glass-panel p-6 flex flex-col gap-6 min-h-[400px] border-white/5 bg-slate-900/40 rounded-2xl">
                             <div className="flex-1 flex flex-col gap-4">
-                                <h3 className="text-[11px] font-black uppercase text-blue-400 tracking-[0.3em] flex items-center gap-2.5"><BrainCircuit size={16} />Banco de Palavras ({wordBank.length})</h3>
+                                <h3 className="text-[11px] font-black uppercase text-emerald-400 tracking-[0.3em] flex items-center gap-2.5"><BrainCircuit size={16} />Banco de Palavras ({wordBank.length})</h3>
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
                                     <Input type="text" placeholder="Filtrar palavras-chave..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-800/50 border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white w-full" />
@@ -438,7 +482,7 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
                             </div>
 
                             <div className="flex-1">
-                                <h3 className="text-[11px] font-black uppercase mb-5 text-blue-400 tracking-[0.3em] flex items-center gap-2"><span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />Amostras Coletadas ({identifiedKeywords.length} de 10)</h3>
+                                <h3 className="text-[11px] font-black uppercase mb-5 text-emerald-400 tracking-[0.3em] flex items-center gap-2"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />Amostras Coletadas ({identifiedKeywords.length} de 10)</h3>
                                 {identifiedKeywords.length > 0 ? (
                                 <ClueTags keywords={identifiedKeywords} onRemove={() => {}} />
                                 ) : (
@@ -460,7 +504,7 @@ export default function MeioAmbienteGame({ playerName, onBackToHub, onSaveScore 
                             <div className="space-y-4 pt-6 border-t border-white/10">
                                 <div className="flex justify-between items-center bg-slate-800/50 px-5 py-3 rounded-xl">
                                     <span className="text-sm font-semibold text-white/60">Pontuação Total:</span>
-                                    <span className="text-2xl font-black text-green-400">{totalScore}</span>
+                                    <span className="text-2xl font-black text-emerald-400">{totalScore}</span>
                                 </div>
                                 <Button onClick={handleReveal} disabled={identifiedKeywords.length < 2} className="w-full bg-white hover:bg-gray-100 text-black font-black rounded-2xl py-7 md:py-8 transition-all active:scale-95 text-lg md:text-xl shadow-[0_10px_40px_rgba(255,255,255,0.15)] disabled:opacity-30 border-none">Enviar Dedução</Button>
                             </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Building, Hammer, ArrowLeft, ArrowRight, Coins, Users, AlertCircle, Calendar, ShieldCheck, BookOpen, FastForward, FileText, TrendingUp, HelpCircle, Zap, Home, TreePine, Droplets, Train, Factory, School, Sparkles, Globe, Briefcase, Landmark, Trophy, Target, Skull, CheckCircle, Star } from 'lucide-react';
+import { AlertTriangle, Building, Hammer, ArrowLeft, ArrowRight, Coins, Users, AlertCircle, Calendar, ShieldCheck, BookOpen, FastForward, FileText, TrendingUp, HelpCircle, Zap, Home, TreePine, Droplets, Train, Factory, School, Sparkles, Globe, Briefcase, Landmark, Trophy, Target, Skull, CheckCircle, Star, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -10,19 +10,13 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 // --- TIPAGENS --- //
 interface MacrocefaliaUrbanaGameProps {
     playerName: string;
+    userId?: string; // Adicionado
     onReturnHome: () => void;
     onSaveScore: (score: number) => void;
 }
 
 type CardType = 'build' | 'policy' | 'economy' | 'social' | 'infrastructure';
 type Difficulty = 'easy' | 'medium' | 'hard';
-
-// Interface para salvar pontuações por dificuldade (Trilha de Urbanização)
-interface UrbanizationScores {
-    easy: number;
-    medium: number;
-    hard: number;
-}
 
 interface ActionCard {
     id: string;
@@ -136,41 +130,114 @@ const DIFFICULTY_CONFIG = {
     }
 };
 
-// --- FUNÇÕES DE SALVAMENTO DA TRILHA DE URBANIZAÇÃO --- //
+/// --- FUNÇÃO DE SALVAMENTO COM USERID --- //
+const saveScoreToRanking = async (playerName: string, userId: string | undefined, score: number, difficulty: Difficulty): Promise<boolean> => {
+    console.log('💾 Salvando pontuação:', { playerName, userId, score, difficulty });
 
-// Salva a pontuação de uma dificuldade específica na trilha
-const saveUrbanizationScore = (difficulty: Difficulty, score: number): boolean => {
+    // 1. SALVAR NO LOCAL STORAGE (SEMPRE FUNCIONA)
+    let localSaved = false;
     try {
-        const key = `urbanization_${difficulty}`;
-        const saved = localStorage.getItem(key);
-        const currentBest = saved ? parseInt(saved, 10) : 0;
-        
-        if (score > currentBest) {
-            localStorage.setItem(key, String(score));
-            return true; // Novo recorde
-        }
-        return false; // Não superou
-    } catch (e) {
-        console.error('Erro ao salvar pontuação da trilha:', e);
-        return false;
-    }
-};
-
-// Carrega todas as pontuações da trilha de urbanização
-const loadUrbanizationScores = (): UrbanizationScores => {
-    const result: UrbanizationScores = { easy: 0, medium: 0, hard: 0 };
-    try {
-        (['easy', 'medium', 'hard'] as Difficulty[]).forEach((diff) => {
-            const key = `urbanization_${diff}`;
-            const saved = localStorage.getItem(key);
-            if (saved) {
-                result[diff] = parseInt(saved, 10);
+        if (typeof window !== 'undefined') {
+            const leaderboardKey = 'bioguesser_leaderboard';
+            let leaderboard: any[] = [];
+            
+            try {
+                const existingData = localStorage.getItem(leaderboardKey);
+                if (existingData) {
+                    leaderboard = JSON.parse(existingData);
+                    if (!Array.isArray(leaderboard)) {
+                        leaderboard = [];
+                    }
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Erro ao parsear localStorage, iniciando novo array');
+                leaderboard = [];
             }
-        });
-    } catch (e) {
-        console.error('Erro ao carregar pontuações da trilha:', e);
+
+            // Busca por userId primeiro, depois por nome (fallback)
+            const existingIndex = leaderboard.findIndex(
+                (entry: any) => 
+                    entry && 
+                    ((entry.userId && entry.userId === userId) || 
+                     (entry.name === playerName && entry.mode === 'Trilha Urbanização' && entry.difficulty === difficulty))
+            );
+            
+            if (existingIndex !== -1 && leaderboard[existingIndex]) {
+                const currentScore = leaderboard[existingIndex].score || 0;
+                if (score > currentScore) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                    if (userId) leaderboard[existingIndex].userId = userId;
+                    console.log('📝 Atualizando pontuação existente:', leaderboard[existingIndex]);
+                } else {
+                    console.log('⏭️ Pontuação não superou o recorde atual:', currentScore);
+                }
+            } else {
+                const newEntry: any = {
+                    name: playerName,
+                    score: score,
+                    mode: 'Trilha Urbanização',
+                    difficulty: difficulty,
+                    date: new Date().toISOString()
+                };
+                if (userId) newEntry.userId = userId;
+                leaderboard.push(newEntry);
+                console.log('📝 Nova entrada criada:', newEntry);
+            }
+            
+            leaderboard.sort((a: any, b: any) => (b?.score || 0) - (a?.score || 0));
+            localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+            localSaved = true;
+            console.log('✅ Pontuação salva no localStorage! Total de entradas:', leaderboard.length);
+        }
+    } catch (localError) {
+        console.error('❌ Erro ao salvar no localStorage:', localError);
     }
-    return result;
+
+    // 2. TENTAR SINCRONIZAR COM O SERVIDOR (COM USERID)
+    try {
+        console.log('🌐 Tentando sincronizar com o servidor...');
+        
+        const response = await fetch('/api/ranking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: playerName,
+                userId: userId || '', // Envia o userId
+                score: score,
+                mode: 'Trilha Urbanização',
+                difficulty: difficulty,
+                date: new Date().toISOString()
+            }),
+        });
+
+        console.log('📡 Status da API:', response.status);
+
+        let responseData = {};
+        try {
+            const text = await response.text();
+            console.log('📄 Resposta bruta:', text);
+            if (text) {
+                responseData = JSON.parse(text);
+            }
+        } catch (parseError) {
+            console.warn('⚠️ Não foi possível parsear a resposta');
+        }
+
+        if (!response.ok) {
+            console.warn('⚠️ API retornou erro, mas dados já estão salvos localmente');
+            return true;
+        }
+
+        console.log('✅ Pontuação sincronizada com o servidor!', responseData);
+        return true;
+
+    } catch (apiError) {
+        console.warn('⚠️ Erro ao sincronizar com API (servidor offline), dados salvos localmente');
+        return true;
+    }
 };
 
 // --- BASE DE DADOS DE CARTAS --- //
@@ -565,7 +632,7 @@ const getDynamicEvents = (state: GameState, difficulty: Difficulty): EventCard[]
 };
 
 // --- COMPONENTE PRINCIPAL --- //
-export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSaveScore }: MacrocefaliaUrbanaGameProps) {
+export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHome, onSaveScore }: MacrocefaliaUrbanaGameProps) {
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
     const [gameState, setGameState] = useState<GameState>({
         population: 5,
@@ -593,7 +660,8 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
     const [showCollapseInfo, setShowCollapseInfo] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-    const [isNewUrbanizationRecord, setIsNewUrbanizationRecord] = useState(false);
+    const [isSavingScore, setIsSavingScore] = useState(false);
+    const [scoreSaved, setScoreSaved] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -646,7 +714,8 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
 
     const initializeGame = (diff: Difficulty) => {
         const config = DIFFICULTY_CONFIG[diff];
-        setIsNewUrbanizationRecord(false);
+        setScoreSaved(false);
+        setIsSavingScore(false);
         setGameState({
             population: 5,
             infrastructure: 8,
@@ -801,6 +870,88 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         }
     };
 
+    // Salva a pontuação quando o jogo termina (victory) - COM USERID
+    useEffect(() => {
+        const saveScoreIfNeeded = async () => {
+            // Só executa se:
+            // 1. Status for 'victory'
+            // 2. Ainda não salvou
+            // 3. Não está salvando agora
+            if (status !== 'victory' || scoreSaved || isSavingScore) {
+                return;
+            }
+
+            const currentConfig = DIFFICULTY_CONFIG[gameState.difficulty || difficulty];
+            const currentDiff = gameState.difficulty || difficulty;
+            
+            // Calcula a pontuação final
+            let rawScore = gameState.score + 
+                          (gameState.infrastructure * 5) + 
+                          gameState.budget + 
+                          (gameState.educationLevel * 10) + 
+                          (gameState.healthIndex * 10);
+            
+            const multipliers = {
+                easy: 0.5,
+                medium: 0.7,
+                hard: 1.0
+            };
+            
+            let finalScore = Math.round(rawScore * multipliers[currentDiff]);
+            finalScore = Math.min(finalScore, currentConfig.maxScore);
+            
+            setIsSavingScore(true);
+            
+            try {
+                console.log('🎯 Salvando pontuação final:', { finalScore, difficulty: currentDiff, userId });
+                
+                // Salva no ranking com userId
+                const success = await saveScoreToRanking(playerName, userId, finalScore, currentDiff);
+                
+                // Marca como salvo
+                setScoreSaved(true);
+                
+                // Chama o callback do ranking (para o ranking geral)
+                onSaveScore(finalScore);
+                
+                if (success) {
+                    toast({
+                        title: "🏆 Pontuação Salva!",
+                        description: `Você alcançou ${finalScore} pontos na dificuldade ${currentConfig.label}!`,
+                        variant: "default"
+                    });
+                } else {
+                    toast({
+                        title: "⚠️ Aviso",
+                        description: "Pontuação salva localmente. Sincronização pendente.",
+                        variant: "default"
+                    });
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao salvar pontuação:', error);
+                setScoreSaved(true);
+                toast({
+                    title: "✅ Pontuação Salva Localmente",
+                    description: "A sincronização com o servidor será feita depois.",
+                    variant: "default"
+                });
+            } finally {
+                setIsSavingScore(false);
+            }
+        };
+
+        saveScoreIfNeeded();
+    }, [status, gameState, difficulty, playerName, userId, onSaveScore, scoreSaved, isSavingScore]);
+
+    // ============================================================ //
+    // Painel de Ajuda ENEM, StatisticsPanel, e telas do jogo
+    // ============================================================ //
+    // O resto do código permanece igual (EnemHelpPanel, StatisticsPanel, 
+    // telas intro, gameover, victory, selection, resolution)
+    // Para economizar espaço, estou mantendo o código completo abaixo...
+
+    // ... (continuação do código - todas as telas permanecem iguais)
     // Painel de Ajuda ENEM
     const EnemHelpPanel = () => (
         <Sheet>
@@ -928,7 +1079,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
 
     const canAffordAny = hand.some(card => gameState.budget >= card.cost);
 
-    // TELA DE INTRO COM SELEÇÃO DE DIFICULDADE (SEM PROGRESSO E SEM TRILHA)
+    // TELA DE INTRO COM SELEÇÃO DE DIFICULDADE
     if (status === 'intro') {
         const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
         
@@ -1030,9 +1181,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-red-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(239,68,68,0.2)] max-w-2xl relative">
                     <AlertTriangle className="w-24 h-24 text-red-500 mx-auto mb-6 animate-bounce" />
                     <h1 className="text-5xl md:text-6xl font-black text-red-500 mb-4 tracking-tighter">Colapso Urbano!</h1>
-                    <p className="text-xl text-slate-300 mb-4 leading-relaxed">
-                        Infelizmente o seu mandato terminou de forma desastrosa.
-                    </p>
+                    <p className="text-xl text-slate-300 mb-4 leading-relaxed">Infelizmente o seu mandato terminou de forma desastrosa.</p>
                     <p className="text-lg text-red-400 font-bold mb-8">{reason}</p>
                     <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-8">
                         <p className="text-sm text-slate-400">Pontuação alcançada</p>
@@ -1041,9 +1190,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                     </div>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Button onClick={onReturnHome} variant="ghost" className="text-slate-400 hover:text-white py-6 text-lg">Voltar ao Menu</Button>
-                        <Button onClick={() => { 
-                            initializeGame(gameState.difficulty || difficulty);
-                        }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6 text-lg">Tentar Novamente</Button>
+                        <Button onClick={() => { initializeGame(gameState.difficulty || difficulty); }} className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-6 text-lg">Tentar Novamente</Button>
                     </div>
                 </motion.div>
             </div>
@@ -1064,13 +1211,6 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         
         let finalScore = Math.round(rawScore * multipliers[gameState.difficulty || difficulty]);
         finalScore = Math.min(finalScore, config.maxScore);
-        
-        // SALVA NA TRILHA DE URBANIZAÇÃO (separado por dificuldade)
-        const currentDiff = gameState.difficulty || difficulty;
-        const isNewUrbanizationRecord = saveUrbanizationScore(currentDiff, finalScore);
-        
-        // Chama o callback do ranking (para o ranking geral)
-        onSaveScore(finalScore);
         
         const isMaxScore = finalScore >= config.maxScore;
         const percentage = Math.min(100, Math.round((finalScore / config.maxScore) * 100));
@@ -1096,18 +1236,23 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 md:p-12 bg-slate-900 border border-green-500/50 rounded-3xl shadow-xl md:shadow-[0_0_80px_rgba(34,197,94,0.2)] max-w-2xl relative">
                     <ShieldCheck className="w-24 h-24 text-green-400 mx-auto mb-6" />
                     <h1 className="text-5xl md:text-6xl font-black text-green-400 mb-4 tracking-tighter">Mandato de Sucesso!</h1>
-                    <p className="text-xl text-slate-300 mb-4">
-                        PARABÉNS, {playerName}! Você governou com sabedoria e impediu o colapso da metrópole.
-                    </p>
-                    {isNewUrbanizationRecord && (
+                    <p className="text-xl text-slate-300 mb-4">PARABÉNS, {playerName}! Você governou com sabedoria e impediu o colapso da metrópole.</p>
+                    
+                    {isSavingScore ? (
+                        <div className="flex items-center justify-center gap-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-3 mb-6">
+                            <Loader2 className="w-5 h-5 animate-spin text-yellow-400" />
+                            <p className="text-yellow-400 font-bold">Salvando sua pontuação...</p>
+                        </div>
+                    ) : scoreSaved && (
                         <motion.div 
                             initial={{ scale: 0, rotate: -10 }}
                             animate={{ scale: 1, rotate: 0 }}
-                            className="inline-block bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-2 mb-6"
+                            className="inline-block bg-green-500/20 border border-green-500/50 rounded-xl px-6 py-2 mb-6"
                         >
-                            <p className="text-yellow-400 font-bold text-lg">🎉 NOVO RECORDE na TRILHA DE URBANIZAÇÃO - {config.label}!</p>
+                            <p className="text-green-400 font-bold text-lg">✅ Pontuação salva com sucesso!</p>
                         </motion.div>
                     )}
+                    
                     <p className={`text-lg font-bold ${rankColor} mb-8`}>{rank}</p>
                     
                     <div className="grid grid-cols-2 gap-4 mb-8">
@@ -1156,7 +1301,13 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         );
     }
 
-    // PLAYING - Selection (mantido igual)
+    // PLAYING - Selection e Resolution (mantidos iguais ao original)
+    // ... (o código das telas selection e resolution permanece o mesmo)
+    // Para não ficar muito longo, mantenha o código original das telas selection e resolution
+
+    
+
+    // PLAYING - Selection
     if (phase === 'selection') {
         const config = DIFFICULTY_CONFIG[gameState.difficulty || difficulty];
         
@@ -1389,9 +1540,9 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                                 scale: 1.03,
                                                 transition: { type: "spring", stiffness: 300, damping: 20 }
                                             } : {}}
-                                className={`relative flex flex-col w-[98%] max-w-[360px] md:w-full md:max-w-none mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border-2 ${colors.border} ${colors.bg} ${colors.glow} shadow-xl backdrop-blur-sm min-h-[420px] md:min-h-[380px] ${
-  canAfford ? 'cursor-pointer' : 'opacity-60 grayscale-[0.5]'
-}`}
+                                            className={`relative flex flex-col w-[98%] max-w-[360px] md:w-full md:max-w-none mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border-2 ${colors.border} ${colors.bg} ${colors.glow} shadow-xl backdrop-blur-sm min-h-[420px] md:min-h-[380px] ${
+                                                canAfford ? 'cursor-pointer' : 'opacity-60 grayscale-[0.5]'
+                                            }`}
                                             style={{
                                                 backgroundImage: `radial-gradient(circle at 10% 20%, rgba(255,255,255,0.03) 0%, transparent 50%)`
                                             }}
@@ -1451,39 +1602,33 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
                                                     }}
                                                     className="text-[11px] font-bold text-slate-400 hover:text-white mb-3 self-start transition-colors"
                                                 >
-                                                  
                                                 </button>
                                             )}
-                                         <div className={isMobile ? "flex flex-col gap-2 mt-auto" : "flex gap-2 mt-auto"}>
-    
-    {/* O botão Detalhes agora está livre da condição e aparecerá sempre */}
-    <Button 
-        onClick={() => setSelectedCardDescription(card)}
-        variant="outline"
-        className={isMobile ? "w-full flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all" : "flex-1 flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all"}
-    >
-        <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" /> 
-        Detalhes
-    </Button>
+                                            <div className={isMobile ? "flex flex-col gap-2 mt-auto" : "flex gap-2 mt-auto"}>
+                                                <Button 
+                                                    onClick={() => setSelectedCardDescription(card)}
+                                                    variant="outline"
+                                                    className={isMobile ? "w-full flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all" : "flex-1 flex items-center justify-center bg-black/30 backdrop-blur-sm border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl text-xs md:text-sm font-bold py-2.5 md:py-3 px-2 transition-all"}
+                                                >
+                                                    <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" /> 
+                                                    Detalhes
+                                                </Button>
+                                                <Button 
+                                                    onClick={() => executeTurn(card)} 
+                                                    disabled={!canAfford}
+                                                    className={`${isMobile ? 'w-full' : 'flex-1'} font-bold rounded-xl py-2.5 md:py-3 text-xs md:text-sm transition-all active:scale-95 ${
+                                                        canAfford 
+                                                        ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-lg shadow-white/10' 
+                                                        : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+                                                    }`}
+                                                >
+                                                    {canAfford ? ' Aprovar' : ' Sem Verba'}
+                                                </Button>
+                                            </div>
 
-    {/* O botão Aprovar continua igual */}
-    <Button 
-        onClick={() => executeTurn(card)} 
-        disabled={!canAfford}
-        className={`${isMobile ? 'w-full' : 'flex-1'} font-bold rounded-xl py-2.5 md:py-3 text-xs md:text-sm transition-all active:scale-95 ${
-            canAfford 
-            ? 'bg-white hover:bg-slate-200 text-slate-900 shadow-lg shadow-white/10' 
-            : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
-        }`}
-    >
-        {canAfford ? ' Aprovar' : ' Sem Verba'}
-    </Button>
-
-</div>
-
-<div className="absolute bottom-2 right-3 text-[8px] md:text-[10px] text-white/10 font-mono">
-    #{idx + 1}
-</div>
+                                            <div className="absolute bottom-2 right-3 text-[8px] md:text-[10px] text-white/10 font-mono">
+                                                #{idx + 1}
+                                            </div>
                                         </motion.div>
                                     );
                                 })}
@@ -1495,7 +1640,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, onReturnHome, onSav
         );
     }
 
-    // PLAYING - Resolution (mantido igual)
+    // PLAYING - Resolution
     if (phase === 'resolution') {
         const config = DIFFICULTY_CONFIG[gameState.difficulty || difficulty];
         

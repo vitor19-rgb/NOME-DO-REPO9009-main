@@ -15,13 +15,16 @@ import {
   MoveRight,
   Info,
   BookOpen,
+  Loader2,
 } from "lucide-react";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from '@/hooks/use-toast';
 
 // --- TIPAGENS DA APLICAÇÃO ---
 interface EscudoDaVerdadeProps {
   playerName: string;
+  userId?: string;
   onComplete?: () => void;
   onSaveScore?: (score: number) => void;
 }
@@ -547,19 +550,123 @@ const PHASES: PhaseType[] = [
   }
 ];
 
+// ============================================================ //
+// FUNÇÃO PARA SALVAR PONTUAÇÃO NO BANCO DE DADOS
+// ============================================================ //
+const saveScoreToRanking = async (playerName: string, userId: string | undefined, score: number): Promise<boolean> => {
+    console.log('💾 Salvando pontuação da Geografia Agrária:', { playerName, userId, score });
+
+    // 1. SALVAR NO LOCAL STORAGE (SEMPRE FUNCIONA)
+    try {
+        if (typeof window !== 'undefined') {
+            const leaderboardKey = 'bioguesser_leaderboard';
+            let leaderboard: any[] = [];
+            
+            try {
+                const existingData = localStorage.getItem(leaderboardKey);
+                if (existingData) {
+                    const parsed = JSON.parse(existingData);
+                    if (Array.isArray(parsed)) {
+                        leaderboard = parsed;
+                    }
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Erro ao parsear localStorage');
+                leaderboard = [];
+            }
+
+            // Busca por userId primeiro, depois por nome
+            const existingIndex = leaderboard.findIndex(
+                (entry: any) => 
+                    entry && 
+                    ((entry.userId && entry.userId === userId) || 
+                     (entry.name === playerName && entry.mode === 'Trilha Geografia Agrária'))
+            );
+            
+            if (existingIndex !== -1 && leaderboard[existingIndex]) {
+                const currentScore = leaderboard[existingIndex].score || 0;
+                if (score > currentScore) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                    if (userId) leaderboard[existingIndex].userId = userId;
+                    console.log('📝 Atualizando pontuação existente:', leaderboard[existingIndex]);
+                } else {
+                    console.log('⏭️ Pontuação não superou o recorde atual:', currentScore);
+                }
+            } else {
+                const newEntry: any = {
+                    name: playerName,
+                    score: score,
+                    mode: 'Trilha Geografia Agrária',
+                    date: new Date().toISOString()
+                };
+                if (userId) newEntry.userId = userId;
+                leaderboard.push(newEntry);
+                console.log('📝 Nova entrada criada:', newEntry);
+            }
+            
+            leaderboard.sort((a: any, b: any) => (b?.score || 0) - (a?.score || 0));
+            localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+            console.log('✅ Pontuação salva no localStorage!');
+        }
+    } catch (localError) {
+        console.error('❌ Erro ao salvar no localStorage:', localError);
+    }
+
+    // 2. TENTAR SALVAR NO BANCO DE DADOS
+    try {
+        console.log('🌐 Salvando no banco de dados...');
+        
+        const response = await fetch('/api/ranking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: playerName,
+                userId: userId || '',
+                score: score,
+                mode: 'Trilha Geografia Agrária',
+                date: new Date().toISOString()
+            }),
+        });
+
+        let responseData = {};
+        try {
+            const text = await response.text();
+            if (text) {
+                responseData = JSON.parse(text);
+            }
+        } catch (parseError) {
+            // Ignora erro de parse
+        }
+
+        if (!response.ok) {
+            console.warn('⚠️ API retornou erro:', responseData);
+            return false;
+        }
+
+        console.log('✅ Salvo no banco de dados!');
+        return true;
+
+    } catch (error) {
+        console.warn('⚠️ Erro ao salvar no banco:', error);
+        return false;
+    }
+};
+
 export default function EscudoDaVerdadeGame({
   playerName,
+  userId,
   onComplete,
   onSaveScore,
 }: EscudoDaVerdadeProps) {
   
-  // Embaralhar as fases ao iniciar o jogo para que apareçam de forma aleatória a cada nova jogada
+  // Embaralhar as fases ao iniciar o jogo
   const [gamePhases] = useState<PhaseType[]>(() => [...PHASES].sort(() => Math.random() - 0.5));
 
   // --- ESTADOS DO JOGO ---
   const [status, setStatus] = useState<"intro" | "playing" | "phase_transition" | "victory">("intro");
-  
-  // ESTADO DA FASE (Lê a partir das fases aleatórias)
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const currentPhase = gamePhases[currentPhaseIndex];
 
@@ -586,6 +693,10 @@ export default function EscudoDaVerdadeGame({
   // Estados para os modais
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showEnemModal, setShowEnemModal] = useState(false);
+  
+  // Estado para controle de salvamento
+  const [isSaving, setIsSaving] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   // Referências
   const dropzoneRef = useRef<HTMLDivElement>(null);
@@ -593,10 +704,9 @@ export default function EscudoDaVerdadeGame({
 
   // 1. Inicializa o baralho baseando-se na FASE ATUAL
   useEffect(() => {
-    // Se o jogo já acabou, não faz nada para evitar erros de renderização
     if (!currentPhase) return;
     setAvailableCards([...currentPhase.cards].sort(() => Math.random() - 0.5));
-    setShieldedCards([]); // Limpa a tela para a nova fase
+    setShieldedCards([]);
   }, [currentPhaseIndex, currentPhase]);
 
   // 2. Deteta Condição de Vitória (Fim do Baralho da fase atual)
@@ -682,7 +792,54 @@ export default function EscudoDaVerdadeGame({
     }
   };
 
-  if (!currentPhase) return null; // Prevenção extra enquanto carrega as fases
+  // ============================================================ //
+  // SALVAR PONTUAÇÃO QUANDO O JOGO TERMINA
+  // ============================================================ //
+  useEffect(() => {
+    const saveScoreIfNeeded = async () => {
+      if (status === "victory" && !scoreSaved && !isSaving) {
+        setIsSaving(true);
+        
+        try {
+          const success = await saveScoreToRanking(playerName, userId, score);
+          
+          setScoreSaved(true);
+          
+          if (onSaveScore) {
+            onSaveScore(score);
+          }
+          
+          if (success) {
+            toast({
+              title: "🏆 Pontuação Salva!",
+              description: `Você alcançou ${score} pontos na Geografia Agrária!`,
+              variant: "default"
+            });
+          } else {
+            toast({
+              title: "⚠️ Aviso",
+              description: "Pontuação salva localmente. Sincronização pendente.",
+              variant: "default"
+            });
+          }
+        } catch (error) {
+          console.error('❌ Erro ao salvar pontuação:', error);
+          setScoreSaved(true);
+          toast({
+            title: "✅ Pontuação Salva Localmente",
+            description: "A sincronização com o servidor será feita depois.",
+            variant: "default"
+          });
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    };
+
+    saveScoreIfNeeded();
+  }, [status, score, playerName, userId, onSaveScore, scoreSaved, isSaving]);
+
+  if (!currentPhase) return null;
 
   return (
     <main className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
@@ -759,15 +916,13 @@ export default function EscudoDaVerdadeGame({
           </div>
           
           <button
-  onClick={() => setShowEnemModal(true)}
-  className="hidden md:flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:text-amber-200 rounded-full px-4 py-2 transition-all duration-200 shadow-md"
-  title="O que cai no ENEM sobre Geografia Agrária?"
->
-  <HelpCircle className="w-4 h-4" />
-  <span className="text-sm font-semibold">
-    O que cai no ENEM?
-  </span>
-</button>
+            onClick={() => setShowEnemModal(true)}
+            className="hidden md:flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:text-amber-200 rounded-full px-4 py-2 transition-all duration-200 shadow-md"
+            title="O que cai no ENEM sobre Geografia Agrária?"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="text-sm font-semibold">O que cai no ENEM?</span>
+          </button>
           
           <button
             onClick={() => setShowEnemModal(true)}
@@ -1377,6 +1532,7 @@ export default function EscudoDaVerdadeGame({
         )}
       </AnimatePresence>
 
+      {/* VICTORY - COM SUPORTE A SALVAMENTO */}
       <AnimatePresence>
         {status === "victory" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
@@ -1388,8 +1544,50 @@ export default function EscudoDaVerdadeGame({
                 <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Pontuação Total Adquirida</p>
                 <p className="text-6xl font-black text-emerald-400 drop-shadow-md">{score}</p>
               </div>
-              <Button onClick={() => onSaveScore && onSaveScore(score)} className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105">
-                Salvar e Avançar (+{score})
+              
+              {isSaving ? (
+                <div className="flex items-center justify-center gap-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-6 py-4 mb-4">
+                  <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+                  <p className="text-yellow-400 font-bold">Salvando sua pontuação...</p>
+                </div>
+              ) : scoreSaved ? (
+                <div className="bg-green-500/20 border border-green-500/50 rounded-xl px-6 py-3 mb-4">
+                  <p className="text-green-400 font-bold">✅ Pontuação salva com sucesso!</p>
+                </div>
+              ) : null}
+              
+              <Button 
+                onClick={() => {
+                  if (onSaveScore && !scoreSaved) {
+                    // Se não salvou ainda, tenta salvar
+                    const saveScoreIfNeeded = async () => {
+                      setIsSaving(true);
+                      try {
+                        const success = await saveScoreToRanking(playerName, userId, score);
+                        setScoreSaved(true);
+                        if (onSaveScore) onSaveScore(score);
+                        if (success) {
+                          toast({
+                            title: "🏆 Pontuação Salva!",
+                            description: `Você alcançou ${score} pontos na Geografia Agrária!`,
+                            variant: "default"
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro ao salvar:', error);
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    };
+                    saveScoreIfNeeded();
+                  }
+                  // Avança para a próxima tela
+                  if (onComplete) onComplete();
+                }} 
+                className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105"
+                disabled={isSaving}
+              >
+                {isSaving ? 'Salvando...' : 'Salvar e Avançar'}
               </Button>
             </motion.div>
           </motion.div>
