@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, query, orderBy, limit, where, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, orderBy, limit, where, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 // ============================================================================ //
 // MÉTODO GET: Busca os dados do Firebase
@@ -35,10 +35,10 @@ export async function GET(request: Request) {
                 where('name', '==', name),
                 where('mode', '==', mode),
                 orderBy('score', 'desc'),
-                limit(200)
+                limit(1) // 🔥 Só precisa do melhor score
             );
         } else {
-            // Busca geral
+            // Busca geral - pega os melhores de cada jogador
             q = query(rankingRef, orderBy('score', 'desc'), limit(200));
         }
         
@@ -58,14 +58,22 @@ export async function GET(request: Request) {
                 hard: 0
             };
             
-            leaderboard.forEach((entry) => {
-                if (entry.difficulty && scores[entry.difficulty as keyof typeof scores] !== undefined) {
-                    const currentScore = scores[entry.difficulty as keyof typeof scores] || 0;
-                    if (entry.score > currentScore) {
-                        scores[entry.difficulty as keyof typeof scores] = entry.score;
-                    }
+            // 🔥 Agora só pega o melhor de cada dificuldade
+            // Busca separadamente por dificuldade
+            for (const diff of ['easy', 'medium', 'hard']) {
+                const diffQuery = query(
+                    rankingRef,
+                    where('name', '==', name),
+                    where('mode', '==', mode),
+                    where('difficulty', '==', diff),
+                    orderBy('score', 'desc'),
+                    limit(1)
+                );
+                const diffSnapshot = await getDocs(diffQuery);
+                if (!diffSnapshot.empty) {
+                    scores[diff as keyof typeof scores] = diffSnapshot.docs[0].data().score || 0;
                 }
-            });
+            }
             
             console.log('✅ Scores retornados:', scores);
             return NextResponse.json({ scores });
@@ -84,7 +92,7 @@ export async function GET(request: Request) {
 }
 
 // ============================================================================ //
-// MÉTODO POST: Salva a pontuação no Firebase
+// MÉTODO POST: Salva a pontuação no Firebase (APENAS MELHOR SCORE)
 // ============================================================================ //
 export async function POST(request: Request) {
     try {
@@ -122,25 +130,83 @@ export async function POST(request: Request) {
         }
 
         const rankingRef = collection(db, 'ranking');
+        const newScore = Math.round(score);
+        const userName = name.trim();
+        const userMode = mode.trim();
+        const userDifficulty = difficulty || null;
+
+        // 🔥 BUSCA SE JÁ EXISTE UM SCORE PARA ESTE JOGADOR + MODO + DIFICULDADE
+        const existingQuery = query(
+            rankingRef,
+            where('name', '==', userName),
+            where('mode', '==', userMode),
+            where('difficulty', '==', userDifficulty),
+            limit(1)
+        );
         
-        // Cria o documento
+        const existingSnapshot = await getDocs(existingQuery);
+
+        // ============================================================ //
+        // SE JÁ EXISTE, VERIFICA SE O NOVO SCORE É MAIOR
+        // ============================================================ //
+        if (!existingSnapshot.empty) {
+            const docRef = existingSnapshot.docs[0].ref;
+            const currentData = existingSnapshot.docs[0].data();
+            const currentScore = currentData.score || 0;
+            
+            console.log(`📊 Score atual: ${currentScore}, Novo score: ${newScore}`);
+            
+            // 🔥 SÓ ATUALIZA SE O NOVO SCORE FOR MAIOR
+            if (newScore > currentScore) {
+                await updateDoc(docRef, {
+                    score: newScore,
+                    date: date || new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+                
+                console.log('✅ Score atualizado com sucesso! (Novo recorde)');
+                return NextResponse.json({
+                    success: true,
+                    updated: true,
+                    message: '🎉 Novo recorde!',
+                    previousScore: currentScore,
+                    newScore: newScore
+                });
+            }
+            
+            // 🔥 SCORE MENOR OU IGUAL - NÃO SALVA
+            console.log('⏭️ Score menor ou igual ao atual, NÃO salvo');
+            return NextResponse.json({
+                success: false,
+                updated: false,
+                message: 'Score menor que o recorde atual',
+                currentBest: currentScore,
+                attempted: newScore
+            });
+        }
+
+        // ============================================================ //
+        // NÃO EXISTE - CRIA NOVO DOCUMENTO
+        // ============================================================ //
         const docData = {
-            name: name.trim(),
-            score: Math.round(score),
-            mode: mode.trim(),
-            difficulty: difficulty || null,
+            name: userName,
+            score: newScore,
+            mode: userMode,
+            difficulty: userDifficulty,
             date: date || new Date().toISOString(),
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
 
-        console.log('💾 Salvando no Firebase:', docData);
+        console.log('💾 Criando novo documento (primeira partida):', docData);
 
         const docRef = await addDoc(rankingRef, docData);
         console.log('✅ Documento criado com ID:', docRef.id);
 
         return NextResponse.json({
             success: true,
-            message: 'Pontuação salva com sucesso!',
+            created: true,
+            message: '🏆 Primeira partida salva!',
             id: docRef.id
         });
 
