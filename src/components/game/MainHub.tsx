@@ -8,8 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { ScoreEntry } from '@/app/page';
 
-// IMPORTAÇÕES DO FIREBASE (Para o Login do Google)
-import { signInWithPopup } from 'firebase/auth';
+// NOVO: Adicionamos o 'signOut' e o 'onAuthStateChanged' na importação do Firebase
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 
 // --- VARIÁVEIS DE ANIMAÇÃO (FRAMER MOTION) --- //
@@ -27,8 +27,6 @@ const fadeUpItem = {
 };
 
 // --- FUNÇÕES AUXILIARES PARA CORES DINÂMICAS --- //
-
-// 1. Cor do texto da Tag no Ranking
 const getBadgeColor = (mode?: string) => {
     if (!mode) return "text-slate-400";
     if (mode.includes("Meio Ambiente")) return "text-green-400";
@@ -40,7 +38,6 @@ const getBadgeColor = (mode?: string) => {
     return "text-blue-400";
 };
 
-// 2. Cor de fundo do Botão (Sub-aba) quando selecionado
 const getTabActiveColor = (track: string) => {
     if (track.includes("Meio Ambiente")) return "bg-green-600 text-white border-green-500";
     if (track.includes("Urbanização")) return "bg-blue-600 text-white border-blue-500";
@@ -139,9 +136,6 @@ interface MainHubProps {
     onLogout: () => void;
 }
 
-// ============================================================ //
-// FUNÇÃO PARA CARREGAR O RANKING DO LOCAL STORAGE
-// ============================================================ //
 const loadRankingFromLocalStorage = (): ScoreEntry[] => {
     if (typeof window === 'undefined') return [];
     try {
@@ -161,6 +155,9 @@ const loadRankingFromLocalStorage = (): ScoreEntry[] => {
 
 export default function MainHub({ onSelectTheme, initialPlayerName, initialUserId, onLogout }: MainHubProps) {
     const [isLoading, setIsLoading] = useState(true);
+    // NOVO: Estado para segurar a tela de carregamento enquanto o Firebase verifica o login após o F5
+    const [isAuthChecking, setIsAuthChecking] = useState(true); 
+
     const [view, setView] = useState<'home' | 'fake_login' | 'name_input' | 'ranking'>('home');
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
@@ -174,6 +171,38 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
     const [moduleTab, setModuleTab] = useState<string>('Trilha Meio Ambiente');
 
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!initialUserId);
+
+    // ========================================================= //
+    // NOVO: LÓGICA DE PERSISTÊNCIA DIRETO NO COMPONENTE
+    // ========================================================= //
+    useEffect(() => {
+        // O observador do Firebase vai rodar sozinho quando a página carregar
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Se o usuário foi encontrado na memória do navegador (após o F5)
+                const nomeCompleto = user.displayName || localStorage.getItem('bioguesser_user_name') || 'Estudante';
+                const uid = user.uid;
+
+                setPlayerName(nomeCompleto);
+                setUserId(uid);
+                setIsUserLoggedIn(true);
+
+                // Se a tela atual era a de login, mandamos de volta para a home
+                if (view === 'fake_login') {
+                    setView('home');
+                }
+            } else {
+                // Se não tiver ninguém logado, limpamos tudo
+                setIsUserLoggedIn(false);
+                setUserId('');
+            }
+            // Terminou a verificação! Avisa o sistema para tirar a tela de carregamento.
+            setIsAuthChecking(false);
+        });
+
+        // Limpa o observador quando o componente for fechado
+        return () => unsubscribe();
+    }, [view]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -191,9 +220,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     }, []);
 
-    // ========================================================= //
-    // LÓGICA DO RANKING ONLINE (BANCO DE DADOS)
-    // ========================================================= //
     useEffect(() => {
         if (view === 'ranking') {
             const fetchOnlineRanking = async () => {
@@ -245,7 +271,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     }
 
-    // --- LOGIN REAL COM O GOOGLE (COM SUPORTE A UID) --- //
     const handleGoogleLogin = async () => {
         setIsLoggingIn(true);
         try {
@@ -297,6 +322,24 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     };
 
+    // NOVO: Função para o usuário conseguir deslogar e limpar a memória corretamente
+    const handleCustomLogout = async () => {
+        try {
+            await signOut(auth); // Desloga do Firebase
+            setIsUserLoggedIn(false);
+            setUserId('');
+            setPlayerName('');
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('bioguesser_user_id');
+                localStorage.removeItem('bioguesser_user_name');
+            }
+            onLogout(); // Retorna ao estado inicial do pai
+            toast({ title: "Desconectado", description: "Você saiu da conta com sucesso." });
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+        }
+    };
+
     const handleStartGame = () => {
         if (playerName.trim().length < 3) {
             toast({ title: "Atenção", description: "O seu nome de estudante deve ter pelo menos 3 letras.", variant: "destructive" });
@@ -309,24 +352,16 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     };
     
-    // ============================================================ //
-    // FUNÇÕES CORRIGIDAS DO RANKING - USANDO userId SEMPRE
-    // ============================================================ //
-    
-    // 1. Agrupa as melhores pontuações por userId (NUNCA por nome)
     const getBestScoresPerUser = () => {
         const bestScores: Record<string, Record<string, ScoreEntry>> = {};
         
         leaderboard.forEach(entry => {
             if (!entry.mode) return;
             
-            // SEMPRE usa userId como chave principal
-            // Se não tiver userId, usa o nome (mas isso é fallback)
             const key = entry.userId || entry.name;
             
             if (!bestScores[key]) {
                 bestScores[key] = {};
-                // Guarda o nome associado a este userId
                 bestScores[key]._name = entry.name;
             }
             
@@ -339,7 +374,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         return bestScores;
     };
 
-    // 2. Ranking da Trilha Total (soma de todas as 4 trilhas)
     const getTrilhaTotalRanking = () => {
         const bestScores = getBestScoresPerUser();
         const mainTracks = ['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'];
@@ -349,7 +383,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
             let totalScore = 0;
             let hasAll = true;
             let latestDate = "";
-            let userName = modes._name || userId; // Usa o nome guardado ou o userId
+            let userName = modes._name || userId; 
 
             mainTracks.forEach(track => {
                 if (modes[track]) {
@@ -374,7 +408,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         return totals.sort((a, b) => b.score - a.score).slice(0, 10);
     };
 
-    // 3. Ranking por módulo específico
     const getModuleRanking = (moduleName: string) => {
         const bestScores = getBestScoresPerUser();
         const results: ScoreEntry[] = [];
@@ -393,7 +426,6 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         return results.sort((a, b) => b.score - a.score).slice(0, 10);
     };
 
-    // 4. Ranking do Simulado
     const getSimuladoRanking = () => {
         return getModuleRanking('Trilha do Simulado Enem');
     };
@@ -408,7 +440,8 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         displayLeaderboard = getModuleRanking(moduleTab);
     }
 
-    if (isLoading) return <LoadingScreen />;
+    // NOVO: Adicionado isAuthChecking para que a tela não pisque enquanto procura o usuário
+    if (isLoading || isAuthChecking) return <LoadingScreen />;
 
     // --- TELA DE LOGIN --- //
     if (view === 'fake_login') {
@@ -677,12 +710,13 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                 </motion.div>
                 
                 <AnimatePresence>
-                    {initialPlayerName && (
+                    {/* NOVO: Usando a verificação de estado atualizado em vez de apenas initialPlayerName */}
+                    {isUserLoggedIn && playerName && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
                             <span className="text-slate-400 text-[8px] md:text-sm hidden sm:inline bg-slate-800/50 px-1.5 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
-                                <strong className="text-white font-black ml-0.5 md:ml-1">{initialPlayerName}</strong>
+                                <strong className="text-white font-black ml-0.5 md:ml-1">{playerName}</strong>
                             </span>
-                            <Button variant="ghost" onClick={onLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
+                            <Button variant="ghost" onClick={handleCustomLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
                                 Sair
                             </Button>
                         </motion.div>
