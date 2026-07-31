@@ -208,7 +208,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         if (typeof window !== 'undefined') {
             const hasLoadedBefore = sessionStorage.getItem('bioguesser_has_loaded');
             if (hasLoadedBefore) {
-                const timer = setTimeout(() => setIsLoading(false), 2000); 
+                const timer = setTimeout(() => setIsLoading(false), 500); 
                 return () => clearTimeout(timer);
             } else {
                 const timer = setTimeout(() => {
