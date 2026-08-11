@@ -5,7 +5,6 @@ export const viewport: Viewport = {
   themeColor: "#020617",
 };
 
-// 1. ADICIONADA A FORÇAGEM DOS ÍCONES PARA O NAVEGADOR RECONHECER O PWA
 export const metadata: Metadata = {
   title: 'BioGuesser - central de jogos',
   description: 'Sistema de Análise de Biomas Brasileiros',
@@ -40,9 +39,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased selection:bg-accent selection:text-accent-foreground">
+        {/* Conteúdo principal da aplicação */}
         {children}
         
-        {/* 2. SCRIPT DE INSTALAÇÃO DO SERVICE WORKER (OBRIGATÓRIO PARA DESKTOP) */}
+        {/* ========================================== */}
+        {/* SCRIPTS E WIDGETS GLOBAIS                   */}
+        {/* ========================================== */}
+
+        {/* 1. SERVICE WORKER (PWA) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -55,6 +59,31 @@ export default function RootLayout({
                   });
                 });
               }
+            `,
+          }}
+        />
+
+        {/* 2. USERWAY (Configurado com data-position="5" para o canto inferior esquerdo) */}
+        <script 
+          src="https://cdn.userway.org/widget.js" 
+          data-account="N3n5QEOuAT" 
+          data-position="5"
+        ></script>
+
+        {/* 3. VLIBRAS */}
+        <div vw="true" className="enabled">
+          <div vw-access-button="true" className="active"></div>
+          <div vw-plugin-wrapper="true">
+            <div className="vw-plugin-top-wrapper"></div>
+          </div>
+        </div>
+        
+        <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+        
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              new window.VLibras.Widget('https://vlibras.gov.br/app');
             `,
           }}
         />
