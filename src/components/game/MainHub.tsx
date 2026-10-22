@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Globe, BrainCircuit, ArrowRight, BookOpen, Building, ShieldCheck, Cloud, Trophy, User, X, Map, Gamepad2, Compass, GraduationCap, Sparkles, Loader2, Medal, Layers } from 'lucide-react';
@@ -164,13 +164,56 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
     const [userId, setUserId] = useState(initialUserId || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
-
     const [isFetchingRanking, setIsFetchingRanking] = useState(false);
 
     const [rankingTab, setRankingTab] = useState<'total' | 'modulos' | 'simulados'>('total');
     const [moduleTab, setModuleTab] = useState<string>('Trilha Meio Ambiente');
 
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!initialUserId);
+
+    // ========================================================= //
+    // CARREGAMENTO RESILIENTE E RÁPIDO DO RANKING GLOBAL
+    // ========================================================= //
+    const fetchOnlineRanking = useCallback(async () => {
+        try {
+            const response = await fetch('/api/ranking');
+            if (response.ok) {
+                const dadosDoBanco = await response.json();
+                if (Array.isArray(dadosDoBanco) && dadosDoBanco.length > 0) {
+                    setLeaderboard(dadosDoBanco);
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('bioguesser_leaderboard', JSON.stringify(dadosDoBanco));
+                    }
+                }
+            } else {
+                const localData = loadRankingFromLocalStorage();
+                if (localData.length > 0) setLeaderboard(localData);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar o ranking global:', error);
+            const localData = loadRankingFromLocalStorage();
+            if (localData.length > 0) setLeaderboard(localData);
+        } finally {
+            setIsFetchingRanking(false);
+        }
+    }, []);
+
+    // Carrega do cache local no primeiro milissegundo e atualiza via API em background
+    useEffect(() => {
+        const local = loadRankingFromLocalStorage();
+        if (local && local.length > 0) {
+            setLeaderboard(local);
+        } else {
+            setIsFetchingRanking(true);
+        }
+        fetchOnlineRanking();
+    }, [fetchOnlineRanking]);
+
+    const handleOpenRanking = () => {
+        setView('ranking');
+        fetchOnlineRanking();
+    };
+
 
     // ========================================================= //
     // NOVO: LÓGICA DE PERSISTÊNCIA DIRETO NO COMPONENTE
@@ -188,9 +231,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                 setIsUserLoggedIn(true);
 
                 // Se a tela atual era a de login, mandamos de volta para a home
-                if (view === 'fake_login') {
-                    setView('home');
-                }
+                setView(prev => prev === 'fake_login' ? 'home' : prev);
             } else {
                 // Se não tiver ninguém logado, limpamos tudo
                 setIsUserLoggedIn(false);
@@ -202,7 +243,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
 
         // Limpa o observador quando o componente for fechado
         return () => unsubscribe();
-    }, [view]);
+    }, []);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -220,42 +261,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     }, []);
 
-    useEffect(() => {
-        if (view === 'ranking') {
-            const fetchOnlineRanking = async () => {
-                setIsFetchingRanking(true);
-                try {
-                    const response = await fetch('/api/ranking');
-                    
-                    if (response.ok) {
-                        const dadosDoBanco = await response.json();
-                        setLeaderboard(dadosDoBanco);
-                    } else {
-                        const localData = loadRankingFromLocalStorage();
-                        setLeaderboard(localData);
-                        toast({ 
-                            title: "⚠️ Modo Offline", 
-                            description: "Usando dados salvos localmente.", 
-                            variant: "default" 
-                        });
-                    }
-                } catch (error) {
-                    console.error("Erro ao buscar o ranking global:", error);
-                    const localData = loadRankingFromLocalStorage();
-                    setLeaderboard(localData);
-                    toast({ 
-                        title: "⚠️ Modo Offline", 
-                        description: "Não foi possível conectar ao servidor.", 
-                        variant: "default" 
-                    });
-                } finally {
-                    setIsFetchingRanking(false);
-                }
-            };
-            
-            fetchOnlineRanking();
-        }
-    }, [view]);
+    // (fetchOnlineRanking unificado)
 
     const handleModeSelection = (themeId: string, enabled: boolean) => {
         if (!enabled) {
@@ -374,33 +380,35 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         return bestScores;
     };
 
-    const getTrilhaTotalRanking = () => {
+        const getTrilhaTotalRanking = () => {
         const bestScores = getBestScoresPerUser();
-        const mainTracks = ['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'];
         const totals: ScoreEntry[] = [];
 
         Object.entries(bestScores).forEach(([userId, modes]) => {
             let totalScore = 0;
-            let hasAll = true;
             let latestDate = "";
-            let userName = modes._name || userId; 
+            let userName = (modes as any)._name || userId; 
+            let tracksPlayed = 0;
 
-            mainTracks.forEach(track => {
-                if (modes[track]) {
-                    totalScore += modes[track].score;
-                    if (modes[track].date > latestDate) latestDate = modes[track].date;
-                } else {
-                    hasAll = false; 
+            Object.entries(modes).forEach(([trackName, entry]) => {
+                if (trackName === '_name') return;
+                const scoreItem = entry as any;
+                if (scoreItem && typeof scoreItem.score === 'number') {
+                    totalScore += scoreItem.score;
+                    tracksPlayed++;
+                    if (scoreItem.date && scoreItem.date > latestDate) {
+                        latestDate = scoreItem.date;
+                    }
                 }
             });
 
-            if (hasAll) {
+            if (totalScore > 0) {
                 totals.push({ 
                     name: userName,
                     userId: userId,
                     score: totalScore, 
-                    date: latestDate, 
-                    mode: 'Mestre da Geografia' 
+                    date: latestDate || new Date().toISOString(), 
+                    mode: tracksPlayed >= 4 ? 'Mestre da Geografia' : `${tracksPlayed} trilha(s)`
                 });
             }
         });
@@ -638,24 +646,24 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                     
                     {/* LISTA DE PONTUAÇÕES */}
                     <div className="p-4 md:p-8 overflow-y-auto flex-1 max-h-[50vh]">
-                        {isFetchingRanking ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12">
+                        {isFetchingRanking && displayLeaderboard.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12">
                                 <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
                                 <p className="text-slate-400 font-medium">A procurar os melhores na base de dados global...</p>
-                            </motion.div>
+                            </div>
                         ) : displayLeaderboard.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+                            <div className="text-center py-12">
                                 <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                                 <p className="text-slate-400 font-medium text-lg">
                                     {rankingTab === 'total' 
-                                        ? "Nenhum jogador completou todas as 4 trilhas base ainda. Seja o primeiro!" 
+                                        ? "Nenhum jogador completou missões ainda. Seja o primeiro!" 
                                         : "Nenhum registo encontrado para esta categoria. O pódio está à sua espera!"}
                                 </p>
-                            </motion.div>
+                            </div>
                         ) : (
-                            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4">
+                            <div className="space-y-4">
                                 {displayLeaderboard.map((entry, index) => (
-                                    <motion.div variants={fadeUpItem} key={entry.userId || entry.name + index} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
+                                    <div key={entry.userId || (entry.name + '_' + index)} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
                                         <div className="flex items-center gap-4 md:gap-6">
                                             <span className={`text-2xl md:text-3xl font-black w-10 text-center transition-transform group-hover:scale-110 ${index === 0 ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]' : index === 1 ? 'text-slate-300 drop-shadow-[0_0_10px_rgba(203,213,225,0.4)]' : index === 2 ? 'text-amber-600 drop-shadow-[0_0_10px_rgba(217,119,6,0.4)]' : 'text-slate-600'}`}>
                                                 #{index + 1}
@@ -671,9 +679,9 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                                             <span className="text-emerald-400 font-black text-xl md:text-2xl tracking-tight">{entry.score} pts</span>
                                             <span className="text-xs text-slate-500 font-medium">{new Date(entry.date).toLocaleDateString('pt-BR')}</span>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 ))}
-                            </motion.div>
+                            </div>
                         )}
                     </div>
                 </motion.div>
@@ -764,7 +772,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                         </Button>
                         
                         <Button 
-                            onClick={() => setView('ranking')} 
+                            onClick={handleOpenRanking} 
                             className="w-[95%] sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-xl md:rounded-2xl px-6 md:px-10 py-4 md:py-7 text-sm md:text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
                         >
                             <Trophy className="mr-2 md:mr-3 text-yellow-400 group-hover:scale-110 transition-transform w-4 h-4 md:w-5 md:h-5" /> 

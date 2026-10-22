@@ -32,13 +32,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br" className="dark">
+    <html lang="pt-br" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased selection:bg-accent selection:text-accent-foreground">
+      <body className="font-body antialiased selection:bg-accent selection:text-accent-foreground" suppressHydrationWarning>
         {/* Conteúdo principal da aplicação */}
         {children}
         
@@ -46,16 +46,16 @@ export default function RootLayout({
         {/* SCRIPTS E WIDGETS GLOBAIS                   */}
         {/* ========================================== */}
 
-        {/* 1. SERVICE WORKER (PWA) */}
+        {/* 1. SERVICE WORKER (PWA - apenas em produção, pois em desenvolvimento o next-pwa fica desativado e não gera sw.js) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
+              if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registrado com sucesso com o scope: ', registration.scope);
-                  }, function(err) {
-                    console.log('ServiceWorker falhou: ', err);
+                    console.log('ServiceWorker registrado com sucesso:', registration.scope);
+                  }).catch(function(err) {
+                    console.log('ServiceWorker falhou:', err);
                   });
                 });
               }
@@ -83,7 +83,9 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              new window.VLibras.Widget('https://vlibras.gov.br/app');
+              if (window.VLibras) {
+                new window.VLibras.Widget('https://vlibras.gov.br/app');
+              }
             `,
           }}
         />
