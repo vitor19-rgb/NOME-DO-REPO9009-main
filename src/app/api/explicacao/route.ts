@@ -33,12 +33,63 @@ async function callGeminiCandidate(
     return { text, provider: modelName };
 }
 
-async function callDeepSeekCandidate(
+async function callGroqCandidate(
     apiKey: string, 
     prompt: string
 ): Promise<{ text: string; provider: string }> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout máximo
+
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'qwen/qwen3.8-27b',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Você é um professor de Geografia do ENEM. Responda em no máximo 2 frases curtas e amigáveis, sem entregar a resposta correta, focando em fazer o aluno refletir.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                max_tokens: 95,
+                temperature: 0.3
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Groq status ${response.status}`);
+        }
+
+        const data = await response.json();
+        const text = data?.choices?.[0]?.message?.content?.trim();
+        if (!text) {
+            throw new Error('Groq resposta vazia');
+        }
+
+        return { text, provider: 'groq (qwen-27b)' };
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+    }
+}
+
+async function callDeepSeekCandidate(
+    apiKey: string, 
+    prompt: string
+): Promise<{ text: string; provider: string }> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
         const response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -114,7 +165,7 @@ Sua tarefa:
         // ⚡ DISPARO PARALELO (RACE PATTERN): Todas as IAs disparam juntas ao mesmo tempo
         const racePromises: Promise<{ text: string; provider: string }>[] = [];
 
-        // 1. Modelos leves do Gemini
+        // 1. Modelos leves do Gemini (Plano A)
         const geminiApiKey = process.env.GEMINI_API_KEY;
         if (geminiApiKey) {
             const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -123,7 +174,13 @@ Sua tarefa:
             }
         }
 
-        // 2. DeepSeek competindo em paralelo
+        // 2. Groq (Plano B Gratuito e Ultrarrápido)
+        const groqApiKey = process.env.GROQ_API_KEY;
+        if (groqApiKey) {
+            racePromises.push(callGroqCandidate(groqApiKey, prompt));
+        }
+
+        // 3. DeepSeek (Caso haja saldo)
         const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
         if (deepseekApiKey) {
             racePromises.push(callDeepSeekCandidate(deepseekApiKey, prompt));
