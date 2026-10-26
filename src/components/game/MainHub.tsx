@@ -888,30 +888,29 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
             </div>
 
             {/* HEADER */}
-            <header className="bg-[#0A1024]/80 backdrop-blur-xl border-b border-white/5 px-2 md:px-8 py-0.5 md:py-2 flex justify-between items-center sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all">
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center">
+            <header className="sticky top-0 z-50 flex min-h-16 w-full items-center justify-between gap-3 border-b border-white/5 bg-[#0A1024]/80 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:gap-4 md:min-h-20 md:px-8 md:py-2">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex min-w-0 flex-1 items-center">
                     <img 
                         src="/icon.png" 
                         alt="Logotipo BioGuesser" 
-                        className="h-5 md:h-16 w-auto object-contain drop-shadow-md" 
+                        className="block h-auto max-h-10 w-full max-w-[176px] object-contain object-left drop-shadow-md sm:max-h-12 sm:max-w-[240px] md:h-16 md:max-h-none md:w-auto md:max-w-[360px]"
                     />
                 </motion.div>
                 
                 <AnimatePresence>
                     {!isUserLoggedIn && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <Button type="button" onClick={() => openAuth(null)} className="h-9 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-500">
+                        <motion.div key="header-login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex shrink-0 items-center">
+                            <Button type="button" onClick={() => openAuth(null)} className="h-11 min-w-[72px] shrink-0 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-500">
                                 Entrar
                             </Button>
                         </motion.div>
                     )}
-                    {/* NOVO: Usando a verificação de estado atualizado em vez de apenas initialPlayerName */}
                     {isUserLoggedIn && playerName && (
-                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
-                            <span className="text-slate-400 text-[8px] md:text-sm hidden sm:inline bg-slate-800/50 px-1.5 md:px-4 py-0.5 md:py-1.5 rounded-full border border-slate-700/50">
-                                <strong className="text-white font-black ml-0.5 md:ml-1">{playerName}</strong>
+                        <motion.div key="header-account" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex min-w-0 shrink-0 items-center gap-2 md:gap-4">
+                            <span title={playerName} className="hidden min-w-0 max-w-[144px] items-center rounded-full border border-slate-700/50 bg-slate-800/50 px-3 py-2 text-sm sm:inline-flex lg:max-w-[240px] lg:px-4">
+                                <strong className="truncate font-bold text-white">{playerName}</strong>
                             </span>
-                            <Button variant="ghost" onClick={handleCustomLogout} className="text-slate-400 font-bold hover:text-red-400 hover:bg-red-500/10 rounded-full text-[8px] md:text-sm transition-colors px-1 md:px-4 py-0.5 md:py-2 h-auto">
+                            <Button type="button" variant="ghost" onClick={handleCustomLogout} className="h-11 min-w-[64px] shrink-0 rounded-xl px-3 text-sm font-bold text-slate-300 transition-colors hover:bg-red-500/10 hover:text-red-400 md:px-4">
                                 Sair
                             </Button>
                         </motion.div>
