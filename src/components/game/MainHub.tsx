@@ -1,16 +1,71 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
-import { Globe, BrainCircuit, ArrowRight, BookOpen, Building, ShieldCheck, Cloud, Trophy, User, X, Map, Gamepad2, Compass, GraduationCap, Sparkles, Loader2, Medal, Layers } from 'lucide-react';
+import { Globe, BrainCircuit, BookOpen, Building, ShieldCheck, Cloud, Trophy, User, X, Map, Gamepad2, GraduationCap, Sparkles, Loader2, Medal, Layers, Mail, LockKeyhole } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
-import { ScoreEntry } from '@/app/page';
+import type { ScoreEntry } from '@/app/page';
 
-// NOVO: Adicionamos o 'signOut' e o 'onAuthStateChanged' na importação do Firebase
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile, signOut, onAuthStateChanged } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+
+type AuthMode = 'login' | 'register' | 'reset';
+type AuthAction = 'email' | 'google' | 'profile' | null;
+
+const PLANET_ICON = 'https://res.cloudinary.com/dobhlsnjg/image/upload/v1792866887/IconePlaneta2p_r4j1ei.png';
+
+const getAuthErrorCode = (error: unknown) => (
+    typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string'
+        ? error.code
+        : ''
+);
+
+const getAuthErrorMessage = (error: unknown) => {
+    switch (getAuthErrorCode(error)) {
+        case 'auth/invalid-email': return 'Digite um endereço de e-mail válido.';
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found': return 'E-mail ou senha incorretos. Confira seus dados e tente novamente.';
+        case 'auth/email-already-in-use': return 'Já existe uma conta com este e-mail. Entre na sua conta ou recupere a senha.';
+        case 'auth/weak-password': return 'Escolha uma senha com pelo menos 6 caracteres.';
+        case 'auth/password-does-not-meet-requirements': return 'A senha não atende à política da conta. Use uma senha mais forte, com letras, números e símbolos.';
+        case 'auth/missing-password': return 'Digite a sua senha.';
+        case 'auth/user-disabled': return 'Esta conta está desativada. Entre em contato com o suporte.';
+        case 'auth/too-many-requests': return 'Muitas tentativas seguidas. Aguarde um pouco e tente novamente.';
+        case 'auth/network-request-failed': return 'Não foi possível conectar. Confira sua internet e tente novamente.';
+        case 'auth/popup-blocked': return 'O navegador bloqueou a janela do Google. Permita os pop-ups e tente novamente.';
+        case 'auth/account-exists-with-different-credential': return 'Este e-mail já usa outra forma de acesso. Entre com o método utilizado no cadastro.';
+        case 'auth/operation-not-allowed': return 'Este método de acesso ainda não está disponível. Tente entrar com o Google.';
+        case 'auth/unauthorized-domain': return 'Este endereço do site ainda não está autorizado para login.';
+        default: return 'Não foi possível concluir. Tente novamente em instantes.';
+    }
+};
+
+// O cache guarda apenas nome e UID. A sessão e as senhas são gerenciadas pelo Firebase.
+const cacheUserProfile = (user: FirebaseUser, name: string) => {
+    try {
+        localStorage.setItem('bioguesser_user_id', user.uid);
+        localStorage.setItem('bioguesser_user_name', name);
+    } catch {
+        // O login continua funcionando se o navegador bloquear o armazenamento local.
+    }
+};
+
+const getPlayerDisplayName = (user: FirebaseUser) => {
+    if (user.displayName?.trim()) return user.displayName.trim();
+    try {
+        if (localStorage.getItem('bioguesser_user_id') === user.uid) {
+            const savedName = localStorage.getItem('bioguesser_user_name')?.trim();
+            if (savedName) return savedName;
+        }
+    } catch {
+        // Usa o e-mail quando o cache não está disponível.
+    }
+    return user.email?.split('@')[0] || 'Estudante';
+};
 
 // --- VARIÁVEIS DE ANIMAÇÃO (FRAMER MOTION) --- //
 const staggerContainer = {
@@ -23,7 +78,7 @@ const staggerContainer = {
 
 const fadeUpItem = {
     hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
 };
 
 // --- FUNÇÕES AUXILIARES PARA CORES DINÂMICAS --- //
@@ -155,15 +210,23 @@ const loadRankingFromLocalStorage = (): ScoreEntry[] => {
 
 export default function MainHub({ onSelectTheme, initialPlayerName, initialUserId, onLogout }: MainHubProps) {
     const [isLoading, setIsLoading] = useState(true);
-    // NOVO: Estado para segurar a tela de carregamento enquanto o Firebase verifica o login após o F5
-    const [isAuthChecking, setIsAuthChecking] = useState(true); 
+    const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-    const [view, setView] = useState<'home' | 'fake_login' | 'name_input' | 'ranking'>('home');
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [view, setView] = useState<'home' | 'login' | 'name_input' | 'ranking'>('home');
+    const [authMode, setAuthMode] = useState<AuthMode>('login');
+    const [authAction, setAuthAction] = useState<AuthAction>(null);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [registrationName, setRegistrationName] = useState('');
+    const [authError, setAuthError] = useState('');
+    const [authNotice, setAuthNotice] = useState('');
+    const authInFlight = useRef(false);
+    const isLoggingIn = authAction !== null;
     const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
     const [playerName, setPlayerName] = useState(initialPlayerName || '');
-    const [userId, setUserId] = useState(initialUserId || '');
     const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([]);
+
     const [isFetchingRanking, setIsFetchingRanking] = useState(false);
 
     const [rankingTab, setRankingTab] = useState<'total' | 'modulos' | 'simulados'>('total');
@@ -171,77 +234,26 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
 
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!initialUserId);
 
-    // ========================================================= //
-    // CARREGAMENTO RESILIENTE E RÁPIDO DO RANKING GLOBAL
-    // ========================================================= //
-    const fetchOnlineRanking = useCallback(async () => {
-        try {
-            const response = await fetch('/api/ranking');
-            if (response.ok) {
-                const dadosDoBanco = await response.json();
-                if (Array.isArray(dadosDoBanco) && dadosDoBanco.length > 0) {
-                    setLeaderboard(dadosDoBanco);
-                    if (typeof window !== 'undefined') {
-                        localStorage.setItem('bioguesser_leaderboard', JSON.stringify(dadosDoBanco));
-                    }
-                }
-            } else {
-                const localData = loadRankingFromLocalStorage();
-                if (localData.length > 0) setLeaderboard(localData);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar o ranking global:', error);
-            const localData = loadRankingFromLocalStorage();
-            if (localData.length > 0) setLeaderboard(localData);
-        } finally {
-            setIsFetchingRanking(false);
-        }
-    }, []);
-
-    // Carrega do cache local no primeiro milissegundo e atualiza via API em background
+    // Um único observador restaura a sessão. A navegação ocorre ao concluir o login,
+    // sem interromper o cadastro antes de salvar o nome do estudante.
     useEffect(() => {
-        const local = loadRankingFromLocalStorage();
-        if (local && local.length > 0) {
-            setLeaderboard(local);
-        } else {
-            setIsFetchingRanking(true);
-        }
-        fetchOnlineRanking();
-    }, [fetchOnlineRanking]);
-
-    const handleOpenRanking = () => {
-        setView('ranking');
-        fetchOnlineRanking();
-    };
-
-
-    // ========================================================= //
-    // NOVO: LÓGICA DE PERSISTÊNCIA DIRETO NO COMPONENTE
-    // ========================================================= //
-    useEffect(() => {
-        // O observador do Firebase vai rodar sozinho quando a página carregar
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Se o usuário foi encontrado na memória do navegador (após o F5)
-                const nomeCompleto = user.displayName || localStorage.getItem('bioguesser_user_name') || 'Estudante';
-                const uid = user.uid;
-
-                setPlayerName(nomeCompleto);
-                setUserId(uid);
+                const name = getPlayerDisplayName(user);
+                setPlayerName(name);
                 setIsUserLoggedIn(true);
-
-                // Se a tela atual era a de login, mandamos de volta para a home
-                setView(prev => prev === 'fake_login' ? 'home' : prev);
+                cacheUserProfile(user, name);
             } else {
-                // Se não tiver ninguém logado, limpamos tudo
                 setIsUserLoggedIn(false);
-                setUserId('');
+                setPlayerName('');
             }
-            // Terminou a verificação! Avisa o sistema para tirar a tela de carregamento.
             setIsAuthChecking(false);
+        }, () => {
+            setIsUserLoggedIn(false);
+            setIsAuthChecking(false);
+            toast({ title: 'Não foi possível verificar sua sessão', description: 'Tente entrar novamente.', variant: 'destructive' });
         });
 
-        // Limpa o observador quando o componente for fechado
         return () => unsubscribe();
     }, []);
 
@@ -261,7 +273,82 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     }, []);
 
-    // (fetchOnlineRanking unificado)
+    useEffect(() => {
+        if (view === 'ranking') {
+            const fetchOnlineRanking = async () => {
+                setIsFetchingRanking(true);
+                try {
+                    const response = await fetch('/api/ranking');
+                    
+                    if (response.ok) {
+                        const dadosDoBanco = await response.json();
+                        setLeaderboard(dadosDoBanco);
+                    } else {
+                        const localData = loadRankingFromLocalStorage();
+                        setLeaderboard(localData);
+                        toast({ 
+                            title: "⚠️ Modo Offline", 
+                            description: "Usando dados salvos localmente.", 
+                            variant: "default" 
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar o ranking global:", error);
+                    const localData = loadRankingFromLocalStorage();
+                    setLeaderboard(localData);
+                    toast({ 
+                        title: "⚠️ Modo Offline", 
+                        description: "Não foi possível conectar ao servidor.", 
+                        variant: "default" 
+                    });
+                } finally {
+                    setIsFetchingRanking(false);
+                }
+            };
+            
+            fetchOnlineRanking();
+        }
+    }, [view]);
+
+    const switchAuthMode = (mode: AuthMode) => {
+        if (authInFlight.current) return;
+        setAuthMode(mode);
+        setAuthError('');
+        setAuthNotice('');
+        setPassword('');
+        setConfirmPassword('');
+    };
+
+    const openAuth = (themeId: string | null) => {
+        switchAuthMode('login');
+        setSelectedTheme(themeId);
+        setView('login');
+    };
+
+    const closeAuth = () => {
+        if (authInFlight.current) return;
+        switchAuthMode('login');
+        setSelectedTheme(null);
+        setView('home');
+    };
+
+    const completeLogin = (user: FirebaseUser) => {
+        const name = getPlayerDisplayName(user);
+        setPlayerName(name);
+        setIsUserLoggedIn(true);
+        cacheUserProfile(user, name);
+        setPassword('');
+        setConfirmPassword('');
+        setAuthError('');
+        setAuthNotice('');
+        setView('home');
+        toast({ title: 'Login bem-sucedido!', description: `Bem-vindo(a), ${name}!` });
+        if (selectedTheme) {
+            const themeId = selectedTheme;
+            setSelectedTheme(null);
+            onSelectTheme(themeId, name, user.uid);
+        }
+    };
 
     const handleModeSelection = (themeId: string, enabled: boolean) => {
         if (!enabled) {
@@ -269,62 +356,96 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
             return;
         }
 
-        if (isUserLoggedIn && userId) {
-            onSelectTheme(themeId, playerName, userId);
+        if (auth.currentUser) {
+            onSelectTheme(themeId, getPlayerDisplayName(auth.currentUser), auth.currentUser.uid);
         } else {
-            setSelectedTheme(themeId);
-            setView('fake_login'); 
+            openAuth(themeId);
         }
     }
 
     const handleGoogleLogin = async () => {
-        setIsLoggingIn(true);
+        if (authInFlight.current) return;
+        authInFlight.current = true;
+        setAuthAction('google');
+        setAuthError('');
+        setAuthNotice('');
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
+            completeLogin(result.user);
+        } catch (error) {
+            if (!['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(getAuthErrorCode(error))) {
+                setAuthError(getAuthErrorMessage(error));
+            }
+        } finally {
+            authInFlight.current = false;
+            setAuthAction(null);
+        }
+    };
 
-            if (user.displayName && user.uid) {
-                const nomeCompleto = user.displayName;
-                const uid = user.uid;
-                
-                setPlayerName(nomeCompleto);
-                setUserId(uid);
-                setIsUserLoggedIn(true);
-                
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('bioguesser_user_id', uid);
-                    localStorage.setItem('bioguesser_user_name', nomeCompleto);
-                }
-                
-                if (selectedTheme) {
-                    toast({ 
-                        title: "Login bem-sucedido!", 
-                        description: `Bem-vindo(a), ${nomeCompleto}! Iniciando o jogo...`,
-                        variant: "default" 
-                    });
-                    
-                    onSelectTheme(selectedTheme, nomeCompleto, uid);
+    const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (authInFlight.current) return;
+        setAuthError('');
+        setAuthNotice('');
+        const normalizedEmail = email.trim();
+
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            setAuthError('Digite um endereço de e-mail válido.');
+            return;
+        }
+        if (authMode === 'register') {
+            if (registrationName.trim().length < 3) {
+                setAuthError('Seu nome deve ter pelo menos 3 caracteres.');
+                return;
+            }
+            if (password.length < 6) {
+                setAuthError('Escolha uma senha com pelo menos 6 caracteres.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                setAuthError('As senhas não coincidem. Confira e tente novamente.');
+                return;
+            }
+        }
+        if (authMode !== 'reset' && !password) {
+            setAuthError('Digite a sua senha.');
+            return;
+        }
+
+        authInFlight.current = true;
+        setAuthAction('email');
+        try {
+            if (authMode === 'reset') {
+                auth.languageCode = 'pt-BR';
+                await sendPasswordResetEmail(auth, normalizedEmail);
+                setAuthNotice('Se houver uma conta com este e-mail, você receberá as instruções para redefinir sua senha. Confira também a caixa de spam.');
+            } else if (authMode === 'register') {
+                const { user } = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+                try {
+                    await updateProfile(user, { displayName: registrationName.trim() });
+                } catch {
+                    // A conta já existe: permite tentar salvar o perfil novamente sem recriá-la.
+                    setPlayerName(registrationName.trim());
+                    setPassword('');
+                    setConfirmPassword('');
+                    setView('name_input');
+                    toast({ title: 'Conta criada', description: 'Não foi possível salvar seu nome. Confirme-o para continuar.', variant: 'destructive' });
                     return;
                 }
-                
-                setView('home');
-                toast({ 
-                    title: "Login bem-sucedido!", 
-                    description: `Bem-vindo(a), ${nomeCompleto}!`,
-                    variant: "default" 
-                });
+                completeLogin(user);
             } else {
-                setView('name_input');
+                const { user } = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+                completeLogin(user);
             }
         } catch (error) {
-            console.error("Erro ao fazer login com o Google:", error);
-            toast({ 
-                title: "Erro no Login", 
-                description: "Não foi possível conectar com o Google. Tente novamente.", 
-                variant: "destructive" 
-            });
+            if (authMode === 'reset' && getAuthErrorCode(error) === 'auth/user-not-found') {
+                setAuthNotice('Se houver uma conta com este e-mail, você receberá as instruções para redefinir sua senha. Confira também a caixa de spam.');
+            } else {
+                setAuthError(getAuthErrorMessage(error));
+            }
         } finally {
-            setIsLoggingIn(false);
+            authInFlight.current = false;
+            setAuthAction(null);
         }
     };
 
@@ -333,12 +454,13 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         try {
             await signOut(auth); // Desloga do Firebase
             setIsUserLoggedIn(false);
-            setUserId('');
             setPlayerName('');
-            if (typeof window !== 'undefined') {
+            setSelectedTheme(null);
+            setView('home');
+            try {
                 localStorage.removeItem('bioguesser_user_id');
                 localStorage.removeItem('bioguesser_user_name');
-            }
+            } catch { /* A sessão do Firebase já foi encerrada. */ }
             onLogout(); // Retorna ao estado inicial do pai
             toast({ title: "Desconectado", description: "Você saiu da conta com sucesso." });
         } catch (error) {
@@ -346,20 +468,32 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         }
     };
 
-    const handleStartGame = () => {
+    const handleStartGame = async () => {
+        if (authInFlight.current) return;
         if (playerName.trim().length < 3) {
             toast({ title: "Atenção", description: "O seu nome de estudante deve ter pelo menos 3 letras.", variant: "destructive" });
             return;
         }
-        if (selectedTheme) {
-            setIsUserLoggedIn(true);
-            const finalUserId = userId || `temp_${Date.now()}`;
-            onSelectTheme(selectedTheme, playerName.trim(), finalUserId);
+        const user = auth.currentUser;
+        if (!user) {
+            openAuth(selectedTheme);
+            return;
+        }
+        authInFlight.current = true;
+        setAuthAction('profile');
+        try {
+            await updateProfile(user, { displayName: playerName.trim() });
+            completeLogin(user);
+        } catch (error) {
+            toast({ title: 'Não foi possível salvar o perfil', description: getAuthErrorMessage(error), variant: 'destructive' });
+        } finally {
+            authInFlight.current = false;
+            setAuthAction(null);
         }
     };
     
     const getBestScoresPerUser = () => {
-        const bestScores: Record<string, Record<string, ScoreEntry>> = {};
+        const bestScores: Record<string, { name: string; modes: Record<string, ScoreEntry> }> = {};
         
         leaderboard.forEach(entry => {
             if (!entry.mode) return;
@@ -367,48 +501,45 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
             const key = entry.userId || entry.name;
             
             if (!bestScores[key]) {
-                bestScores[key] = {};
-                bestScores[key]._name = entry.name;
+                bestScores[key] = { name: entry.name, modes: {} };
             }
             
-            const currentBest = bestScores[key][entry.mode];
+            const currentBest = bestScores[key].modes[entry.mode];
             if (!currentBest || entry.score > currentBest.score) {
-                bestScores[key][entry.mode] = entry;
+                bestScores[key].modes[entry.mode] = entry;
             }
         });
         
         return bestScores;
     };
 
-        const getTrilhaTotalRanking = () => {
+    const getTrilhaTotalRanking = () => {
         const bestScores = getBestScoresPerUser();
+        const mainTracks = ['Trilha Meio Ambiente', 'Trilha Urbanização', 'Trilha Geopolítica', 'Trilha Geografia Agrária'];
         const totals: ScoreEntry[] = [];
 
-        Object.entries(bestScores).forEach(([userId, modes]) => {
+        Object.entries(bestScores).forEach(([userId, { name, modes }]) => {
             let totalScore = 0;
+            let hasAll = true;
             let latestDate = "";
-            let userName = (modes as any)._name || userId; 
-            let tracksPlayed = 0;
+            const userName = name || userId;
 
-            Object.entries(modes).forEach(([trackName, entry]) => {
-                if (trackName === '_name') return;
-                const scoreItem = entry as any;
-                if (scoreItem && typeof scoreItem.score === 'number') {
-                    totalScore += scoreItem.score;
-                    tracksPlayed++;
-                    if (scoreItem.date && scoreItem.date > latestDate) {
-                        latestDate = scoreItem.date;
-                    }
+            mainTracks.forEach(track => {
+                if (modes[track]) {
+                    totalScore += modes[track].score;
+                    if (modes[track].date > latestDate) latestDate = modes[track].date;
+                } else {
+                    hasAll = false; 
                 }
             });
 
-            if (totalScore > 0) {
+            if (hasAll) {
                 totals.push({ 
                     name: userName,
                     userId: userId,
                     score: totalScore, 
-                    date: latestDate || new Date().toISOString(), 
-                    mode: tracksPlayed >= 4 ? 'Mestre da Geografia' : `${tracksPlayed} trilha(s)`
+                    date: latestDate, 
+                    mode: 'Mestre da Geografia' 
                 });
             }
         });
@@ -420,13 +551,13 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
         const bestScores = getBestScoresPerUser();
         const results: ScoreEntry[] = [];
 
-        Object.entries(bestScores).forEach(([userId, modes]) => {
+        Object.entries(bestScores).forEach(([userId, { name, modes }]) => {
             if (modes[moduleName]) {
                 const entry = modes[moduleName];
                 results.push({
                     ...entry,
                     userId: userId,
-                    name: modes._name || userId
+                    name: name || userId
                 });
             }
         });
@@ -451,61 +582,107 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
     // NOVO: Adicionado isAuthChecking para que a tela não pisque enquanto procura o usuário
     if (isLoading || isAuthChecking) return <LoadingScreen />;
 
-    // --- TELA DE LOGIN --- //
-    if (view === 'fake_login') {
+    // --- LOGIN, CADASTRO E RECUPERAÇÃO DE SENHA --- //
+    if (view === 'login') {
+        const isRegister = authMode === 'register';
+        const isReset = authMode === 'reset';
+        const title = isRegister ? 'Crie a sua conta' : isReset ? 'Recupere sua senha' : 'Bem-vindo de volta';
+        const subtitle = isRegister
+            ? 'Cadastre-se para começar os seus estudos'
+            : isReset
+                ? 'Enviaremos um link para você redefinir a sua senha'
+                : 'Faça login para continuar os seus estudos';
+        const inputClassName = 'h-[60px] w-full rounded-2xl border border-[#343d50] bg-[#080f20] pl-14 pr-4 text-[17px] min-[400px]:text-xl font-normal text-white md:text-xl placeholder:text-[#9094a1] shadow-inner transition-colors focus-visible:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 disabled:opacity-60';
+
         return (
-            <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
-                
-                <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 20 }} className="bg-slate-900/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-slate-700/50 max-w-md w-full text-center shadow-[0_0_80px_rgba(37,99,235,0.15)] relative z-10">
-                    
-                    <div className="flex justify-center mb-8">
-                        <div className="flex gap-[2px] text-4xl font-black tracking-tighter">
-                            <span className="text-blue-500">G</span>
-                            <span className="text-red-500">o</span>
-                            <span className="text-yellow-500">o</span>
-                            <span className="text-blue-500">g</span>
-                            <span className="text-green-500">l</span>
-                            <span className="text-red-500">e</span>
-                        </div>
+            <main className="relative isolate flex min-h-screen min-h-[100svh] flex-col items-center justify-center overflow-x-hidden bg-[#050d25] px-4 py-9 text-white">
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.12),transparent_70%)]" />
+                <motion.section
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    aria-labelledby="auth-title"
+                    className="relative w-full max-w-[428px] rounded-[44px] border border-[#242d40] bg-[#101627] px-6 pb-5 pt-[38px] shadow-[0_0_70px_rgba(37,99,235,0.08)] min-[400px]:px-[38px]"
+                >
+                    <div className="mb-8 flex justify-center">
+                        <img src={PLANET_ICON} alt="BioGuesser" width={96} height={96} className="h-24 w-24 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.28)]" />
                     </div>
-                    
-                    <h2 className="text-2xl md:text-3xl font-medium text-white mb-2 tracking-tight">Fazer login</h2>
-                    <p className="text-slate-400 mb-10 font-medium">Use a sua Conta do Google para acessar o BioGuesser</p>
-                    
-                    <div className="space-y-4">
-                        <Button 
-                            onClick={handleGoogleLogin} 
-                            disabled={isLoggingIn}
-                            className="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-7 text-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-3"
-                        >
-                            {isLoggingIn ? (
-                                <>
-                                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                                    <span>Conectando aos servidores...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-6 h-6" viewBox="0 0 24 24">
-                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                                    </svg>
-                                    Continuar com o Google
-                                </>
+                    <h1 id="auth-title" className="text-center text-2xl font-bold leading-[34px] tracking-tight min-[400px]:text-[28px]">{title}</h1>
+                    <p id="auth-description" className="mt-3 text-center text-[18px] font-medium leading-7 text-[#979baa] min-[400px]:text-xl">{subtitle}</p>
+
+                    <form onSubmit={handleEmailSubmit} aria-describedby="auth-description" aria-busy={authAction === 'email'} className="mt-10">
+                        <fieldset disabled={isLoggingIn} className="m-0 min-w-0 space-y-[18px] border-0 p-0">
+                            <legend className="sr-only">{title}</legend>
+                            {isRegister && (
+                                <div className="relative">
+                                    <label htmlFor="auth-name" className="sr-only">Seu nome</label>
+                                    <User aria-hidden="true" size={24} className="pointer-events-none absolute left-[19px] top-[18px] text-[#9298a6]" />
+                                    <Input id="auth-name" name="name" type="text" autoComplete="name" placeholder="Como quer ser chamado?" value={registrationName} onChange={(event) => { setRegistrationName(event.target.value); setAuthError(''); }} minLength={3} maxLength={60} required className={inputClassName} />
+                                </div>
                             )}
-                        </Button>
-                        
-                        {!isLoggingIn && (
-                            <Button onClick={() => setView('home')} variant="ghost" className="w-full text-slate-400 hover:text-white py-6 rounded-xl font-bold transition-all">
-                                Cancelar e Voltar
+                            <div className="relative">
+                                <label htmlFor="auth-email" className="sr-only">Seu endereço de email</label>
+                                <Mail aria-hidden="true" size={24} className="pointer-events-none absolute left-[19px] top-[18px] text-[#9298a6]" />
+                                <Input id="auth-email" name="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="Seu endereço de email" value={email} onChange={(event) => { setEmail(event.target.value); setAuthError(''); setAuthNotice(''); }} required aria-invalid={!!authError} aria-describedby={authError ? 'auth-error' : undefined} className={inputClassName} />
+                            </div>
+                            {!isReset && (
+                                <div className="relative">
+                                    <label htmlFor="auth-password" className="sr-only">Sua senha secreta</label>
+                                    <LockKeyhole aria-hidden="true" size={24} className="pointer-events-none absolute left-[19px] top-[18px] text-[#9298a6]" />
+                                    <Input id="auth-password" name="password" type="password" autoComplete={isRegister ? 'new-password' : 'current-password'} placeholder={isRegister ? 'Crie sua senha' : 'Sua senha secreta'} value={password} onChange={(event) => { setPassword(event.target.value); setAuthError(''); }} minLength={isRegister ? 6 : undefined} required aria-invalid={!!authError} aria-describedby={authError ? 'auth-error' : undefined} className={inputClassName} />
+                                </div>
+                            )}
+                            {isRegister && (
+                                <div className="relative">
+                                    <label htmlFor="auth-confirm-password" className="sr-only">Confirme sua senha</label>
+                                    <LockKeyhole aria-hidden="true" size={24} className="pointer-events-none absolute left-[19px] top-[18px] text-[#9298a6]" />
+                                    <Input id="auth-confirm-password" name="confirmPassword" type="password" autoComplete="new-password" placeholder="Confirme sua senha" value={confirmPassword} onChange={(event) => { setConfirmPassword(event.target.value); setAuthError(''); }} minLength={6} required aria-invalid={!!authError} aria-describedby={authError ? 'auth-error' : undefined} className={inputClassName} />
+                                </div>
+                            )}
+                            {authError && <p id="auth-error" role="alert" className="text-left text-sm leading-5 text-red-300">{authError}</p>}
+                            {authNotice && <p role="status" className="text-left text-sm leading-6 text-emerald-300">{authNotice}</p>}
+                            <Button type="submit" className="h-[58px] w-full rounded-[15px] bg-[#2463eb] text-xl font-bold text-white shadow-[0_0_26px_rgba(37,99,235,0.28)] transition-colors hover:bg-blue-500 focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-60">
+                                {authAction === 'email' && <Loader2 aria-hidden="true" className="mr-2 h-5 w-5 animate-spin" />}
+                                {authAction === 'email' ? (isReset ? 'Enviando...' : isRegister ? 'Criando conta...' : 'Entrando...') : isReset ? 'Enviar link de recuperação' : isRegister ? 'Criar Cadastro' : 'Entrar'}
                             </Button>
-                        )}
+                        </fieldset>
+                    </form>
+
+                    {authMode === 'login' ? (
+                        <div className="mt-[18px] text-center">
+                            <button type="button" onClick={() => switchAuthMode('reset')} disabled={isLoggingIn} className="min-h-11 rounded-lg px-2 text-base font-bold text-[#a4c7e1] transition-colors hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-60">Esqueceu a sua senha?</button>
+                            <p className="mt-1 text-base leading-7 text-[#979baa]">
+                                Não tem conta?{' '}
+                                <button type="button" onClick={() => switchAuthMode('register')} disabled={isLoggingIn} className="min-h-11 rounded-lg font-bold text-[#7397e5] transition-colors hover:text-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-60">Criar Cadastro</button>
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="mt-5 text-center text-base text-[#979baa]">
+                            {isRegister ? 'Já tem conta? ' : 'Lembrou a senha? '}
+                            <button type="button" onClick={() => switchAuthMode('login')} disabled={isLoggingIn} className="min-h-11 rounded-lg px-1 font-bold text-[#a4c7e1] hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-60">{isRegister ? 'Fazer login' : 'Voltar ao login'}</button>
+                        </p>
+                    )}
+
+                    <div aria-hidden="true" className="mb-7 mt-6 flex items-center gap-5">
+                        <span className="h-px flex-1 bg-[#2a3244]" />
+                        <span className="text-sm font-medium text-[#9298a6]">OU</span>
+                        <span className="h-px flex-1 bg-[#2a3244]" />
                     </div>
-                </motion.div>
-            </div>
-        )
+                    <Button type="button" onClick={handleGoogleLogin} disabled={isLoggingIn} className="h-[58px] w-full gap-3 rounded-[15px] bg-white text-[17px] font-semibold text-[#25272c] shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-60 min-[400px]:text-xl">
+                        {authAction === 'google' ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-blue-600" /> : (
+                            <svg aria-hidden="true" className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                        )}
+                        {authAction === 'google' ? 'Conectando...' : 'Continuar com Google'}
+                    </Button>
+                    <button type="button" onClick={closeAuth} disabled={isLoggingIn} className="mt-[22px] min-h-11 w-full rounded-xl text-base font-bold text-[#959aa9] transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-60">Cancelar e Voltar</button>
+                </motion.section>
+            </main>
+        );
     }
 
     // --- TELA DE INPUT DO NOME (FALLBACK) --- //
@@ -546,12 +723,14 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                         onChange={(e) => setPlayerName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
                         className="bg-slate-950/50 border-slate-700 text-white font-black text-base sm:text-lg md:text-xl py-5 sm:py-6 md:py-8 mb-6 text-center rounded-xl md:rounded-2xl shadow-inner focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-                        maxLength={15}
+                        maxLength={60}
+                        disabled={isLoggingIn}
                     />
                     
                     <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                         <Button
-                            onClick={() => setView('home')}
+                            onClick={closeAuth}
+                            disabled={isLoggingIn}
                             variant="outline"
                             className="flex-1 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 py-3 md:py-7 text-sm md:text-lg rounded-xl font-bold transition-all min-h-[48px] md:min-h-[64px]"
                         >
@@ -560,9 +739,10 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
 
                         <Button
                             onClick={handleStartGame}
+                            disabled={isLoggingIn}
                             className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 md:py-7 text-sm md:text-lg rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 transition-all min-h-[48px] md:min-h-[64px]"
                         >
-                            Salvar Perfil
+                            {authAction === 'profile' ? 'Salvando...' : 'Salvar Perfil'}
                         </Button>
                     </div>
                 </motion.div>
@@ -646,24 +826,24 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                     
                     {/* LISTA DE PONTUAÇÕES */}
                     <div className="p-4 md:p-8 overflow-y-auto flex-1 max-h-[50vh]">
-                        {isFetchingRanking && displayLeaderboard.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12">
+                        {isFetchingRanking ? (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12">
                                 <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
                                 <p className="text-slate-400 font-medium">A procurar os melhores na base de dados global...</p>
-                            </div>
+                            </motion.div>
                         ) : displayLeaderboard.length === 0 ? (
-                            <div className="text-center py-12">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
                                 <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                                 <p className="text-slate-400 font-medium text-lg">
                                     {rankingTab === 'total' 
-                                        ? "Nenhum jogador completou missões ainda. Seja o primeiro!" 
+                                        ? "Nenhum jogador completou todas as 4 trilhas base ainda. Seja o primeiro!" 
                                         : "Nenhum registo encontrado para esta categoria. O pódio está à sua espera!"}
                                 </p>
-                            </div>
+                            </motion.div>
                         ) : (
-                            <div className="space-y-4">
+                            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4">
                                 {displayLeaderboard.map((entry, index) => (
-                                    <div key={entry.userId || (entry.name + '_' + index)} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
+                                    <motion.div variants={fadeUpItem} key={entry.userId || entry.name + index} className="flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/80 transition-all duration-300 p-4 md:p-5 rounded-2xl border border-slate-700/50 group">
                                         <div className="flex items-center gap-4 md:gap-6">
                                             <span className={`text-2xl md:text-3xl font-black w-10 text-center transition-transform group-hover:scale-110 ${index === 0 ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]' : index === 1 ? 'text-slate-300 drop-shadow-[0_0_10px_rgba(203,213,225,0.4)]' : index === 2 ? 'text-amber-600 drop-shadow-[0_0_10px_rgba(217,119,6,0.4)]' : 'text-slate-600'}`}>
                                                 #{index + 1}
@@ -679,9 +859,9 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                                             <span className="text-emerald-400 font-black text-xl md:text-2xl tracking-tight">{entry.score} pts</span>
                                             <span className="text-xs text-slate-500 font-medium">{new Date(entry.date).toLocaleDateString('pt-BR')}</span>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
-                            </div>
+                            </motion.div>
                         )}
                     </div>
                 </motion.div>
@@ -718,6 +898,13 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                 </motion.div>
                 
                 <AnimatePresence>
+                    {!isUserLoggedIn && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                            <Button type="button" onClick={() => openAuth(null)} className="h-9 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-500">
+                                Entrar
+                            </Button>
+                        </motion.div>
+                    )}
                     {/* NOVO: Usando a verificação de estado atualizado em vez de apenas initialPlayerName */}
                     {isUserLoggedIn && playerName && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-0.5 md:gap-4">
@@ -772,7 +959,7 @@ export default function MainHub({ onSelectTheme, initialPlayerName, initialUserI
                         </Button>
                         
                         <Button 
-                            onClick={handleOpenRanking} 
+                            onClick={() => setView('ranking')} 
                             className="w-[95%] sm:w-auto bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/30 font-black rounded-xl md:rounded-2xl px-6 md:px-10 py-4 md:py-7 text-sm md:text-xl hover:scale-105 transition-all duration-300 group shadow-xl"
                         >
                             <Trophy className="mr-2 md:mr-3 text-yellow-400 group-hover:scale-110 transition-transform w-4 h-4 md:w-5 md:h-5" /> 
