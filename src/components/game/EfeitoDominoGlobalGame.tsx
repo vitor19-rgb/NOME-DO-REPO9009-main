@@ -280,15 +280,15 @@ const EnemHelpPanel = () => (
         <SheetContent className="bg-slate-900/95 backdrop-blur-xl text-slate-100 border-l-slate-700/50 w-full sm:max-w-lg p-0 overflow-y-auto z-[150]">
              <div className="p-8">
                 <div className="flex items-center gap-4 mb-6 border-b border-slate-800 pb-4">
-                    <div className="bg-blue-500/20 p-3 rounded-xl border border-blue-500/30">
-                        <BookOpen className="text-blue-400 w-6 h-6"/>
+                    <div className="bg-red-500/20 p-3 rounded-xl border border-red-500/30">
+                        <BookOpen className="text-red-400 w-6 h-6"/>
                     </div>
                     <h2 className="text-2xl font-black text-white tracking-tight">Geopolítica no ENEM</h2>
                 </div>
 
                 <div className="space-y-6 text-left pb-8">
                     <div>
-                        <h3 className="font-bold text-lg text-blue-400 mb-2">Por que estudar isso?</h3>
+                        <h3 className="font-bold text-lg text-red-400 mb-2">Por que estudar isso?</h3>
                         <p className="text-slate-300 leading-relaxed text-[15px]">
                             A Geopolítica e a Geografia Econômica são temas fortíssimos na prova de Ciências Humanas. O ENEM quer que você desenvolva a <strong>Visão Sistêmica</strong>: a capacidade de entender como tensões mundiais, clima, medidas do governo e a ação de grandes indústrias afetam o meio ambiente e a sociedade.
                         </p>
@@ -314,8 +314,8 @@ const EnemHelpPanel = () => (
                         </ul>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                        <p className="text-sm text-blue-300 italic">
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <p className="text-sm text-red-300 italic">
                             <strong>Dica de Mestre:</strong> Ao completar os relatórios deste jogo, você estará exercitando exatamente o raciocínio de "causa e consequência" que as questões do ENEM exigem!
                         </p>
                     </div>
