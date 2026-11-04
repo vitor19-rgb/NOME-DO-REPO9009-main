@@ -735,7 +735,7 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                     {/* RODAPÉ: DADOS COLETADOS */}
                     <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl mt-auto shadow-inner">
                         <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-5 text-center flex items-center justify-center gap-2">
-                            <MousePointerClick size={16}/> Termos Disponíveis (Arraste ou Clique)
+                            <MousePointerClick size={16}/> Termos Disponíveis (Clique)
                         </h3>
                         
                         {zone1 && zone2 && zone3 ? (

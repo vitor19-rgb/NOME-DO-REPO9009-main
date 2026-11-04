@@ -863,11 +863,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
     };
 
     const handleExit = () => {
-        if (status === 'playing' && window.confirm("Deseja renunciar ao seu mandato de Gestor? O progresso será perdido.")) {
-            onReturnHome();
-        } else if (status !== 'playing') {
-            onReturnHome();
-        }
+        onReturnHome();
     };
 
     // Salva a pontuação quando o jogo termina (victory) - COM USERID

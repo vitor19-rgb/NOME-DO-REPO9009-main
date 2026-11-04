@@ -266,9 +266,7 @@ export default function MeioAmbienteGame({ playerName, userId, onBackToHub, onSa
   const handleReveal = () => setGameState('revealed');
   
   const handleUserExit = () => {
-    if (window.confirm("Deseja realmente sair da partida? O seu progresso atual será perdido.")) {
-        onBackToHub();
-    }
+    onBackToHub();
   };
 
   const handleFullRestart = useCallback(() => {

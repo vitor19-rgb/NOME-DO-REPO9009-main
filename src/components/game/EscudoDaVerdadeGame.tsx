@@ -891,8 +891,8 @@ export default function EscudoDaVerdadeGame({
             className="fixed z-[300] text-2xl font-black flex items-center gap-1 pointer-events-none drop-shadow-lg"
             style={{ left: floatingPoints.x, top: floatingPoints.y }}
           >
-            <TrendingUp className="w-5 h-5 text-emerald-400" />
-            <span className="text-emerald-400">+{floatingPoints.points}</span>
+            <TrendingUp className="w-5 h-5 text-orange-400" />
+            <span className="text-orange-400">+{floatingPoints.points}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1025,10 +1025,10 @@ export default function EscudoDaVerdadeGame({
                   </ul>
                 </div>
 
-                <div className="bg-emerald-950/30 p-4 rounded-xl border border-emerald-500/30 text-center">
-                  <p className="text-sm text-emerald-300">
+                <div className="bg-orange-950/30 p-4 rounded-xl border border-orange-500/30 text-center">
+                  <p className="text-sm text-orange-300">
                     💡 <strong>Dica de Mestre:</strong> Ao jogar, você estará exercitando exatamente o raciocínio de 
-                    <strong className="text-emerald-200"> "causa e consequência" </strong> 
+                    <strong className="text-orange-200"> "causa e consequência" </strong> 
                     que as questões do ENEM exigem!
                   </p>
                 </div>
@@ -1059,12 +1059,12 @@ export default function EscudoDaVerdadeGame({
               initial={{ scale: 0.9, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              className="max-w-2xl w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 md:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="max-w-2xl w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-6 md:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                  <ShieldCheck className="w-8 h-8 text-orange-400" />
                   <h2 className="text-2xl md:text-3xl font-black text-white">{currentPhase.title}</h2>
                 </div>
                 <button
@@ -1079,8 +1079,8 @@ export default function EscudoDaVerdadeGame({
                 {currentPhase.id === 1 ? (
                   // CONTEÚDO DA FASE 1 (Agricultura Familiar)
                   <>
-                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                    <div className="bg-orange-950/30 p-5 rounded-2xl border border-orange-500/30">
+                      <h3 className="text-orange-400 font-bold text-lg mb-3 flex items-center gap-2">
                         <ShieldCheck className="w-5 h-5" />
                         O que é Agricultura Familiar?
                       </h3>
@@ -1092,7 +1092,7 @@ export default function EscudoDaVerdadeGame({
                     </div>
 
                     <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <h3 className="text-orange-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">🌱 <span><strong>Abastecimento interno:</strong> Produz cerca de 70% da comida consumida no Brasil</span></li>
                         <li className="flex items-start gap-2">👨‍🌾 <span><strong>Geração de empregos:</strong> Absorve a maior parte da mão de obra no campo</span></li>
@@ -1117,8 +1117,8 @@ export default function EscudoDaVerdadeGame({
                 ) : currentPhase.id === 2 ? (
                   // CONTEÚDO DA FASE 2 (Agronegócio)
                   <>
-                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                    <div className="bg-orange-950/30 p-5 rounded-2xl border border-orange-500/30">
+                      <h3 className="text-orange-400 font-bold text-lg mb-3 flex items-center gap-2">
                         <Tractor className="w-5 h-5" />
                         O que é o Agronegócio?
                       </h3>
@@ -1128,7 +1128,7 @@ export default function EscudoDaVerdadeGame({
                     </div>
 
                     <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <h3 className="text-orange-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">🌍 <span><strong>Exportação:</strong> Foco absoluto no mercado externo e ração animal</span></li>
                         <li className="flex items-start gap-2">🚜 <span><strong>Alta mecanização:</strong> Usa muita tecnologia e gera POUCOS empregos diretos</span></li>
@@ -1153,8 +1153,8 @@ export default function EscudoDaVerdadeGame({
                 ) : currentPhase.id === 3 ? (
                   // CONTEÚDO DA FASE 3 (Estrutura Fundiária)
                   <>
-                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                    <div className="bg-orange-950/30 p-5 rounded-2xl border border-orange-500/30">
+                      <h3 className="text-orange-400 font-bold text-lg mb-3 flex items-center gap-2">
                         <ShieldCheck className="w-5 h-5" />
                         O que é a Estrutura Fundiária?
                       </h3>
@@ -1164,7 +1164,7 @@ export default function EscudoDaVerdadeGame({
                     </div>
 
                     <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <h3 className="text-orange-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">📜 <span><strong>Herança Histórica:</strong> Tem origem no sistema colonial de Sesmarias e Capitanias Hereditárias.</span></li>
                         <li className="flex items-start gap-2">⚖️ <span><strong>Lei de Terras (1850):</strong> Instituiu a terra apenas por compra, marginalizando os mais pobres, ex-escravos e indígenas.</span></li>
@@ -1187,8 +1187,8 @@ export default function EscudoDaVerdadeGame({
                 ) : currentPhase.id === 4 ? (
                   // CONTEÚDO DA FASE 4 (MATOPIBA)
                   <>
-                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                    <div className="bg-orange-950/30 p-5 rounded-2xl border border-orange-500/30">
+                      <h3 className="text-orange-400 font-bold text-lg mb-3 flex items-center gap-2">
                         <Leaf className="w-5 h-5" />
                         O que é o MATOPIBA?
                       </h3>
@@ -1198,7 +1198,7 @@ export default function EscudoDaVerdadeGame({
                     </div>
 
                     <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <h3 className="text-orange-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">📍 <span><strong>Localização:</strong> Encontro das regiões Nordeste e Norte.</span></li>
                         <li className="flex items-start gap-2">🌳 <span><strong>Desmatamento:</strong> Expansão fortíssima sobre o bioma Cerrado.</span></li>
@@ -1221,8 +1221,8 @@ export default function EscudoDaVerdadeGame({
                 ) : (
                   // CONTEÚDO DA FASE 5 (Reforma Agrária)
                   <>
-                    <div className="bg-emerald-950/30 p-5 rounded-2xl border border-emerald-500/30">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3 flex items-center gap-2">
+                    <div className="bg-orange-950/30 p-5 rounded-2xl border border-orange-500/30">
+                      <h3 className="text-orange-400 font-bold text-lg mb-3 flex items-center gap-2">
                         <ShieldCheck className="w-5 h-5" />
                         A Função Social e a Reforma Agrária
                       </h3>
@@ -1232,7 +1232,7 @@ export default function EscudoDaVerdadeGame({
                     </div>
 
                     <div className="bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
-                      <h3 className="text-emerald-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
+                      <h3 className="text-orange-400 font-bold text-lg mb-3">✅ Principais CARACTERÍSTICAS (Verdades):</h3>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">⚖️ <span><strong>A Lei:</strong> Terras improdutivas podem ser desapropriadas com indemnização.</span></li>
                         <li className="flex items-start gap-2">🛡️ <span><strong>Proteção:</strong> Propriedades altamente produtivas NÃO podem ser tomadas.</span></li>
@@ -1261,7 +1261,7 @@ export default function EscudoDaVerdadeGame({
 
                 <Button
                   onClick={() => setShowInfoModal(false)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 font-bold"
+                  className="w-full bg-orange-600 hover:bg-orange-500 font-bold"
                 >
                   Entendi! Vamos jogar 🎮
                 </Button>
@@ -1274,16 +1274,16 @@ export default function EscudoDaVerdadeGame({
       {/* TELA DE INTRODUÇÃO */}
       {status === "intro" && (
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 z-10">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-8 text-center shadow-2xl">
-            <ShieldCheck className="w-20 h-20 text-emerald-400 mx-auto mb-6" />
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-xl w-full bg-slate-900 border-2 border-orange-500/40 rounded-3xl p-6 md:p-8 text-center shadow-[0_0_50px_rgba(249,115,22,0.15)]">
+            <ShieldCheck className="w-20 h-20 text-orange-400 mx-auto mb-6" />
             <h1 className="text-3xl font-black mb-4">Escudo da Verdade</h1>
-            <h2 className="text-emerald-400 font-bold mb-6 uppercase tracking-widest text-sm">O Desafio Agrário</h2>
+            <h2 className="text-orange-400 font-bold mb-6 uppercase tracking-widest text-sm">O Desafio Agrário</h2>
             
             <div className="text-left bg-slate-950 p-5 md:p-6 rounded-2xl border border-slate-800 space-y-4 mb-8 text-sm text-slate-300">
               <p><strong>A Missão:</strong> Proteja a agricultura brasileira identificando o que é verdade e o que é mito ao longo de {gamePhases.length} fases surpresa!</p>
-              <div className="bg-emerald-950/50 p-3 rounded-xl border border-emerald-500/30">
-                <p className="flex items-center gap-2 text-emerald-300">
-                  <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+              <div className="bg-orange-950/50 p-3 rounded-xl border border-orange-500/30">
+                <p className="flex items-center gap-2 text-orange-300">
+                  <ShieldCheck className="w-5 h-5 flex-shrink-0 text-orange-400" />
                   <span><strong>Verdades:</strong> Arraste para perto do ESCUDO no centro da tela. (Vale 50 pts)</span>
                 </p>
               </div>
@@ -1314,7 +1314,7 @@ export default function EscudoDaVerdadeGame({
                 setAvailableCards([...gamePhases[0].cards].sort(() => Math.random() - 0.5));
                 setStatus("playing");
               }} 
-              className="w-full bg-emerald-600 hover:bg-emerald-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105"
+              className="w-full bg-orange-600 hover:bg-orange-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105 shadow-[0_0_30px_rgba(249,115,22,0.4)]"
             >
               Iniciar Missão
             </Button>
@@ -1351,10 +1351,10 @@ export default function EscudoDaVerdadeGame({
           <div className="relative w-full flex justify-center items-center py-2 md:py-8 flex-shrink-0 px-4">
             <div className="flex flex-col items-center">
              <div className="relative">
-                <div className="absolute inset-0 -m-8 rounded-full border-2 border-emerald-500/30 border-dashed animate-pulse pointer-events-none"></div>
+                <div className="absolute inset-0 -m-8 rounded-full border-2 border-orange-500/30 border-dashed animate-pulse pointer-events-none"></div>
                 <div
                   ref={dropzoneRef}
-                  className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] rounded-full border-4 border-dashed border-emerald-700/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
+                  className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] rounded-full border-4 border-dashed border-orange-600/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
                   onClick={() => setZoomedImage(currentPhase.imageSrc)}
                 >
                   <motion.img 
@@ -1372,11 +1372,11 @@ export default function EscudoDaVerdadeGame({
                   </div>
                   
                   {shieldedCards.length > 0 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 rounded-full shadow-[0_0_50px_rgba(16,185,129,0.6)] border-4 border-emerald-500 pointer-events-none" />
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 rounded-full shadow-[0_0_50px_rgba(249,115,22,0.6)] border-4 border-orange-500 pointer-events-none" />
                   )}
                 </div>
               </div>
-              <p className="text-emerald-400/70 text-[10px] mt-2 text-center">✨ Área de proteção - Solte a VERDADE aqui ✨</p>
+              <p className="text-orange-400/70 text-[10px] mt-2 text-center">✨ Área de proteção - Solte a VERDADE aqui ✨</p>
               <p className="text-red-400/70 text-[10px] mt-1 text-center">⚠️ MITOS não podem ser soltos nesta área!</p>
             </div>
           </div>
@@ -1392,14 +1392,14 @@ export default function EscudoDaVerdadeGame({
           <div className="flex flex-col gap-1.5 md:gap-2 w-full px-4 items-center pointer-events-none mt-2 flex-shrink-0 min-h-[80px]">
             <AnimatePresence>
               {shieldedCards.slice(-2).map((card) => (
-                <motion.div key={`log-${card.id}`} initial={{ opacity: 0, y: -10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="bg-emerald-950/95 backdrop-blur-sm border border-emerald-600/80 text-emerald-100 p-2 md:p-3 rounded-xl text-center text-[11px] md:text-sm font-bold shadow-lg w-full max-w-lg truncate">
-                  <Leaf className="inline-block w-3 h-3 md:w-4 md:h-4 mr-2 text-emerald-400" />
+                <motion.div key={`log-${card.id}`} initial={{ opacity: 0, y: -10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="bg-orange-950/95 backdrop-blur-sm border border-orange-500/80 text-orange-100 p-2 md:p-3 rounded-xl text-center text-[11px] md:text-sm font-bold shadow-lg w-full max-w-lg truncate">
+                  <Leaf className="inline-block w-3 h-3 md:w-4 md:h-4 mr-2 text-orange-400" />
                   {card.text}
                 </motion.div>
               ))}
             </AnimatePresence>
             {shieldedCards.length > 0 && (
-              <div className="text-emerald-500 text-[10px] md:text-xs font-bold bg-slate-900/90 px-4 py-1.5 rounded-full border border-emerald-500/30 mt-1">
+              <div className="text-orange-400 text-[10px] md:text-xs font-bold bg-slate-900/90 px-4 py-1.5 rounded-full border border-orange-500/30 mt-1">
                 Total: {shieldedCards.length} respostas corretas na Fase {currentPhaseIndex + 1}
               </div>
             )}
@@ -1484,8 +1484,8 @@ export default function EscudoDaVerdadeGame({
       <AnimatePresence>
         {status === "phase_transition" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
-            <motion.div initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(16,185,129,0.2)]">
-              <CheckCircle2 className="w-24 h-24 text-emerald-400 mx-auto mb-6" />
+            <motion.div initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)]">
+              <CheckCircle2 className="w-24 h-24 text-orange-400 mx-auto mb-6" />
               <h2 className="text-3xl font-black text-white mb-2">Fase {currentPhaseIndex + 1} Concluída!</h2>
               <p className="text-slate-400 mb-6">Classificaste com sucesso as características da {currentPhase.title}.</p>
               
@@ -1498,7 +1498,7 @@ export default function EscudoDaVerdadeGame({
                   setCurrentPhaseIndex(nextIndex);
                   setStatus("playing");
                 }} 
-                className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105"
+                className="w-full bg-orange-600 hover:bg-orange-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all hover:scale-105"
               >
                 Avançar para a Fase {currentPhaseIndex + 2}
               </Button>
@@ -1536,13 +1536,13 @@ export default function EscudoDaVerdadeGame({
       <AnimatePresence>
         {status === "victory" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(16,185,129,0.2)]">
-              <CheckCircle2 className="w-24 h-24 text-emerald-400 mx-auto mb-6" />
+            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)]">
+              <CheckCircle2 className="w-24 h-24 text-orange-400 mx-auto mb-6" />
               <h2 className="text-3xl font-black text-white mb-2">Missão Concluída!</h2>
               <p className="text-slate-400 mb-6">Dominaste todas as fases sobre Geografia Agrária e protegeste o conhecimento de todas as falsas informações.</p>
               <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 mb-8 shadow-inner">
                 <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Pontuação Total Adquirida</p>
-                <p className="text-6xl font-black text-emerald-400 drop-shadow-md">{score}</p>
+                <p className="text-6xl font-black text-orange-400 drop-shadow-md">{score}</p>
               </div>
               
               {isSaving ? (
@@ -1584,7 +1584,7 @@ export default function EscudoDaVerdadeGame({
                   // Avança para a próxima tela
                   if (onComplete) onComplete();
                 }} 
-                className="w-full bg-emerald-600 hover:bg-emerald-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105"
+                className="w-full bg-orange-600 hover:bg-orange-500 py-7 text-lg font-black rounded-xl shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all hover:scale-105"
                 disabled={isSaving}
               >
                 {isSaving ? 'Salvando...' : 'Salvar e Avançar'}
