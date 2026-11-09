@@ -734,7 +734,7 @@ export default function CorridaPendularGame({ playerName, userId, onComplete, on
         if (status === 'intro') {
             return (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 py-10 overflow-y-auto w-full">
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-10 shadow-2xl text-center">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full my-auto max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-8 shadow-2xl text-center">
                         <div className="flex justify-center mb-4">
                             <div className="bg-purple-600/20 p-4 rounded-3xl border border-purple-500/30">
                                 <Award className="w-12 h-12 text-purple-400" />
@@ -778,7 +778,7 @@ export default function CorridaPendularGame({ playerName, userId, onComplete, on
             
             return (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
-                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-8 max-w-2xl bg-slate-900 border-2 border-purple-500/50 rounded-[2rem] shadow-[0_0_50px_rgba(147,51,234,0.2)] w-full">
+                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center p-5 md:p-8 my-auto max-h-[92vh] overflow-y-auto max-w-2xl bg-slate-900 border-2 border-purple-500/50 rounded-[2rem] shadow-[0_0_50px_rgba(147,51,234,0.2)] w-full">
                         <CheckCircle2 className="w-20 h-20 text-purple-400 mx-auto mb-6" />
                         <h1 className="text-4xl md:text-5xl font-black text-purple-400 mb-4">Simulado Concluído!</h1>
                         
@@ -843,7 +843,7 @@ export default function CorridaPendularGame({ playerName, userId, onComplete, on
         if (status === 'feedback' && selectedAnswer !== null && currentQuestion) {
             return (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-8 shadow-2xl">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full my-auto max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-8 shadow-2xl">
                         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-800">
                             {isCorrect ? (
                                 <div className="bg-emerald-500/20 p-3 rounded-full text-emerald-400"><CheckCircle2 size={32}/></div>
@@ -913,7 +913,7 @@ export default function CorridaPendularGame({ playerName, userId, onComplete, on
     const respondidas = totalQuestoes - questionQueue.length - skippedQuestions.length - 1;
     
     return (
-        <div className="flex-1 flex flex-col items-center p-4 pt-8 md:pt-12 w-full">
+        <div className="flex-1 flex flex-col items-center p-3 md:p-4 pt-3 md:pt-6 w-full">
             <div className="max-w-4xl w-full flex-1 flex flex-col">
                 
                 <motion.div 
@@ -1001,8 +1001,8 @@ export default function CorridaPendularGame({ playerName, userId, onComplete, on
     };
 
     return (
-        <main className="min-h-screen bg-[#020617] text-white flex flex-col overflow-x-hidden">
-            <header className="bg-[#0A1024]/95 border-b border-white/10 px-4 md:px-8 py-4 flex justify-between items-center shadow-2xl sticky top-0 z-50 backdrop-blur-md w-full">
+        <main className="min-h-screen bg-[#020617] text-white flex flex-col overflow-x-hidden overflow-y-auto">
+            <header className="bg-[#0A1024]/95 border-b border-white/10 px-3 md:px-8 py-3 md:py-4 flex justify-between items-center shadow-2xl sticky top-0 z-50 backdrop-blur-md w-full">
                 <div className="flex items-center gap-3">
                     <button onClick={handleExitAndSave} className="flex items-center gap-3 transition-transform active:scale-95 group">
                         <div className="bg-purple-600 p-2 rounded-full shadow-lg shadow-purple-900/20 group-hover:-translate-x-1 transition-transform">

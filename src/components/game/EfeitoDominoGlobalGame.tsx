@@ -554,10 +554,10 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
     if (!currentLevel) return null;
 
     return (
-        <main className="min-h-screen bg-[#020617] text-white flex flex-col overflow-x-hidden select-none">
+        <main className="min-h-screen bg-[#020617] text-white flex flex-col overflow-x-hidden overflow-y-auto select-none">
             
             {/* CABEÇALHO */}
-            <header className="bg-[#0A1024]/95 border-b border-white/10 px-4 md:px-8 py-4 flex justify-between items-center shadow-2xl sticky top-0 z-50 backdrop-blur-md w-full">
+            <header className="bg-[#0A1024]/95 border-b border-white/10 px-3 md:px-8 py-3 md:py-4 flex justify-between items-center shadow-2xl sticky top-0 z-50 backdrop-blur-md w-full">
                 <div className="flex items-center gap-3">
                     <button onClick={() => onComplete && onComplete()} className="flex items-center gap-3 transition-transform active:scale-95 group">
                         <div className="bg-red-600 p-2 rounded-full shadow-lg shadow-red-900/20 group-hover:-translate-x-1 transition-transform">
@@ -586,8 +586,8 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
 
             {/* --- INTRODUÇÃO --- */}
             {status === 'intro' && (
-                <div className="flex-1 flex flex-col items-center justify-center p-4 py-10 w-full z-10">
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-10 shadow-2xl text-center">
+                <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 w-full z-10 overflow-y-auto">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full my-auto max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-8 shadow-2xl text-center">
                         <div className="flex justify-center mb-4">
                             <div className="bg-red-600/20 p-4 rounded-3xl border border-red-500/30">
                                 <Globe className="w-12 h-12 text-red-400 animate-spin-slow" />
@@ -622,17 +622,17 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
 
             {/* --- CORE GAMEPLAY --- */}
             {status === 'playing' && (
-                <div className="flex-1 flex flex-col p-4 md:p-8 max-w-5xl mx-auto w-full gap-6">
+                <div className="flex-1 flex flex-col p-3 md:p-6 max-w-5xl mx-auto w-full gap-3 md:gap-4">
                     
-                    <div className="bg-slate-800/50 border border-slate-700 p-5 rounded-2xl flex flex-col md:flex-row items-center gap-4 shadow-sm mb-2">
+                    <div className="bg-slate-800/50 border border-slate-700 p-3 md:p-4 rounded-xl md:rounded-2xl flex flex-col md:flex-row items-center gap-3 shadow-sm mb-1">
                         <div className="bg-red-500/20 p-3 rounded-full border border-red-500/30 flex-shrink-0">
                             <Target className="text-red-500 w-6 h-6 md:w-8 md:h-8" />
                         </div>
                         <div className="text-center md:text-left max-w-3xl">
-                            <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight leading-tight">
+                            <h2 className="text-xl md:text-3xl font-black text-white tracking-tight leading-tight">
                                 Missão {currentLevelIndex + 1}: {currentLevel.title}
                             </h2>
-                            <p className="text-slate-300 text-base md:text-xl mt-3 leading-relaxed">
+                            <p className="text-slate-300 text-xs md:text-sm mt-1 md:mt-2 leading-relaxed">
                                 Leia a notícia no <strong>Plantão Global</strong> e preencha o <strong>Relatório Confidencial</strong> abaixo.
                             </p>
                         </div>
@@ -655,23 +655,23 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                                     <img 
                                         src={currentLevel.image} 
                                         alt="Notícia" 
-                                        className="w-full h-full object-cover cursor-zoom-in hover:opacity-80 transition-opacity min-h-[180px]"
+                                        className="w-full h-full object-cover cursor-zoom-in hover:opacity-80 transition-opacity min-h-[110px] max-h-[140px] md:max-h-[160px]"
                                         onError={() => setImageError(true)}
                                         onClick={() => setZoomedImage(currentLevel.image)}
                                     />
                                 )}
                             </div>
 
-                            <div className="p-6 flex-1 flex flex-col justify-center items-start gap-3">
+                            <div className="p-3 md:p-4 flex-1 flex flex-col justify-center items-start gap-1.5 md:gap-2">
                                 <span className="text-red-400 font-bold uppercase tracking-wider text-xs md:text-sm border border-red-500/30 bg-red-500/10 px-3 py-1 rounded-full">
                                     Alerta Estratégico
                                 </span>
-                                <h2 className="text-xl md:text-2xl font-black text-white leading-tight">
+                                <h2 className="text-base md:text-xl font-black text-white leading-snug">
                                     {currentLevel.headline}
                                </h2>
                                 <Button 
                                     onClick={() => setIsNewsModalOpen(true)}
-                                    className="mt-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold rounded-xl px-5 py-6 text-sm w-full md:w-auto shadow-md"
+                                    className="mt-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold rounded-xl px-4 py-2.5 md:py-3 text-xs md:text-sm w-full md:w-auto shadow-md"
                                 >
                                     Ler Notícia de Apoio <ArrowRight className="ml-2 w-4 h-4" />
                                 </Button>
@@ -680,18 +680,18 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                     </div>
 
                     {/* CENTRO: TEXTO COM LACUNAS */}
-                    <div className="bg-slate-900/80 p-6 md:p-10 rounded-3xl border border-slate-700 shadow-2xl flex flex-col">
-                        <h3 className="font-black text-white text-base md:text-lg mb-6 flex items-center gap-2 border-b border-slate-800 pb-4">
+                    <div className="bg-slate-900/80 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-slate-700 shadow-2xl flex flex-col mb-1">
+                        <h3 className="font-black text-white text-sm md:text-base mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
                             <FileText size={20} className="text-blue-400" /> Relatório Confidencial: Complete a Análise
                         </h3>
 
-                        <div className="text-lg md:text-xl leading-[2.5rem] md:leading-[3rem] text-slate-300 font-medium">
+                        <div className="text-sm sm:text-base md:text-lg leading-relaxed md:leading-[2.2rem] text-slate-300 font-medium">
                             {currentLevel.reportParts[0]}
                             
                             <span 
                                 ref={zone1Ref}
                                 onClick={() => handleZoneClick(1, zone1)}
-                                className={`inline-flex items-center justify-center min-w-[200px] h-[40px] md:h-[48px] px-4 mx-2 align-middle rounded-lg border-2 transition-all cursor-pointer ${
+                                className={`inline-flex items-center justify-center min-w-[150px] md:min-w-[180px] h-[34px] md:h-[42px] px-3 mx-1 align-middle rounded-lg border-2 transition-all cursor-pointer ${
                                     zone1 
                                     ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:bg-blue-500' 
                                     : 'bg-slate-950 border-slate-600 border-dashed text-slate-500 hover:bg-slate-800'
@@ -705,7 +705,7 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                             <span 
                                 ref={zone2Ref}
                                 onClick={() => handleZoneClick(2, zone2)}
-                                className={`inline-flex items-center justify-center min-w-[200px] h-[40px] md:h-[48px] px-4 mx-2 align-middle rounded-lg border-2 transition-all cursor-pointer ${
+                                className={`inline-flex items-center justify-center min-w-[150px] md:min-w-[180px] h-[34px] md:h-[42px] px-3 mx-1 align-middle rounded-lg border-2 transition-all cursor-pointer ${
                                     zone2 
                                     ? 'bg-purple-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:bg-purple-500' 
                                     : 'bg-slate-950 border-slate-600 border-dashed text-slate-500 hover:bg-slate-800'
@@ -719,7 +719,7 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                             <span 
                                 ref={zone3Ref}
                                 onClick={() => handleZoneClick(3, zone3)}
-                                className={`inline-flex items-center justify-center min-w-[200px] h-[40px] md:h-[48px] px-4 mx-2 align-middle rounded-lg border-2 transition-all cursor-pointer ${
+                                className={`inline-flex items-center justify-center min-w-[150px] md:min-w-[180px] h-[34px] md:h-[42px] px-3 mx-1 align-middle rounded-lg border-2 transition-all cursor-pointer ${
                                     zone3 
                                     ? 'bg-emerald-600 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:bg-emerald-500' 
                                     : 'bg-slate-950 border-slate-600 border-dashed text-slate-500 hover:bg-slate-800'
@@ -733,8 +733,8 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                     </div>
 
                     {/* RODAPÉ: DADOS COLETADOS */}
-                    <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl mt-auto shadow-inner">
-                        <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-5 text-center flex items-center justify-center gap-2">
+                    <div className="bg-slate-950 border border-slate-800 p-3 md:p-4 rounded-2xl md:rounded-3xl mt-auto shadow-inner">
+                        <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-3 text-center flex items-center justify-center gap-2">
                             <MousePointerClick size={16}/> Termos Disponíveis (Clique)
                         </h3>
                         
@@ -742,7 +742,7 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex justify-center w-full mt-2">
                                 <Button 
                                     onClick={handleValidate} 
-                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-7 px-10 text-xl rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-transform hover:scale-105 w-full md:w-auto"
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 md:py-5 px-8 text-base md:text-lg rounded-xl md:rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-transform hover:scale-105 w-full md:w-auto"
                                 >
                                     <CheckCircle2 className="mr-3 w-6 h-6" /> Validar Relatório
                                 </Button>
@@ -825,7 +825,7 @@ export default function EfeitoDominoGlobalGame({ playerName, userId, onComplete,
                     >
                         <motion.div 
                             initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
-                            className="max-w-xl w-full p-6 md:p-8 rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl relative"
+                            className="max-w-xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-8 rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl relative"
                         >
                             <button 
                                 onClick={() => setIsNewsModalOpen(false)}

@@ -407,7 +407,7 @@ export default function ReacaoEmCadeiaGame({ playerName, userId, onFinishGame, o
     );
 
     return (
-        <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
             
             {/* CABEÇALHO */}
             <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">

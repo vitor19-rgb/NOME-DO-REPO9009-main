@@ -1308,7 +1308,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
         const config = DIFFICULTY_CONFIG[gameState.difficulty || difficulty];
         
         return (
-            <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
                 {/* Modal de Colapso */}
                 <AnimatePresence>
                     {showCollapseInfo && (
@@ -1318,7 +1318,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
                         >
                             <motion.div 
                                 initial={{ scale: 0.5, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}
-                                className="max-w-2xl w-full p-8 rounded-3xl border-2 shadow-2xl text-center bg-slate-900 border-slate-600"
+                                className="max-w-2xl w-full max-h-[92vh] overflow-y-auto my-auto p-5 md:p-8 rounded-3xl border-2 shadow-2xl text-center bg-slate-900 border-slate-600"
                             >
                                 <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-yellow-500" />
                                 <h2 className="text-2xl font-black mb-4 text-white uppercase tracking-tight">Risco de Colapso</h2>
@@ -1350,7 +1350,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
                         >
                             <motion.div 
                                 initial={{ scale: 0.8, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
-                                className="max-w-2xl w-full p-8 rounded-3xl border-2 shadow-2xl bg-slate-900 border-blue-500/50"
+                                className="max-w-2xl w-full max-h-[92vh] overflow-y-auto my-auto p-5 md:p-8 rounded-3xl border-2 shadow-2xl bg-slate-900 border-blue-500/50"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="flex items-center gap-3 mb-4">
@@ -1413,9 +1413,9 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
                 </header>
 
                 {/* MAIN - Cards com estilo de carta */}
-                <main className="flex-grow flex flex-col items-center justify-center p-3 md:p-4 relative z-10">
+                <main className="flex-grow flex flex-col items-center justify-start md:justify-center p-2.5 md:p-4 relative z-10">
                     <div className="w-full max-w-7xl mx-auto">
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-3 md:mb-5 gap-3">
                             <div className="text-center md:text-left">
                                 <h2 className="text-2xl md:text-3xl font-black text-white flex items-center justify-center md:justify-start gap-3">
                                     <BookOpen className="text-blue-400 w-6 h-6 md:w-8 md:h-8" /> Projetos do Mandato
@@ -1462,7 +1462,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
                             </motion.div>
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3 md:gap-4">
                             <AnimatePresence mode="popLayout">
                                 {hand.map((card, idx) => {
                                     const canAfford = gameState.budget >= card.cost;
@@ -1536,7 +1536,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
                                                 scale: 1.03,
                                                 transition: { type: "spring", stiffness: 300, damping: 20 }
                                             } : {}}
-                                            className={`relative flex flex-col w-[98%] max-w-[360px] md:w-full md:max-w-none mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border-2 ${colors.border} ${colors.bg} ${colors.glow} shadow-xl backdrop-blur-sm min-h-[420px] md:min-h-[380px] ${
+                                            className={`relative flex flex-col w-[98%] max-w-[360px] md:w-full md:max-w-none mx-auto rounded-2xl md:rounded-3xl p-3.5 md:p-4 border-2 ${colors.border} ${colors.bg} ${colors.glow} shadow-xl backdrop-blur-sm min-h-[330px] md:min-h-[350px] ${
                                                 canAfford ? 'cursor-pointer' : 'opacity-60 grayscale-[0.5]'
                                             }`}
                                             style={{
@@ -1641,7 +1641,7 @@ export default function MacrocefaliaUrbanaGame({ playerName, userId, onReturnHom
         const config = DIFFICULTY_CONFIG[gameState.difficulty || difficulty];
         
         return (
-            <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
                 <AnimatePresence>
                     {pendingEvent && (
                         <motion.div 

@@ -753,10 +753,10 @@ export default function EscudoDaVerdadeGame({
     const dropzoneRect = dropzoneRef.current.getBoundingClientRect();
 
     const isInsideCenter =
-      dropX >= dropzoneRect.left - 150 &&
-      dropX <= dropzoneRect.right + 150 &&
-      dropY >= dropzoneRect.top - 150 &&
-      dropY <= dropzoneRect.bottom + 150;
+      dropX >= dropzoneRect.left - 100 &&
+      dropX <= dropzoneRect.right + 100 &&
+      dropY >= dropzoneRect.top - 100 &&
+      dropY <= dropzoneRect.bottom + 100;
 
     const isSwipeValid = (Math.abs(offsetX) > 80 || Math.abs(velocityX) > 500) && !isInsideCenter;
 
@@ -1314,7 +1314,7 @@ export default function EscudoDaVerdadeGame({
                 setAvailableCards([...gamePhases[0].cards].sort(() => Math.random() - 0.5));
                 setStatus("playing");
               }} 
-              className="w-full bg-orange-600 hover:bg-orange-500 py-8 text-xl font-black rounded-xl transition-all hover:scale-105 shadow-[0_0_30px_rgba(249,115,22,0.4)]"
+              className="w-full bg-orange-600 hover:bg-orange-500 py-4 md:py-6 text-lg md:text-xl font-black rounded-xl transition-all hover:scale-105 shadow-[0_0_30px_rgba(249,115,22,0.4)]"
             >
               Iniciar Missão
             </Button>
@@ -1324,9 +1324,9 @@ export default function EscudoDaVerdadeGame({
 
       {/* JOGO PRINCIPAL */}
       {status === "playing" && (
-        <div ref={containerRef} className="flex-1 flex flex-col items-center w-full max-w-5xl mx-auto relative pt-4 pb-2">
+        <div ref={containerRef} className="flex-1 flex flex-col items-center justify-between w-full max-w-5xl mx-auto relative pt-2 md:pt-4 pb-2">
           {/* TÍTULO DINÂMICO */}
-          <div className="text-center mb-6 flex-shrink-0 px-4">
+          <div className="text-center mb-2 md:mb-3 flex-shrink-0 px-4">
             <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
               <motion.h2 
                 key={currentPhase.id} 
@@ -1348,13 +1348,13 @@ export default function EscudoDaVerdadeGame({
           </div>
 
           {/* ZONA CENTRAL: ESCUDO (A imagem muda com a fase) */}
-          <div className="relative w-full flex justify-center items-center py-2 md:py-8 flex-shrink-0 px-4">
+          <div className="relative w-full flex justify-center items-center py-1 md:py-2 flex-shrink-0 px-4">
             <div className="flex flex-col items-center">
              <div className="relative">
-                <div className="absolute inset-0 -m-8 rounded-full border-2 border-orange-500/30 border-dashed animate-pulse pointer-events-none"></div>
+                <div className="absolute inset-0 -m-4 md:-m-6 rounded-full border-2 border-orange-500/30 border-dashed animate-pulse pointer-events-none"></div>
                 <div
                   ref={dropzoneRef}
-                  className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] rounded-full border-4 border-dashed border-orange-600/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
+                  className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 max-h-[30vh] max-w-[30vh] aspect-square rounded-full border-4 border-dashed border-orange-600/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
                   onClick={() => setZoomedImage(currentPhase.imageSrc)}
                 >
                   <motion.img 
@@ -1406,7 +1406,7 @@ export default function EscudoDaVerdadeGame({
           </div>
 
           {/* --- ÁREA INFERIOR: CARTAS DE JOGAR --- */}
-          <div className="flex-1 w-full relative flex items-center justify-center pb-[5%] md:pb-12 mt-4 md:mt-8 z-50 px-2 md:px-4 min-h-[160px] md:min-h-[220px] -translate-y-[30px]">
+          <div className="flex-1 w-full relative flex items-center justify-center pb-2 md:pb-5 mt-1 md:mt-3 z-50 px-2 md:px-4 min-h-[110px] md:min-h-[150px] -translate-y-[8px]">
             <div className="w-full max-w-2xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-center gap-2 sm:gap-4 md:gap-5">
               <AnimatePresence mode="popLayout">
                 {availableCards.slice(0, 3).map((card, index) => (
@@ -1453,7 +1453,7 @@ export default function EscudoDaVerdadeGame({
                       damping: 30,
                       x: { duration: 0.15 }
                     }}
-                    className="bg-[#0A1024] hover:bg-[#121b36] border-2 border-[#1e2a4a] p-2 md:p-5 rounded-xl md:rounded-2xl flex-shrink-0 w-[30%] sm:w-[31%] max-w-[200px] h-[110px] sm:h-[130px] md:h-[170px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing flex items-center justify-center text-center relative touch-none transition-colors duration-200"
+                    className="bg-[#0A1024] hover:bg-[#121b36] border-2 border-[#1e2a4a] p-2 sm:p-3 md:p-4 rounded-xl md:rounded-2xl flex-shrink-0 w-[30%] sm:w-[31%] max-w-[210px] h-[90px] sm:h-[110px] md:h-[135px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing flex items-center justify-center text-center relative touch-none transition-colors duration-200"
                     style={{ touchAction: "none" }}
                   >
                     {availableCards.length > 3 && (
@@ -1484,7 +1484,7 @@ export default function EscudoDaVerdadeGame({
       <AnimatePresence>
         {status === "phase_transition" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
-            <motion.div initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)]">
+            <motion.div initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-5 md:p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)] max-h-[92vh] overflow-y-auto my-auto">
               <CheckCircle2 className="w-24 h-24 text-orange-400 mx-auto mb-6" />
               <h2 className="text-3xl font-black text-white mb-2">Fase {currentPhaseIndex + 1} Concluída!</h2>
               <p className="text-slate-400 mb-6">Classificaste com sucesso as características da {currentPhase.title}.</p>
@@ -1536,7 +1536,7 @@ export default function EscudoDaVerdadeGame({
       <AnimatePresence>
         {status === "victory" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)]">
+            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="max-w-md w-full bg-slate-900 border-2 border-orange-500 rounded-3xl p-5 md:p-8 text-center shadow-[0_0_80px_rgba(249,115,22,0.2)] max-h-[92vh] overflow-y-auto my-auto">
               <CheckCircle2 className="w-24 h-24 text-orange-400 mx-auto mb-6" />
               <h2 className="text-3xl font-black text-white mb-2">Missão Concluída!</h2>
               <p className="text-slate-400 mb-6">Dominaste todas as fases sobre Geografia Agrária e protegeste o conhecimento de todas as falsas informações.</p>

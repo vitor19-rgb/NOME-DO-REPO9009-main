@@ -330,26 +330,26 @@ export default function App() {
             : null;
 
         return (
-            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-3 md:p-6 relative overflow-x-hidden overflow-y-auto">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
                 
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-emerald-500/50 rounded-[2.5rem] p-8 md:p-12 text-center shadow-[0_0_50px_rgba(16,185,129,0.2)] relative z-10">
-                    <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-6" />
-                    <h1 className="text-4xl md:text-5xl font-black mb-2 text-white">Expedição Concluída!</h1>
-                    <p className="text-slate-400 text-lg mb-8">Agente <strong>{playerName}</strong>, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full my-auto max-h-[92vh] overflow-y-auto bg-slate-900 border-2 border-emerald-500/50 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 text-center shadow-[0_0_50px_rgba(16,185,129,0.2)] relative z-10">
+                    <Trophy className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 mx-auto mb-3 md:mb-4" />
+                    <h1 className="text-2xl md:text-4xl font-black mb-1 md:mb-2 text-white">Expedição Concluída!</h1>
+                    <p className="text-slate-400 text-sm md:text-base mb-4 md:mb-6">Agente <strong>{playerName}</strong>, aqui está o resultado do seu desempenho na <strong>{finalTrackName}</strong>:</p>
                     
-                    <div className="bg-slate-950/80 rounded-3xl p-8 border border-slate-800 mb-10 shadow-inner">
-                        <div className="flex items-center justify-center gap-2 mb-4">
-                            <Target className={`w-5 h-5 ${feedbackColor}`} />
-                            <p className={`text-sm uppercase tracking-widest font-bold ${feedbackColor}`}>{feedbackMessage}</p>
+                    <div className="bg-slate-950/80 rounded-2xl p-4 md:p-6 border border-slate-800 mb-5 md:mb-6 shadow-inner">
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                            <Target className={`w-4 h-4 md:w-5 md:h-5 ${feedbackColor}`} />
+                            <p className={`text-xs md:text-sm uppercase tracking-widest font-bold ${feedbackColor}`}>{feedbackMessage}</p>
                         </div>
                         
-                        <div className="flex items-baseline justify-center gap-3 mb-6">
-                            <p className="text-6xl md:text-7xl font-black text-white">{accumulatedScore}</p>
-                            <p className="text-2xl md:text-3xl font-bold text-slate-500">/ {maxTrackScore} pts</p>
+                        <div className="flex items-baseline justify-center gap-3 mb-4">
+                            <p className="text-4xl md:text-6xl font-black text-white">{accumulatedScore}</p>
+                            <p className="text-xl md:text-2xl font-bold text-slate-500">/ {maxTrackScore} pts</p>
                         </div>
 
-                        <div className="w-full bg-slate-800 rounded-full h-4 md:h-5 overflow-hidden border border-slate-700 relative">
+                        <div className="w-full bg-slate-800 rounded-full h-3 md:h-4 overflow-hidden border border-slate-700 relative">
                             <motion.div 
                                 initial={{ width: 0 }} 
                                 animate={{ width: `${percentage}%` }} 
@@ -357,7 +357,7 @@ export default function App() {
                                 className="bg-gradient-to-r from-emerald-600 to-green-400 h-full relative" 
                             />
                         </div>
-                        <p className="text-right text-slate-400 text-sm mt-3 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
+                        <p className="text-right text-slate-400 text-xs md:text-sm mt-2 font-bold tracking-wider">{percentage.toFixed(1)}% de aproveitamento</p>
                     </div>
 
                     <div className="flex flex-col gap-4">

@@ -304,7 +304,7 @@ export default function MeioAmbienteGame({ playerName, userId, onBackToHub, onSa
     const state = clickedWords[word];
     if (state === 'correct') return 'bg-emerald-500/80 hover:bg-emerald-500/90 border-emerald-400 text-white';
     if (state === 'incorrect') return 'bg-red-500/80 hover:bg-red-500/90 border-red-400 text-white line-through';
-    return 'bg-slate-700/50 hover:bg-slate-700/80 border-slate-600 text-[#6c7893]';
+    return 'bg-slate-800/90 hover:bg-slate-700 border-slate-600 hover:border-emerald-400/50 text-slate-100 hover:text-white font-bold shadow-sm';
   }
 
   const filteredWordBank = wordBank.filter(word => word.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -348,9 +348,9 @@ export default function MeioAmbienteGame({ playerName, userId, onBackToHub, onSa
   if (!currentBiome) return null;
 
   return (
-    <main className="min-h-screen bg-[#020617] text-white overflow-x-hidden flex flex-col">
+    <main className="min-h-screen bg-[#020617] text-white overflow-x-hidden overflow-y-auto flex flex-col">
      
-      <header className="w-full flex flex-col md:flex-row justify-between items-center p-3 md:p-6 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-3 md:gap-4 shadow-xl md:shadow-2xl">
+      <header className="w-full flex flex-col md:flex-row justify-between items-center p-2.5 md:p-4 border-b border-white/10 bg-[#0A1024]/90 backdrop-blur-md sticky top-0 z-50 gap-2 md:gap-4 shadow-xl md:shadow-2xl">
           <div className="flex items-center w-full md:w-auto relative justify-center md:justify-start min-h-[40px]">
               
               <Button 
@@ -452,60 +452,127 @@ export default function MeioAmbienteGame({ playerName, userId, onBackToHub, onSa
           </div>
       </header>
 
-      <div className="max-w-4xl mx-auto p-3 md:p-6 lg:p-10 w-full flex-grow flex flex-col justify-center">
+      <div className="w-full max-w-7xl mx-auto p-3 sm:p-4 md:p-6 flex-grow flex flex-col justify-start">
         <AnimatePresence mode="wait">
             {gameState === 'playing' && (
-                <motion.div key={`play-area-${currentBiomeIndex}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="flex flex-col gap-8 w-full">
-                    <section className="order-1">
+                <motion.div 
+                    key={`play-area-${currentBiomeIndex}`} 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -20 }} 
+                    transition={{ duration: 0.5 }} 
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch"
+                >
+                    {/* LADO ESQUERDO (7 COLUNAS): INVESTIGAÇÃO VISUAL COMPLETA */}
+                    <section className="flex flex-col gap-4 h-full justify-between">
                         <MissionBriefing landscapeId={currentBiome.imageIds.landscape} detailId={currentBiome.imageIds.detail} />
                     </section>
 
-                    <section className="order-2">
-                        <div className="glass-panel p-6 flex flex-col gap-6 min-h-[400px] border-white/5 bg-slate-900/40 rounded-2xl">
-                            <div className="flex-1 flex flex-col gap-4">
-                                <h3 className="text-[11px] font-black uppercase text-emerald-400 tracking-[0.3em] flex items-center gap-2.5"><BrainCircuit size={16} />Banco de Palavras ({wordBank.length})</h3>
+                    {/* LADO DIREITO (5 COLUNAS): TERMINAL INTERATIVO DE PALAVRAS E DEDUÇÃO */}
+                    <section className="flex flex-col h-full">
+                        <div className="glass-panel p-5 md:p-7 flex flex-col gap-5 border border-emerald-500/20 bg-slate-900/80 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl h-full justify-between">
+                            
+                            {/* BANCO DE PALAVRAS */}
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-black uppercase text-emerald-400 tracking-[0.2em] flex items-center gap-2">
+                                        <BrainCircuit size={18} /> Banco de Palavras ({wordBank.length})
+                                    </h3>
+                                    <span className="text-[11px] text-slate-400 font-bold bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
+                                        Fase {currentBiomeIndex + 1}/3
+                                    </span>
+                                </div>
+
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
-                                    <Input type="text" placeholder="Filtrar palavras-chave..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-800/50 border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white w-full" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16}/>
+                                    <Input 
+                                        type="text" 
+                                        placeholder="Filtrar palavras-chave..." 
+                                        value={searchTerm} 
+                                        onChange={(e) => setSearchTerm(e.target.value)} 
+                                        className="bg-slate-950/60 border-slate-700 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:ring-emerald-500 w-full" 
+                                    />
                                 </div>
-                                <div className="flex flex-wrap gap-2.5 pt-2">
-                                {filteredWordBank.length > 0 ? (
-                                    filteredWordBank.map(word => (
-                                        <Button key={word} onClick={() => handleWordClick(word)} className={`rounded-full px-4 py-1.5 text-base font-bold transition-all border ${getButtonClass(word)}`}>{word}</Button>
-                                    ))
-                                ) : (
-                                    <p className="text-slate-500 text-center w-full">Nenhuma palavra encontrada.</p>
-                                )}
+
+                                <div className="flex flex-wrap gap-2.5 pt-1 max-h-72 md:max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                                    {filteredWordBank.length > 0 ? (
+                                        filteredWordBank.map(word => (
+                                            <Button 
+                                                key={word} 
+                                                onClick={() => handleWordClick(word)} 
+                                                className={`rounded-full px-4 py-2 text-xs md:text-sm font-bold transition-all border hover:scale-105 active:scale-95 ${getButtonClass(word)}`}
+                                            >
+                                                {word}
+                                            </Button>
+                                        ))
+                                    ) : (
+                                        <p className="text-slate-500 text-center w-full py-4 text-xs">Nenhuma palavra encontrada.</p>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="flex-1">
-                                <h3 className="text-[11px] font-black uppercase mb-5 text-emerald-400 tracking-[0.3em] flex items-center gap-2"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />Amostras Coletadas ({identifiedKeywords.length} de 10)</h3>
+                            {/* AMOSTRAS COLETADAS COM BARRA DE PROGRESSO */}
+                            <div className="pt-4 border-t border-slate-800">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-xs font-black uppercase text-emerald-400 tracking-[0.2em] flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                                        Amostras Coletadas ({identifiedKeywords.length} de 10)
+                                    </h3>
+                                    <span className="text-xs font-black text-emerald-400">
+                                        {Math.round((identifiedKeywords.length / 10) * 100)}%
+                                    </span>
+                                </div>
+
+                                <div className="w-full bg-slate-950 rounded-full h-2 mb-3 overflow-hidden border border-slate-800">
+                                    <div 
+                                        className="bg-gradient-to-r from-emerald-600 to-green-400 h-full transition-all duration-300"
+                                        style={{ width: `${Math.min((identifiedKeywords.length / 10) * 100, 100)}%` }}
+                                    />
+                                </div>
+
                                 {identifiedKeywords.length > 0 ? (
-                                <ClueTags keywords={identifiedKeywords} onRemove={() => {}} />
+                                    <ClueTags keywords={identifiedKeywords} onRemove={() => {}} />
                                 ) : (
-                                <div className="flex items-center justify-center h-full text-slate-500 text-center text-sm">Selecione palavras-chave corretas para analisá-las.</div>
+                                    <div className="flex items-center justify-center p-3 bg-slate-950/50 rounded-xl border border-dashed border-slate-800 text-slate-400 text-center text-xs">
+                                        💡 Clique nas palavras corretas no banco acima para validar suas amostras.
+                                    </div>
                                 )}
                             </div>
 
+                            {/* PISTAS RECEBIDAS (SE HOUVER) */}
                             {hintsShown.length > 0 && (
-                                <div className="flex-1">
-                                    <h3 className="text-[11px] font-black uppercase mb-3 text-amber-400 tracking-[0.3em] flex items-center gap-2.5"><Lightbulb size={16} />Pistas Recebidas</h3>
-                                    <div className="space-y-2">
+                                <div className="pt-3 border-t border-slate-800">
+                                    <h3 className="text-xs font-black uppercase mb-2 text-amber-400 tracking-[0.2em] flex items-center gap-2">
+                                        <Lightbulb size={16} /> Dica do Professor
+                                    </h3>
+                                    <div className="space-y-1.5">
                                         {hintsShown.map((hint, index) => (
-                                            <motion.div key={index} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-amber-500/10 border-l-4 border-amber-500 text-amber-300 p-3 rounded-r-lg text-sm">{hint}</motion.div>
+                                            <motion.div key={index} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="bg-amber-500/10 border-l-4 border-amber-500 text-amber-200 p-2.5 rounded-r-lg text-xs leading-relaxed">
+                                                {hint}
+                                            </motion.div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            <div className="space-y-4 pt-6 border-t border-white/10">
-                                <div className="flex justify-between items-center bg-slate-800/50 px-5 py-3 rounded-xl">
-                                    <span className="text-sm font-semibold text-white/60">Pontuação Total:</span>
-                                    <span className="text-2xl font-black text-emerald-400">{totalScore}</span>
+                            {/* PONTUAÇÃO & BOTÃO DE ENVIO */}
+                            <div className="space-y-3 pt-4 border-t border-slate-800 mt-auto">
+                                <div className="flex justify-between items-center bg-slate-950/80 px-4 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pontuação Atual:</span>
+                                    <span className="text-2xl font-black text-emerald-400">{totalScore} <span className="text-xs text-slate-400">PTS</span></span>
                                 </div>
-                                <Button onClick={handleReveal} disabled={identifiedKeywords.length < 2} className="w-full bg-white hover:bg-gray-100 text-black font-black rounded-2xl py-7 md:py-8 transition-all active:scale-95 text-lg md:text-xl shadow-[0_10px_40px_rgba(255,255,255,0.15)] disabled:opacity-30 border-none">Enviar Dedução</Button>
+                                <Button 
+                                    onClick={handleReveal} 
+                                    disabled={identifiedKeywords.length < 2} 
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black rounded-2xl py-5 md:py-6 transition-all active:scale-95 text-base md:text-lg shadow-[0_0_25px_rgba(16,185,129,0.3)] disabled:opacity-40 disabled:cursor-not-allowed border border-emerald-400/30"
+                                >
+                                    {identifiedKeywords.length < 2 
+                                        ? `Selecione mais ${2 - identifiedKeywords.length} amostra(s)`
+                                        : 'Enviar Dedução do Bioma'
+                                    }
+                                </Button>
                             </div>
+
                         </div>
                     </section>
                 </motion.div>

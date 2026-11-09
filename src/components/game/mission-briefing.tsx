@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Info, Satellite, Microscope, X } from 'lucide-react';
+import { Info, Satellite, Microscope, X, ZoomIn, Sparkles } from 'lucide-react';
 
 interface MissionBriefingProps {
   landscapeId: string;
@@ -28,23 +28,34 @@ export function MissionBriefing({ landscapeId, detailId }: MissionBriefingProps)
 
   return (
     <>
-      <div className="space-y-12">
-        <div className="relative group">
-          <div className="absolute top-6 md:top-10 left-0 right-0 z-10 px-4">
-            <motion.h1 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-white font-black text-2xl md:text-4xl lg:text-5xl drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] text-center leading-tight tracking-tighter"
-            >
-              Analise e Identifique os Elementos desta Paisagem
-            </motion.h1>
+      <div className="flex flex-col gap-4 w-full h-full justify-between">
+        {/* CABEÇALHO DO PAINEL VISUAL */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-500/30 text-emerald-400">
+              <Satellite size={22} />
+            </div>
+            <div>
+              <h2 className="text-white font-black text-lg md:text-xl tracking-tight leading-tight">
+                Investigação Visual do Bioma
+              </h2>
+              <p className="text-slate-400 text-xs md:text-sm font-medium">
+                Analise os padrões de vegetação, relevo e composição do solo
+              </p>
+            </div>
           </div>
-          
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+            <ZoomIn size={14} /> Clique nas fotos para ampliar
+          </span>
+        </div>
+
+        {/* 1. IMAGEM PRINCIPAL: VISTA DE SATÉLITE */}
+        <div className="relative group w-full">
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={(e) => satellite && handleZoom(e, satellite.imageUrl)}
-            className="relative aspect-[4/3] md:aspect-video w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden border-[6px] md:border-[10px] border-white/5 shadow-2xl bg-slate-900 cursor-zoom-in"
+            className="relative aspect-[16/9] w-full rounded-2xl md:rounded-3xl overflow-hidden border-2 border-emerald-500/30 group-hover:border-emerald-500/60 shadow-[0_10px_30px_rgba(0,0,0,0.5)] bg-slate-900 cursor-zoom-in transition-all duration-300"
           >
             {satellite && (
               <Image
@@ -52,106 +63,128 @@ export function MissionBriefing({ landscapeId, detailId }: MissionBriefingProps)
                 alt={satellite.description}
                 fill
                 priority
-                className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                className="object-cover transition-transform duration-[1200ms] group-hover:scale-105"
                 data-ai-hint={satellite.imageHint}
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-            <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 flex items-center gap-3 bg-blue-600/90 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20">
-              <Satellite size={20} className="text-white" />
-              <span className="text-white font-black text-sm md:text-base uppercase tracking-wider">Vista de Satélite</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/20 pointer-events-none" />
+            
+            {/* BADGES SOBRE A IMAGEM DE SATÉLITE */}
+            <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 flex items-center gap-2 bg-blue-600/90 backdrop-blur-md px-3.5 py-1.5 md:py-2 rounded-xl border border-white/20 shadow-lg">
+              <Satellite size={16} className="text-white" />
+              <span className="text-white font-black text-xs md:text-sm uppercase tracking-wider">Vista de Satélite</span>
+            </div>
+
+            <div className="absolute top-3 right-3 md:top-4 md:right-4 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white/90 text-xs px-3 py-1.5 rounded-full border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+              <ZoomIn size={14} />
+              <span className="font-semibold hidden sm:inline">Ampliar</span>
             </div>
           </motion.div>
         </div>
 
-        <div className="group relative">
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            onClick={(e) => soil && handleZoom(e, soil.imageUrl)}
-            className="glass-panel p-2 rounded-[2rem] overflow-hidden aspect-[4/3] relative border-white/10 bg-slate-900/40 shadow-xl h-full cursor-zoom-in"
-          >
-            {soil && (
-              <Image
-                src={soil.imageUrl}
-                alt={soil.description}
-                fill
-                className="object-cover rounded-[1.8rem] transition-transform duration-1000 group-hover:scale-105"
-                data-ai-hint={soil.imageHint}
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[1.8rem]" />
-            <div className="absolute bottom-6 left-6 flex items-center gap-2 bg-emerald-500/90 backdrop-blur-sm px-4 py-2 rounded-xl text-xs md:text-sm font-black uppercase border border-white/20">
-              <Microscope size={16} />
-              Perfil do Solo
-            </div>
-          </motion.div>
-        </div>
+        {/* 2. LINHA INFERIOR: PERFIL DO SOLO (50%) + RELATÓRIO DE ANÁLISE (50%) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full items-stretch flex-1">
+          
+          {/* FOTO 2: PERFIL DO SOLO */}
+          <div className="relative group w-full h-full min-h-[220px]">
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              onClick={(e) => soil && handleZoom(e, soil.imageUrl)}
+              className="relative w-full h-full min-h-[220px] rounded-2xl overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500/50 shadow-md bg-slate-900 cursor-zoom-in transition-all duration-300"
+            >
+              {soil && (
+                <Image
+                  src={soil.imageUrl}
+                  alt={soil.description}
+                  fill
+                  className="object-cover transition-transform duration-[1200ms] group-hover:scale-105"
+                  data-ai-hint={soil.imageHint}
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 bg-emerald-600/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-black uppercase text-white border border-white/20 shadow-md">
+                <Microscope size={14} />
+                <span>Perfil do Solo & Vegetação</span>
+              </div>
 
-        <div className="glass-panel p-6 md:p-8 rounded-[2rem] flex flex-col justify-center bg-blue-500/10 border-blue-500/20 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Info size={100} />
+              <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white/80 text-[11px] px-2.5 py-1 rounded-full border border-white/10 opacity-70 group-hover:opacity-100 transition-opacity">
+                <ZoomIn size={12} />
+              </div>
+            </motion.div>
           </div>
-          
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-blue-400/20 p-2 rounded-lg">
-              <Info size={20} className="text-blue-400" />
+
+          {/* CARD DO RELATÓRIO DE ANÁLISE & RECOMPENSAS */}
+          <div className="bg-slate-900/80 border border-slate-700/60 rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-lg backdrop-blur-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none text-emerald-400">
+              <Info size={90} />
             </div>
-            <h4 className="text-blue-400 font-black text-sm uppercase tracking-[0.2em]">Relatório de Análise</h4>
-          </div>
-          
-          <p className="text-white/80 text-base leading-relaxed mb-6 font-medium">
-            O BioGuesser detectou <span className="text-blue-400 font-bold">10 elementos geográficos</span>. Valide as características observadas.
-          </p>
-          
-          <div className="space-y-3 pt-4 border-t border-white/10">
-            <p className="text-xs text-white/40 uppercase font-black tracking-[0.2em]">Protocolo de Recompensa:</p>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="flex items-center justify-between bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/20">
-                <span className="text-emerald-400 text-xs font-bold uppercase">▪ Termos Científicos</span>
-                <span className="text-emerald-400 font-black text-sm">+50 XP</span>
+
+            <div>
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="bg-emerald-500/20 p-1.5 rounded-lg text-emerald-400">
+                  <Sparkles size={16} />
+                </div>
+                <h4 className="text-white font-black text-xs md:text-sm uppercase tracking-wider">
+                  Protocolo de Avaliação
+                </h4>
               </div>
-              <div className="flex items-center justify-between bg-blue-500/10 p-2.5 rounded-lg border border-blue-500/20">
-                <span className="text-blue-300 text-xs font-bold uppercase">▪ Termos Regionais</span>
-                <span className="text-blue-300 font-black text-sm">+30 XP</span>
+
+              <p className="text-slate-300 text-xs md:text-sm leading-relaxed mb-4">
+                O satélite detectou <span className="text-emerald-400 font-bold">10 características</span> deste bioma. Selecione as palavras correspondentes no banco ao lado:
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-between bg-emerald-950/40 p-2 rounded-xl border border-emerald-500/30">
+                <span className="text-emerald-300 text-[11px] font-bold">🧪 Termos Científicos</span>
+                <span className="text-emerald-400 font-black text-xs bg-emerald-500/20 px-2 py-0.5 rounded-md">+50 XP</span>
               </div>
-              <div className="flex items-center justify-between bg-white/5 p-2.5 rounded-lg border border-white/10">
-                <span className="text-white/40 text-xs font-bold uppercase">▪ Termos Comuns</span>
-                <span className="text-white/40 font-black text-sm">+10 XP</span>
+              <div className="flex items-center justify-between bg-blue-950/40 p-2 rounded-xl border border-blue-500/30">
+                <span className="text-blue-300 text-[11px] font-bold">📍 Termos Regionais</span>
+                <span className="text-blue-400 font-black text-xs bg-blue-500/20 px-2 py-0.5 rounded-md">+30 XP</span>
+              </div>
+              <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-xl border border-slate-700">
+                <span className="text-slate-300 text-[11px] font-bold">🌿 Termos Gerais</span>
+                <span className="text-slate-400 font-black text-xs bg-slate-700 px-2 py-0.5 rounded-md">+10 XP</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
+      {/* MODAL DE ZOOM FULLSCREEN */}
       <AnimatePresence>
         {zoomedImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
             onClick={() => handleCloseZoom()}
           >
             <motion.div
               layoutId={zoomedImage}
-              className="relative w-full h-full max-w-[90vw] max-h-[90vh]"
+              className="relative w-full h-full max-w-[90vw] max-h-[88vh] flex items-center justify-center"
             >
               <Image 
                 src={zoomedImage} 
                 alt="Zoomed view" 
                 fill
                 style={{objectFit: 'contain'}}
+                className="rounded-2xl"
               />
             </motion.div>
             <motion.button
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1, transition: { delay: 0.2 } }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              className="absolute top-5 right-5 text-white bg-black/40 rounded-full p-2 transition-colors hover:bg-black/70"
+              className="absolute top-5 right-5 text-white bg-slate-800/80 hover:bg-slate-700 p-3 rounded-full transition-colors border border-white/20 shadow-xl"
               onClick={(e) => handleCloseZoom(e)}
-              aria-label="Close zoomed image"
+              aria-label="Fechar zoom"
             >
-              <X size={28} />
+              <X size={24} />
             </motion.button>
           </motion.div>
         )}

@@ -290,7 +290,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
     
     if (status === 'intro') {
         return (
-            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl w-full bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10">
@@ -324,7 +324,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
 
     if (status === 'mission_briefing') {
         return (
-            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
                 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl w-full bg-slate-900 border-2 border-blue-500/30 rounded-3xl p-8 md:p-12 shadow-2xl relative z-10 text-center">
@@ -370,7 +370,7 @@ export default function DetetiveIbgeGame({ playerName, onReturnHome, onSaveScore
 
     // --- TELA PRINCIPAL (JOGO MAPA) --- //
     return (
-        <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-[#020617] text-white flex flex-col relative overflow-x-hidden overflow-y-auto">
             
             <div className="absolute top-0 w-full h-full opacity-10 pointer-events-none z-0" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
