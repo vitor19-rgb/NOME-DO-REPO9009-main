@@ -1406,8 +1406,8 @@ export default function EscudoDaVerdadeGame({
           </div>
 
           {/* --- ÁREA INFERIOR: CARTAS DE JOGAR --- */}
-          <div className="flex-1 w-full relative flex items-center justify-center pb-2 md:pb-5 mt-1 md:mt-3 z-50 px-2 md:px-4 min-h-[110px] md:min-h-[150px] -translate-y-[8px]">
-            <div className="w-full max-w-2xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-center gap-2 sm:gap-4 md:gap-5">
+         <div className="w-full relative flex flex-col items-center justify-center pb-2 md:pb-4 mt-1 md:mt-3 z-50 px-2 md:px-4">
+            <div className="w-full max-w-2xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-center gap-2 sm:gap-4 md:gap-5 min-h-[100px] md:min-h-[140px]">
               <AnimatePresence mode="popLayout">
                 {availableCards.slice(0, 3).map((card, index) => (
                   <motion.div
@@ -1471,8 +1471,9 @@ export default function EscudoDaVerdadeGame({
               </AnimatePresence>
             </div>
 
+            {/* Texto de "RESTAM X CARTAS" ajustado para ficar mais próximo das cartas */}
             {availableCards.length > 0 && (
-              <div className="absolute bottom-0 md:bottom-2 text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest animate-pulse pointer-events-none w-full text-center">
+              <div className="mt-2 md:mt-4 text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest animate-pulse pointer-events-none w-full text-center">
                 RESTAM {availableCards.length} CARTAS NA FASE {currentPhaseIndex + 1}
               </div>
             )}
