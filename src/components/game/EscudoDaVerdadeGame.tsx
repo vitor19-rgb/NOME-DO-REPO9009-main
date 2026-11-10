@@ -673,6 +673,7 @@ export default function EscudoDaVerdadeGame({
   const [score, setScore] = useState(0);
   const [availableCards, setAvailableCards] = useState<CardItem[]>([]);
   const [shieldedCards, setShieldedCards] = useState<CardItem[]>([]);
+  const [lastSuccessFeedback, setLastSuccessFeedback] = useState<CardItem | null>(null);
   const [dragErrorCardId, setDragErrorCardId] = useState<string | null>(null);
   const [areaError, setAreaError] = useState<{ show: boolean; x: number; y: number }>({ show: false, x: 0, y: 0 });
 
@@ -707,6 +708,7 @@ export default function EscudoDaVerdadeGame({
     if (!currentPhase) return;
     setAvailableCards([...currentPhase.cards].sort(() => Math.random() - 0.5));
     setShieldedCards([]);
+    setLastSuccessFeedback(null);
   }, [currentPhaseIndex, currentPhase]);
 
   // 2. Deteta Condição de Vitória (Fim do Baralho da fase atual)
@@ -764,6 +766,7 @@ export default function EscudoDaVerdadeGame({
       if (isInsideCenter) {
         setAvailableCards((prev) => prev.filter((c) => c.id !== card.id));
         setShieldedCards((prev) => [...prev, card]);
+        setLastSuccessFeedback(card);
         setScore((prev) => prev + 50);
         triggerSuccess(50, dropX, dropY);
         return true;
@@ -1354,7 +1357,7 @@ export default function EscudoDaVerdadeGame({
                 <div className="absolute inset-0 -m-4 md:-m-6 rounded-full border-2 border-orange-500/30 border-dashed animate-pulse pointer-events-none"></div>
                 <div
                   ref={dropzoneRef}
-                  className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 max-h-[30vh] max-w-[30vh] aspect-square rounded-full border-4 border-dashed border-orange-600/50 flex items-center justify-center bg-slate-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
+                  className="relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-[340px] lg:h-[340px] xl:w-[380px] xl:h-[380px] max-h-[38vh] max-w-[38vh] aspect-square rounded-full border-4 border-dashed border-orange-500/70 flex items-center justify-center bg-slate-900 shadow-[0_0_50px_rgba(249,115,22,0.35)] cursor-zoom-in group transition-transform hover:scale-105 mx-auto overflow-hidden"
                   onClick={() => setZoomedImage(currentPhase.imageSrc)}
                 >
                   <motion.img 
@@ -1388,19 +1391,31 @@ export default function EscudoDaVerdadeGame({
             </div>
           </div>
 
-          {/* REGISTO DE VERDADES DA FASE */}
-          <div className="flex flex-col gap-1.5 md:gap-2 w-full px-4 items-center pointer-events-none mt-2 flex-shrink-0 min-h-[80px]">
-            <AnimatePresence>
-              {shieldedCards.slice(-2).map((card) => (
-                <motion.div key={`log-${card.id}`} initial={{ opacity: 0, y: -10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="bg-orange-950/95 backdrop-blur-sm border border-orange-500/80 text-orange-100 p-2 md:p-3 rounded-xl text-center text-[11px] md:text-sm font-bold shadow-lg w-full max-w-lg truncate">
-                  <Leaf className="inline-block w-3 h-3 md:w-4 md:h-4 mr-2 text-orange-400" />
-                  {card.text}
+          {/* ESPAÇO EXPLICATIVO DE FEEDBACK (COMPACTO E PROPORCIONAL) */}
+          <div className="flex flex-col gap-1 w-full px-4 items-center justify-center mt-1 flex-shrink-0 min-h-[52px] max-w-2xl mx-auto">
+            <AnimatePresence mode="wait">
+              {lastSuccessFeedback ? (
+                <motion.div
+                  key={`feedback-${lastSuccessFeedback.id}`}
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-orange-950/85 backdrop-blur-md border border-orange-500/60 rounded-xl px-3 py-1.5 shadow-[0_0_15px_rgba(249,115,22,0.2)] w-full text-center flex items-center justify-center gap-2"
+                >
+                  <Leaf className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                  <p className="text-center text-[11px] md:text-xs text-orange-200 font-medium leading-snug">
+                    {lastSuccessFeedback.explanation}
+                  </p>
                 </motion.div>
-              ))}
+              ) : (
+                <div className="text-slate-400 text-[11px] text-center py-1 px-3 rounded-lg border border-slate-800/80 bg-slate-900/30">
+                  Arraste a afirmativa de <span className="text-orange-400 font-semibold">VERDADE</span> para o escudo para ver a explicação.
+                </div>
+              )}
             </AnimatePresence>
             {shieldedCards.length > 0 && (
-              <div className="text-orange-400 text-[10px] md:text-xs font-bold bg-slate-900/90 px-4 py-1.5 rounded-full border border-orange-500/30 mt-1">
-                Total: {shieldedCards.length} respostas corretas na Fase {currentPhaseIndex + 1}
+              <div className="text-orange-400/90 text-[10px] font-semibold">
+                Verdades protegidas: {shieldedCards.length} na fase {currentPhaseIndex + 1}
               </div>
             )}
           </div>
